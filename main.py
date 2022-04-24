@@ -76,29 +76,21 @@ cap = {
 
 vdev = UInput(cap, name="virtualmarble", version=0x3)
 
-bt_leftalt = Key("leftalt", vdev, e.EV_KEY, e.KEY_LEFTALT)
-bt_tab     = Key("tab",     vdev, e.EV_KEY, e.KEY_TAB)
-bt_right   = Key("right",   vdev, e.EV_KEY, e.BTN_RIGHT, 90001)
-bt_left    = Key("left",    vdev, e.EV_KEY, e.BTN_LEFT, 90004)
-bt_middle  = Key("middle",  vdev, e.EV_KEY, e.BTN_MIDDLE, 90005)
-bt_rel_x   = Key("rel_x",   vdev, e.EV_REL, e.REL_X)
-bt_rel_y   = Key("rel_y",   vdev, e.EV_REL, e.REL_Y)
-bt_back    = Key("back",    vdev, e.EV_KEY, e.BTN_SIDE, 90004)
-bt_forward = Key("forward", vdev, e.EV_KEY, e.BTN_EXTRA, 90005)
-bt_wheel_h = WheelKey("wheel_h", vdev, e.EV_REL, e.REL_HWHEEL, e.REL_HWHEEL_HI_RES, 20)
-bt_wheel_v = WheelKey("wheel_v", vdev, e.EV_REL, e.REL_WHEEL, e.REL_WHEEL_HI_RES, 10)
+def process_events(dev):
+    global vdev
 
-while True:
+    bt_leftalt = Key("leftalt", vdev, e.EV_KEY, e.KEY_LEFTALT)
+    bt_tab     = Key("tab",     vdev, e.EV_KEY, e.KEY_TAB)
+    bt_right   = Key("right",   vdev, e.EV_KEY, e.BTN_RIGHT, 90001)
+    bt_left    = Key("left",    vdev, e.EV_KEY, e.BTN_LEFT, 90004)
+    bt_middle  = Key("middle",  vdev, e.EV_KEY, e.BTN_MIDDLE, 90005)
+    bt_rel_x   = Key("rel_x",   vdev, e.EV_REL, e.REL_X)
+    bt_rel_y   = Key("rel_y",   vdev, e.EV_REL, e.REL_Y)
+    bt_back    = Key("back",    vdev, e.EV_KEY, e.BTN_SIDE, 90004)
+    bt_forward = Key("forward", vdev, e.EV_KEY, e.BTN_EXTRA, 90005)
+    bt_wheel_h = WheelKey("wheel_h", vdev, e.EV_REL, e.REL_HWHEEL, e.REL_HWHEEL_HI_RES, 20)
+    bt_wheel_v = WheelKey("wheel_v", vdev, e.EV_REL, e.REL_WHEEL, e.REL_WHEEL_HI_RES, 10)
 
-    dev = grab_device()
-
-    if dev is None:
-        print("Trackball not found, waiting for it...")
-        time.sleep(3)
-        continue
-    
-    done = False
-    
     left_big    = 0
     right_big   = 0
     left_small  = 0
@@ -108,7 +100,6 @@ while True:
     tab_state   = False
 
     for event in dev.read_loop():
-
         if event.type == e.EV_SYN:
             if event.code == e.SYN_REPORT:
 
@@ -171,3 +162,29 @@ while True:
             elif event.code == e.REL_Y:
                 rel_y = event.value
 
+while True:
+    try:
+        dev = grab_device()
+
+        if dev is None:
+            print("Trackball not found, resuming in 3s")
+            time.sleep(3)
+        
+        else:
+            print("Trackball connected")
+            process_events(dev)
+        
+    except OSError:
+        print("OSError, resuming in 3s")
+        time.sleep(3)
+    
+    except KeyboardInterrupt:
+        break
+
+if dev is not None:
+    dev.close()
+
+if vdev is not None:
+    vdev.close()
+
+print("Bye")
