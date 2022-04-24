@@ -119,23 +119,23 @@ while True:
                     bt_middle.update(0)
                     bt_rel_x.update(0)
                     bt_rel_y.update(0)
-                    bt_back.update(left_big)
-                    bt_forward.update(left_small)
+                    bt_back.update(left_small)
+                    bt_forward.update(right_small)
 
                     bt_wheel_h.update(rel_x)
                     bt_wheel_v.update(-rel_y)
 
-                    if not tab_state and right_small == 1:
+                    if not tab_state and left_big == 1:
                         bt_leftalt.update(1)
                         tab_state = True
                     
-                    bt_tab.update(right_small)
+                    bt_tab.update(left_big)
 
                 # Normal state
                 else:
                     bt_left.update(left_big)
-                    bt_right.update(left_small)
-                    bt_middle.update(right_small)
+                    bt_right.update(right_small)
+                    bt_middle.update(left_small)
                     bt_rel_x.update(refine(rel_x))
                     bt_rel_y.update(refine(rel_y))
                     bt_wheel_h.update(0)
