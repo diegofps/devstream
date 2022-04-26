@@ -133,14 +133,14 @@ def process_events(dev):
             # small right
             elif event.code == e.BTN_EXTRA:
                 if alt_mode == 0:
-                    bt_middle.update(event.value)
+                    bt_right.update(event.value)
                 else:
                     bt_back.update(event.value)
 
             # big right
             elif event.code == e.BTN_RIGHT:
                 if alt_mode == 0:
-                    bt_right.update(event.value)
+                    bt_middle.update(event.value)
 
                 else:
                     bt_forward.update(event.value)

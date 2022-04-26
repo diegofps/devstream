@@ -8,8 +8,8 @@ This is a daemon to enhance the features in the Logitech Trackball Marble in Lin
 
 - A : Left click
 - B : Alternate mode
-- C : Middle click
-- D : Right click
+- C : Right click
+- D : Middle click
 - E : Move cursor
 
 - B + A : Alt + Tab
