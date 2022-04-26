@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 from evdev import InputDevice, UInput, AbsInfo, list_devices, ecodes as e
+import traceback
 import time
+import sys
 
 def grab_device():
     devices = [InputDevice(path) for path in list_devices()]
@@ -11,10 +13,8 @@ def grab_device():
             return d
     return None
 
-def refine(v):
-    v2 = v**2 if v > 0 else -v**2
-    a = 0.99
-    return int(v * a + v2 * (1-a))
+def smooth(v):
+    return int(v * 1.5)
 
 class Key:
     def __init__(self, name, device, type, code, scan=None):
@@ -91,76 +91,75 @@ def process_events(dev):
     bt_wheel_h = WheelKey("wheel_h", vdev, e.EV_REL, e.REL_HWHEEL, e.REL_HWHEEL_HI_RES, 20)
     bt_wheel_v = WheelKey("wheel_v", vdev, e.EV_REL, e.REL_WHEEL, e.REL_WHEEL_HI_RES, 10)
 
-    left_big    = 0
-    right_big   = 0
-    left_small  = 0
-    right_small = 0
-    rel_x       = 0
-    rel_y       = 0
-    tab_state   = False
+    alt_mode = 0
+    tab_mode = 0
 
     for event in dev.read_loop():
-        if event.type == e.EV_SYN:
-            if event.code == e.SYN_REPORT:
+        if event.type == e.EV_KEY:
 
-                # Alternate state
-                if right_big == 1:
-                    bt_right.update(0)
-                    bt_left.update(0)
-                    bt_middle.update(0)
-                    bt_rel_x.update(0)
-                    bt_rel_y.update(0)
-                    bt_back.update(left_small)
-                    bt_forward.update(right_small)
-
-                    bt_wheel_h.update(rel_x)
-                    bt_wheel_v.update(-rel_y)
-
-                    if not tab_state and left_big == 1:
-                        bt_leftalt.update(1)
-                        tab_state = True
-                    
-                    bt_tab.update(left_big)
-
-                # Normal state
+            # big_left
+            if event.code == e.BTN_LEFT:
+                if alt_mode == 0:
+                    bt_left.update(event.value)
                 else:
-                    bt_left.update(left_big)
-                    bt_right.update(right_small)
-                    bt_middle.update(left_small)
-                    bt_rel_x.update(refine(rel_x))
-                    bt_rel_y.update(refine(rel_y))
-                    bt_wheel_h.update(0)
-                    bt_wheel_v.update(0)
+                    # Activate alt mode if not active
+                    if tab_mode != 1:
+                        tab_mode = 1
+                        bt_leftalt.update(1)
+                    
+                    # Activate/deactivate tab click
+                    bt_tab.update(event.value)
+
+            # small left
+            elif event.code == e.BTN_SIDE:
+                alt_mode = event.value
+
+                # Disable alternate buttons
+                if alt_mode == 0:
+                    
                     bt_back.update(0)
                     bt_forward.update(0)
 
-                    if tab_state:
-                        bt_leftalt.update(0)
-                        tab_state = False
-                
-                rel_x = 0
-                rel_y = 0
+                    bt_leftalt.update(0)
+                    bt_tab.update(0)
+                    tab_mode = 0
 
-        elif event.type == e.EV_KEY:
-            if event.code == e.BTN_LEFT:
-                left_big = event.value
-                
-            elif event.code == e.BTN_RIGHT:
-                right_big = event.value
-
+                # Disable normal buttons
+                else:
+                    bt_left.update(0)
+                    bt_right.update(0)
+                    bt_middle.update(0)
+            
+            # small right
             elif event.code == e.BTN_EXTRA:
-                right_small = event.value
+                if alt_mode == 0:
+                    bt_middle.update(event.value)
+                else:
+                    bt_back.update(event.value)
 
-            elif event.code == e.BTN_SIDE:
-                left_small = event.value
-                
+            # big right
+            elif event.code == e.BTN_RIGHT:
+                if alt_mode == 0:
+                    bt_right.update(event.value)
+
+                else:
+                    bt_forward.update(event.value)
 
         elif event.type == e.EV_REL:
-            if event.code == e.REL_X:
-                rel_x = event.value
 
+            # Ball rotates horizontally
+            if event.code == e.REL_X:
+                if alt_mode == 0:
+                    bt_rel_x.update(smooth(event.value))
+                else:
+                    bt_wheel_h.update(event.value)
+
+            # Ball rotates vertically
             elif event.code == e.REL_Y:
-                rel_y = event.value
+                if alt_mode == 0:
+                    bt_rel_y.update(smooth(event.value))
+                else:
+                    bt_wheel_v.update(-event.value)
 
 while True:
     try:
@@ -176,6 +175,7 @@ while True:
         
     except OSError:
         print("OSError, resuming in 3s")
+        traceback.print_exc(file=sys.stdout)
         time.sleep(3)
     
     except KeyboardInterrupt:
