@@ -7,14 +7,15 @@ This is a daemon to enhance the features in the Logitech Trackball Marble in Lin
 ![Buttons](keys.png)
 
 - A : Left click
-- B : Middle click
-- C : Right click
+- B : Alternate mode
+- C : Middle click
+- D : Right click
 - E : Move cursor
 
-- D + A : Alt + Tab
-- D + B : Back
-- D + C : Forward
-- D + E : Vertical and horizontal scrolling
+- B + A : Alt + Tab
+- B + C : Back
+- B + D : Forward
+- B + E : Vertical and horizontal scrolling
 
 # Dependencies
 
