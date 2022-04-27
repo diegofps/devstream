@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 
+
 echo "Copying files..."
-mkdir -p /etc/marble_daemon
-cp ./main.py /etc/marble_daemon/
-cp ./logitech-marble /etc/init.d/logitech-marble
+mkdir -p /etc/logitech_wrappers
+cp ./*.py /etc/logitech_wrappers/
+cp ./marble-svc /etc/init.d/marble-svc
+cp ./mx2s-svc /etc/init.d/mx2s-svc
+
 
 echo "Configuring service..."
-chmod +x /etc/init.d/logitech-marble
-update-rc.d logitech-marble defaults
-systemctl enable logitech-marble
+chmod +x /etc/init.d/marble-svc
+chmod +x /etc/init.d/mx2s-svc
 
-echo "Starting service..."
-service logitech-marble start
+update-rc.d marble-svc defaults
+update-rc.d mx2s-svc defaults
+
 
 echo "Installation completed"
