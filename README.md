@@ -20,7 +20,7 @@ Holding B
 
 - B + A : Previous window (Alt+Shift+Tab)
 - B + C : Forward
-- B + D : Next window (Alt+Tab)
+- B + D : Next window (Alt + Tab)
 - B + E : Vertical and horizontal scrolling
 
 Holding D
@@ -66,19 +66,19 @@ Multimedia Mode
 System mode
 
 - H + G : Show windows (Meta key)
-- H + G + A : Ctrl+Y
+- H + G + A : Ctrl + Z
 - H + G + B : Close Window
-- H + G + C : Ctrl+Z
+- H + G + C : Ctrl + Shift + Z
 - H + G + E : Switch Window
 
 # Dependencies
 
-This daemon requires python3, pip and evdev. It has only been tested in Ubuntu 20.04 LTS and you can install its dependencies with the following commands.
+This daemon requires python3, pip and evdev. It has only been tested in Ubuntu 20.04 LTS, you can install its dependencies with the following commands.
 
 ```shell
 sudo apt update
 sudo apt install -yq libpython3-dev
-pip3 install evdev
+sudo pip3 install evdev
 ```
 
 # Install

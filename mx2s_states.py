@@ -100,7 +100,7 @@ class StateBrowser(BaseState): # G
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
-        if event.value == 1:
+        if event.value != 0:
             self.c.key_leftctrl.press()
             self.c.key_equal.press()
         else:
@@ -110,7 +110,7 @@ class StateBrowser(BaseState): # G
     def on_scroll_right_click(self, event): # F
         self.clean = False
         
-        if event.value == 1:
+        if event.value != 0:
             self.c.key_leftctrl.press()
             self.c.key_minus.press()
         else:
@@ -195,29 +195,27 @@ class StateSystem(BaseState): # HG
     
     def on_left_click(self, event): # A
         self.clean = False
-        if event.value == 1:
-            self.c.key_leftctrl.press()
-            self.c.key_y.press()
-        else:
-            self.c.key_y.release()
-            self.c.key_leftctrl.release()
 
     def on_middle_click(self, event): # B
         self.clean = False
+
         if event.value == 1:
             self.c.key_leftalt.press()
             self.c.key_f4.press()
-        else:
+        elif event.value == 0:
             self.c.key_f4.release()
             self.c.key_leftalt.release()
         
     def on_right_click(self, event): # C
         self.clean = False
-        if event.value == 1:
+        
+        if event.value != 0:
             self.c.key_leftctrl.press()
+            self.c.key_leftshift.press()
             self.c.key_z.press()
         else:
             self.c.key_z.release()
+            self.c.key_leftshift.release()
             self.c.key_leftctrl.release()
 
     def on_side_up_click(self, event): # H
