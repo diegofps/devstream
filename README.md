@@ -8,16 +8,22 @@ This is a daemon to enhance the features in the Logitech Trackball Marble and Lo
 
 ![Buttons](images/keys_marble.png)
 
+Normal Mode
+
 - A : Left click
 - B : Back
 - C : Right click
 - D : Middle click
 - E : Move cursor
 
+Holding B
+
 - B + A : Previous window (Alt+Shift+Tab)
 - B + C : Forward
 - B + D : Next window (Alt+Tab)
 - B + E : Vertical and horizontal scrolling
+
+Holding D
 
 - D + A : Go to declaration (Ctrl + Left click)
 - D + B : Close tab (Ctrl + W)
