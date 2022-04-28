@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 echo "Stopping service..."
 service marble-svc stop
 service mx2s-svc stop

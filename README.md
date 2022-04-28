@@ -33,9 +33,11 @@ Normal Mode
 - A : Left Click
 - B : Middle Click
 - C : Right Click
-- D : Go Forward
+- D : Horizontal Scroll
 - E : Vertical Scroll
-- F : Go Back
+- F : Horizontal Scroll
+- G : Back
+- H : Forward
 
 Browser Mode
 
@@ -57,10 +59,11 @@ Multimedia Mode
 
 System mode
 
-- H+G + A : Ctrl+Z
-- H+G + B : Close Window
-- H+G + C : Ctrl+Y
-- H+G + E : Switch Window
+- H + G : Show windows (Meta key)
+- H + G + A : Ctrl+Y
+- H + G + B : Close Window
+- H + G + C : Ctrl+Z
+- H + G + E : Switch Window
 
 # Dependencies
 

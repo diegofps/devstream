@@ -37,11 +37,11 @@ class Context:
         cap = {
             e.EV_KEY : [
                 e.BTN_LEFT, e.BTN_RIGHT, e.BTN_MIDDLE, e.BTN_SIDE, e.BTN_EXTRA, 
-                e.KEY_TAB, e.KEY_LEFTALT, e.KEY_LEFTCTRL, e.KEY_LEFTSHIFT, 
-                e.KEY_C, e.KEY_X, e.KEY_V, e.KEY_T, e.KEY_W, e.KEY_Y, e.KEY_Z,
+                e.KEY_TAB, e.KEY_LEFTALT, e.KEY_LEFTCTRL, e.KEY_LEFTSHIFT, e.KEY_LEFTMETA, 
+                e.KEY_C, e.KEY_X, e.KEY_V, e.KEY_T, e.KEY_W, e.KEY_Y, e.KEY_Z, 
                 e.KEY_PLAYPAUSE, e.KEY_NEXTSONG, e.KEY_PREVIOUSSONG, e.KEY_STOPCD, 
-                e.KEY_MUTE, e.KEY_VOLUMEUP, e.KEY_VOLUMEDOWN,
-                e.KEY_MINUS, e.KEY_EQUAL, e.KEY_F4,
+                e.KEY_MUTE, e.KEY_VOLUMEUP, e.KEY_VOLUMEDOWN, 
+                e.KEY_MINUS, e.KEY_EQUAL, e.KEY_F4, 
             ],
             e.EV_REL : [
                 (e.REL_X, AbsInfo(value=0, min=-1024, max=+1024, fuzz=0, flat=0, resolution=0)), 
@@ -81,6 +81,7 @@ class Context:
         self.key_zoom     = DelayedKey("DELAYED_ZOOM",     self.vdev, self.on_switch_zoom,    200)
         self.key_undoredo = DelayedKey("DELAYED_UNDOREDO", self.vdev, self.on_undo_redo,      200)
 
+        self.key_leftmeta  = Key("leftmeta",  self.vdev, e.EV_KEY, e.KEY_LEFTMETA)
         self.key_leftalt   = Key("leftalt",   self.vdev, e.EV_KEY, e.KEY_LEFTALT)
         self.key_leftctrl  = Key("leftctrl",  self.vdev, e.EV_KEY, e.KEY_LEFTCTRL)
         self.key_leftshift = Key("leftshift", self.vdev, e.EV_KEY, e.KEY_LEFTSHIFT)

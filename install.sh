@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+set -e
 
 echo "Copying files..."
 mkdir -p /etc/logitech_wrappers
