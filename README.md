@@ -9,15 +9,20 @@ This is a daemon to enhance the features in the Logitech Trackball Marble and Lo
 ![Buttons](images/keys_marble.png)
 
 - A : Left click
-- B : Alternate mode
+- B : Back
 - C : Right click
 - D : Middle click
 - E : Move cursor
 
-- B + A : Alt + Tab
-- B + C : Back
-- B + D : Forward
+- B + A : Previous window (Alt+Shift+Tab)
+- B + C : Forward
+- B + D : Next window (Alt+Tab)
 - B + E : Vertical and horizontal scrolling
+
+- D + A : Go to declaration (Ctrl + Left click)
+- D + B : Close tab (Ctrl + W)
+- D + C : Close window (Alt + F4)
+- D + E : Switch tabs (Ctrl + Tab, Ctrl + Shift + Tab)
 
 ## Logitech MX Anywhere 2S
 
@@ -70,20 +75,21 @@ pip3 install evdev
 # Install
 
 ```shell
-// Install the services and python sources
+# Install the services and python sources for all devices
 sudo ./install.sh
 
-// Start the service you want
-sudo service marble-svc start // For Logitech Trackball Marble
-sudo service mx2s-svc start   // For Logitech MX Anywhere 2S
+# Start the service you want
+sudo service marble-svc start # For Logitech Trackball Marble
+sudo service mx2s-svc start   # For Logitech MX Anywhere 2S
 
-// Activate autostart during system boot
-sudo systemctl enable marble-svc // For Logitech Trackball Marble
-sudo systemctl enable mx2s-svc   // For Logitech MX Anywhere 2S
+# Activate autostart during system boot
+sudo systemctl enable marble-svc # For Logitech Trackball Marble
+sudo systemctl enable mx2s-svc   # For Logitech MX Anywhere 2S
 ```
 
 # Uninstall
 
 ```shell
+# Stop services, uninstall them, and remove all files
 sudo ./uninstall.sh
 ```

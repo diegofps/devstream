@@ -22,7 +22,13 @@ class Key:
         
         self.device.write(self.type, self.code, self.value)
         self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
-
+    
+    def press(self):
+        self.update(1)
+    
+    def release(self):
+        self.update(0)
+    
 class DirectKey:
     
     def __init__(self, name, device, type, code, scan=None):
@@ -38,13 +44,18 @@ class DirectKey:
         
         self.device.write(self.type, self.code, value)
         self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
-
+    
+    def press(self):
+        self.update(1)
+    
+    def release(self):
+        self.update(0)
+    
 
 class WheelKey:
 
-    def __init__(self, name, device, type, code, code_high, size, speed):
+    def __init__(self, name, device, type, code, code_high, size):
         self.device = device
-        self.speed = speed
         self.size = size
         self.name = name
         self.type = type
@@ -54,7 +65,6 @@ class WheelKey:
     
     def update(self, value):
         
-        value *= self.speed
         self.cumulative += value
 
         if self.code_high is not None:

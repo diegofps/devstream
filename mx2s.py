@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from evdev import ecodes as e
-from utils import grab_device, smooth
-from mx2s_states import Context, StateNormal, StateBrowser, StateMultimedia, StateSystem
+from utils import grab_device, Context
+from mx2s_states import StateNormal, StateBrowser, StateMultimedia, StateSystem
 
 import traceback
 import time
@@ -11,7 +11,7 @@ import os
 
 os.nice(-20)
 
-c = Context()
+c = Context("virtual_mx2s")
 c.state_N  = StateNormal(c)
 c.state_G  = StateBrowser(c)
 c.state_H  = StateMultimedia(c)
