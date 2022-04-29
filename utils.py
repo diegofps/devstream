@@ -61,7 +61,7 @@ class BaseState:
     def on_deactivate(self):
         if self.c.alt_mode:
             self.c.alt_mode = False
-            self.c.key_leftalt.update(0)
+            self.c.key_leftalt.release()
 
     def on_activate(self):
         pass
@@ -135,73 +135,73 @@ class Context:
         self.key_z         = Key("key_z",     self.vdev, e.EV_KEY, e.KEY_Z)
         self.key_f4        = Key("key_f4",    self.vdev, e.EV_KEY, e.KEY_F4)
 
-        self.lockable1     = LockableDelayedKey("lockable1", self.on_switch_windows, self.on_switch_tabs, 120)
-        self.lockable2     = LockableDelayedKey("lockable2", self.on_undo_redo, self.on_update_volume, 120)
+        self.lockable1     = LockableDelayedKey("lockable1", self.on_switch_windows, self.on_switch_tabs, 400)
+        self.lockable2     = LockableDelayedKey("lockable2", self.on_undo_redo, self.on_update_volume, 300)
     
     def on_undo_redo(self, value):
         if value:
-            self.key_leftctrl.update(1)
-            self.key_y.update(1)
-            self.key_y.update(0)
-            self.key_leftctrl.update(0)
+            self.key_leftctrl.press()
+            self.key_y.press()
+            self.key_y.release()
+            self.key_leftctrl.release()
 
         else:
-            self.key_leftctrl.update(1)
-            self.key_z.update(1)
-            self.key_z.update(0)
-            self.key_leftctrl.update(0)
+            self.key_leftctrl.press()
+            self.key_z.press()
+            self.key_z.release()
+            self.key_leftctrl.release()
     
     def on_switch_zoom(self, value):
         if value:
-            self.key_leftctrl.update(1)
-            self.key_equal.update(1)
-            self.key_equal.update(0)
-            self.key_leftctrl.update(0)
+            self.key_leftctrl.press()
+            self.key_equal.press()
+            self.key_equal.release()
+            self.key_leftctrl.release()
 
         else:
-            self.key_leftctrl.update(1)
-            self.key_minus.update(1)
-            self.key_minus.update(0)
-            self.key_leftctrl.update(0)
+            self.key_leftctrl.press()
+            self.key_minus.press()
+            self.key_minus.release()
+            self.key_leftctrl.release()
     
     def on_switch_tabs(self, value):
         if value:
-            self.key_leftctrl.update(1)
-            self.key_leftshift.update(1)
-            self.key_tab.update(1)
-            self.key_tab.update(0)
-            self.key_leftshift.update(0)
-            self.key_leftctrl.update(0)
+            self.key_leftctrl.press()
+            self.key_leftshift.press()
+            self.key_tab.press()
+            self.key_tab.release()
+            self.key_leftshift.release()
+            self.key_leftctrl.release()
 
         else:
-            self.key_leftctrl.update(1)
-            self.key_tab.update(1)
-            self.key_tab.update(0)
-            self.key_leftctrl.update(0)
+            self.key_leftctrl.press()
+            self.key_tab.press()
+            self.key_tab.release()
+            self.key_leftctrl.release()
     
     def on_switch_windows(self, value):
         if not self.alt_mode:
             self.alt_mode = True
-            self.key_leftalt.update(1)
+            self.key_leftalt.press()
         
         if value:
-            self.key_tab.update(1)
-            self.key_tab.update(0)
+            self.key_tab.press()
+            self.key_tab.release()
 
         else:
-            self.key_leftshift.update(1)
-            self.key_tab.update(1)
-            self.key_tab.update(0)
-            self.key_leftshift.update(0)
+            self.key_leftshift.press()
+            self.key_tab.press()
+            self.key_tab.release()
+            self.key_leftshift.release()
     
     def on_update_volume(self, value):
         if value:
-            self.key_volume_up.update(1)
-            self.key_volume_up.update(0)
+            self.key_volume_up.press()
+            self.key_volume_up.release()
 
         else:
-            self.key_volume_down.update(1)
-            self.key_volume_down.update(0)
+            self.key_volume_down.press()
+            self.key_volume_down.release()
     
     def set_state(self, state):
         self.state.on_deactivate()

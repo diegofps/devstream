@@ -105,11 +105,11 @@ class DelayedKey:
         self.last_event = current
 
         while self.cumulative >= self.upper_size:
-            self.cumulative -= self.size
+            self.cumulative -= self.upper_size
             self.callback(True)
 
         while self.cumulative <= self.lower_size:
-            self.cumulative += self.size
+            self.cumulative -= self.lower_size
             self.callback(False)
 
 
@@ -142,12 +142,12 @@ class LockableDelayedKey:
         self.last_event = current
 
         while self.cumulative_h >= self.upper_size:
-            self.cumulative_h -= self.size
+            self.cumulative_h -= self.upper_size
             self.callback_h(True)
             self.lock = "h"
 
         while self.cumulative_h <= self.lower_size:
-            self.cumulative_h += self.size
+            self.cumulative_h -= self.lower_size
             self.callback_h(False)
             self.lock = "h"
     
@@ -165,12 +165,12 @@ class LockableDelayedKey:
         self.last_event = current
 
         while self.cumulative_v >= self.upper_size:
-            self.cumulative_v -= self.size
+            self.cumulative_v -= self.upper_size
             self.callback_v(True)
             self.lock = "v"
 
         while self.cumulative_v <= self.lower_size:
-            self.cumulative_v += self.size
+            self.cumulative_v -= self.lower_size
             self.callback_v(False)
             self.lock = "v"
     

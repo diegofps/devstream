@@ -18,7 +18,7 @@ Normal Mode
 
 Holding B
 
-- B + A : Show All Windows
+- B + A : Show All Windows (Super)
 - B + C : Back
 - B + D : Forward
 - B + E : Vertical and Horizontal Scrolling
@@ -27,7 +27,7 @@ Holding C
 
 - C + A : Play / Pause
 - C + C : Mute
-- C + D : Copy / Interrupt Script
+- C + D : Copy / Interrupt Script (Ctrl + C)
 - C + E : Change Volume (Vertical) or Undo / Redo (Horizontal)
 
 Holding D
