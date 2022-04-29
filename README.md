@@ -25,10 +25,10 @@ Holding B
 
 Holding C
 
-- B + A : Play / Pause
-- B + C : Mute
-- B + D : Copy / Interrupt Script
-- B + E : Change Volume (Vertical) or Undo / Redo (Horizontal)
+- C + A : Play / Pause
+- C + C : Mute
+- C + D : Copy / Interrupt Script
+- C + E : Change Volume (Vertical) or Undo / Redo (Horizontal)
 
 Holding D
 
