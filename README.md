@@ -11,21 +11,28 @@ These are system services to enhance the compatibility of the Logitech Trackball
 Normal Mode
 
 - A : Left Click
-- B : Back
+- B : Go to Declaration / Open New (Ctrl + Left Click)
 - C : Right Click
 - D : Middle Click
 - E : Move Cursor
 
 Holding B
 
-- B + A : Reopen Tab (Ctrl + Shift + T)
-- B + C : Forward
-- B + D : Show All Windows
+- B + A : Show All Windows
+- B + C : Back
+- B + D : Forward
 - B + E : Vertical and Horizontal Scrolling
+
+Holding C
+
+- B + A : Play / Pause
+- B + C : Mute
+- B + D : Copy / Interrupt Script
+- B + E : Change Volume (Vertical) or Undo / Redo (Horizontal)
 
 Holding D
 
-- D + A : Go to Declaration (Ctrl + Left Click)
+- D + A : Reopen Tab (Ctrl + Shift + T)
 - D + B : Close Tab (Ctrl + W)
 - D + C : Close Window (Alt + F4)
 - D + E : Switch Tabs (Vertical) or Switch Windows (Horizontal)
@@ -42,11 +49,10 @@ Normal Mode
 - D : Horizontal Scroll
 - E : Vertical Scroll
 - F : Horizontal Scroll
-- G : Back
-- H : Forward
 
 Multimedia Mode
 
+- H : Forward
 - H + A : Play / Pause
 - H + B : Stop
 - H + C : Mute / Unmute
@@ -56,6 +62,7 @@ Multimedia Mode
 
 Browser Mode
 
+- G : Back
 - G + A : Go to Declaration (Ctrl + Click)
 - G + B : Close Tab
 - G + C : Reopen Tab (Ctrl + Shift + T)

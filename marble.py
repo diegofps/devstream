@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from marble_states import StateN, StateB, StateD
+from marble_states import StateN, StateB, StateC, StateD
 from utils import run_main_loop, Context
 from evdev import ecodes as e
 import os
@@ -10,6 +10,7 @@ os.nice(-20)
 c = Context("virtual_marble")
 c.state_N  = StateN(c)
 c.state_B  = StateB(c)
+c.state_C  = StateC(c)
 c.state_D  = StateD(c)
 c.state    = c.state_N
 

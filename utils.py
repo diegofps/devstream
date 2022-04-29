@@ -77,8 +77,8 @@ class Context:
                 e.KEY_TAB, e.KEY_LEFTALT, e.KEY_LEFTCTRL, e.KEY_LEFTSHIFT, e.KEY_LEFTMETA, 
                 e.KEY_C, e.KEY_X, e.KEY_V, e.KEY_T, e.KEY_W, e.KEY_Y, e.KEY_Z, 
                 e.KEY_PLAYPAUSE, e.KEY_NEXTSONG, e.KEY_PREVIOUSSONG, e.KEY_STOPCD, 
-                e.KEY_MUTE, e.KEY_VOLUMEUP, e.KEY_VOLUMEDOWN, 
-                e.KEY_MINUS, e.KEY_EQUAL, e.KEY_F4, 
+                e.KEY_MUTE, e.KEY_VOLUMEUP, e.KEY_VOLUMEDOWN, e.KEY_PRESENTATION, 
+                e.KEY_MINUS, e.KEY_EQUAL, e.KEY_F4, e.KEY_ESC,
             ],
             e.EV_REL : [
                 (e.REL_X, AbsInfo(value=0, min=-1024, max=+1024, fuzz=0, flat=0, resolution=0)), 
@@ -111,6 +111,7 @@ class Context:
         self.key_volume_down   = Key("KEY_VOLUME_DOWN",        self.vdev, e.EV_KEY, e.KEY_VOLUMEDOWN)
         self.key_equal         = Key("KEY_EQUAL",              self.vdev, e.EV_KEY, e.KEY_EQUAL)
         self.key_minus         = Key("KEY_MINUS",              self.vdev, e.EV_KEY, e.KEY_MINUS)
+        self.key_escape        = Key("KEY_ESCAPE",             self.vdev, e.EV_KEY, e.KEY_ESC)
 
         self.key_volume   = DelayedKey("DELAYED_VOLUME",   self.on_update_volume,  200)
         self.key_tabs     = DelayedKey("DELAYED_CTRLTAB",  self.on_switch_tabs,    200)
@@ -135,6 +136,7 @@ class Context:
         self.key_f4        = Key("key_f4",    self.vdev, e.EV_KEY, e.KEY_F4)
 
         self.lockable1     = LockableDelayedKey("lockable1", self.on_switch_windows, self.on_switch_tabs, 120)
+        self.lockable2     = LockableDelayedKey("lockable2", self.on_undo_redo, self.on_update_volume, 120)
     
     def on_undo_redo(self, value):
         if value:
