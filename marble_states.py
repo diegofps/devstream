@@ -1,3 +1,4 @@
+from re import S
 from utils import smooth, BaseState
 
 
@@ -40,8 +41,16 @@ class StateB(BaseState):
     
     def on_left_click(self, event): # A
         self.clean = False
+
         if event.value == 1:
-            self.c.on_switch_windows(False)
+            self.c.key_leftctrl.press()
+            self.c.key_leftshift.press()
+            self.c.key_t.press()
+        
+        else:
+            self.c.key_t.release()
+            self.c.key_leftshift.release()
+            self.c.key_leftctrl.release()
 
     def on_down_click(self, event): # B
         if event.value == 0:
@@ -60,7 +69,9 @@ class StateB(BaseState):
         self.clean = False
 
         if event.value == 1:
-            self.c.on_switch_windows(True)
+            self.c.key_leftmeta.press()
+        else:
+            self.c.key_leftmeta.release()
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -121,11 +132,14 @@ class StateD(BaseState):
                 self.c.bt_middle.press()
                 self.c.bt_middle.release()
             
+            self.c.lockable1.unlock()
+
             self.c.set_state(self.c.state_N)
     
     def on_move_rel_x(self, event):
         self.clean = False
+        self.c.lockable1.update_h(event.value * 5)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        self.c.key_tabs.update(-event.value * 5)
+        self.c.lockable1.update_v(-event.value * 5)

@@ -1,6 +1,6 @@
 # from this import d
-from evdev import InputDevice, AbsInfo, UInput, list_devices, ecodes as e
-from keys import Key, WheelKey, DirectKey, DelayedKey
+from evdev import list_devices, InputDevice, AbsInfo, UInput, ecodes as e
+from keys import Key, WheelKey, DirectKey, DelayedKey, LockableDelayedKey
 
 import traceback
 import time
@@ -112,11 +112,11 @@ class Context:
         self.key_equal         = Key("KEY_EQUAL",              self.vdev, e.EV_KEY, e.KEY_EQUAL)
         self.key_minus         = Key("KEY_MINUS",              self.vdev, e.EV_KEY, e.KEY_MINUS)
 
-        self.key_volume   = DelayedKey("DELAYED_VOLUME",   self.vdev, self.on_update_volume,  200)
-        self.key_tabs     = DelayedKey("DELAYED_CTRLTAB",  self.vdev, self.on_switch_tabs,    200)
-        self.key_windows  = DelayedKey("DELAYED_ALTTAB",   self.vdev, self.on_switch_windows, 200)
-        self.key_zoom     = DelayedKey("DELAYED_ZOOM",     self.vdev, self.on_switch_zoom,    200)
-        self.key_undoredo = DelayedKey("DELAYED_UNDOREDO", self.vdev, self.on_undo_redo,      200)
+        self.key_volume   = DelayedKey("DELAYED_VOLUME",   self.on_update_volume,  200)
+        self.key_tabs     = DelayedKey("DELAYED_CTRLTAB",  self.on_switch_tabs,    200)
+        self.key_windows  = DelayedKey("DELAYED_ALTTAB",   self.on_switch_windows, 200)
+        self.key_zoom     = DelayedKey("DELAYED_ZOOM",     self.on_switch_zoom,    200)
+        self.key_undoredo = DelayedKey("DELAYED_UNDOREDO", self.on_undo_redo,      200)
 
         self.key_leftmeta  = Key("leftmeta",  self.vdev, e.EV_KEY, e.KEY_LEFTMETA)
         self.key_leftalt   = Key("leftalt",   self.vdev, e.EV_KEY, e.KEY_LEFTALT)
@@ -133,6 +133,8 @@ class Context:
         self.key_y         = Key("key_y",     self.vdev, e.EV_KEY, e.KEY_Y)
         self.key_z         = Key("key_z",     self.vdev, e.EV_KEY, e.KEY_Z)
         self.key_f4        = Key("key_f4",    self.vdev, e.EV_KEY, e.KEY_F4)
+
+        self.lockable1     = LockableDelayedKey("lockable1", self.on_switch_windows, self.on_switch_tabs, 120)
     
     def on_undo_redo(self, value):
         if value:

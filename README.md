@@ -1,6 +1,6 @@
 # What is this?
 
-This is a system service to enhance the features in the Logitech Trackball Marble and Logitech MX Anywhere 2S in Linux. It contains scripts that start during system boot and map the device inputs into custom commands, like Back, Forward, Scrolling, Alt+Tab, and so on.
+These are system services to enhance the compatibility of the Logitech Trackball Marble and Logitech MX Anywhere 2S with Linux. It contains scripts that start during system boot and map the device inputs into commands, like Back, Forward, Scrolling, Alt+Tab, and so on.
 
 # Usage
 
@@ -10,25 +10,25 @@ This is a system service to enhance the features in the Logitech Trackball Marbl
 
 Normal Mode
 
-- A : Left click
+- A : Left Click
 - B : Back
-- C : Right click
-- D : Middle click
-- E : Move cursor
+- C : Right Click
+- D : Middle Click
+- E : Move Cursor
 
 Holding B
 
-- B + A : Previous window (Alt+Shift+Tab)
+- B + A : Reopen Tab (Ctrl + Shift + T)
 - B + C : Forward
-- B + D : Next window (Alt + Tab)
-- B + E : Vertical and horizontal scrolling
+- B + D : Show All Windows
+- B + E : Vertical and Horizontal Scrolling
 
 Holding D
 
-- D + A : Go to declaration (Ctrl + Left click)
-- D + B : Close tab (Ctrl + W)
-- D + C : Close window (Alt + F4)
-- D + E : Switch tabs (Ctrl + Tab, Ctrl + Shift + Tab)
+- D + A : Go to Declaration (Ctrl + Left Click)
+- D + B : Close Tab (Ctrl + W)
+- D + C : Close Window (Alt + F4)
+- D + E : Switch Tabs (Vertical) or Switch Windows (Horizontal)
 
 ## Logitech MX Anywhere 2S
 
@@ -58,14 +58,14 @@ Browser Mode
 
 - G + A : Go to Declaration (Ctrl + Click)
 - G + B : Close Tab
-- G + C : Restore Tab
+- G + C : Reopen Tab (Ctrl + Shift + T)
 - G + D : Zoom In
 - G + E : Switch Tabs
 - G + F : Zoom Out
 
 System mode
 
-- G + H : Show windows (Meta key)
+- G + H : Show All Windows
 - G + H + A : Ctrl + Z
 - G + H + B : Close Window
 - G + H + C : Ctrl + Shift + Z
