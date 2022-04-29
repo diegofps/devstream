@@ -116,30 +116,30 @@ class DelayedKey:
 class LockableDelayedKey:
 
     def __init__(self, name, callback_h, callback_v, size):
-        self.callback_h = callback_h
-        self.callback_v = callback_v
+        self.callback_h   = callback_h
+        self.callback_v   = callback_v
+        self.upper_size   =  size / 2
+        self.lower_size   = -size / 2
+        self.size         = size
+        self.name         = name
+        self.lock         = None
         self.cumulative_h = 0
         self.cumulative_v = 0
-        self.last_event = 0
-        self.max_delay = 1
-        self.upper_size =  size / 2
-        self.lower_size = -size / 2
-        self.size = size
-        self.name = name
-        self.lock = None
     
     def update_h(self, value):
         if self.lock is not None and self.lock != "h":
             return
         
-        current = time.time()
+        energy = abs(value)
+        demand = abs(self.cumulative_v)
 
-        if current - self.last_event > self.max_delay:
-            self.cumulative_h = value
-        else:
-            self.cumulative_h += value
+        demand_left = max(0, demand - energy)
+        energy_left = energy - (demand - demand_left)
 
-        self.last_event = current
+        self.cumulative_v = demand_left if self.cumulative_v > 0 else -demand_left
+        value = energy_left if value > 0 else -energy_left
+
+        self.cumulative_h += value
 
         while self.cumulative_h >= self.upper_size:
             self.cumulative_h -= self.upper_size
@@ -155,14 +155,16 @@ class LockableDelayedKey:
         if self.lock is not None and self.lock != "v":
             return
         
-        current = time.time()
+        energy = abs(value)
+        demand = abs(self.cumulative_h)
 
-        if current - self.last_event > self.max_delay:
-            self.cumulative_v = value
-        else:
-            self.cumulative_v += value
+        demand_left = max(0, demand - energy)
+        energy_left = energy - (demand - demand_left)
 
-        self.last_event = current
+        self.cumulative_h = demand_left if self.cumulative_h > 0 else -demand_left
+        value = energy_left if value > 0 else -energy_left
+
+        self.cumulative_v += value
 
         while self.cumulative_v >= self.upper_size:
             self.cumulative_v -= self.upper_size
@@ -175,5 +177,7 @@ class LockableDelayedKey:
             self.lock = "v"
     
     def unlock(self):
+        self.cumulative_v = 0
+        self.cumulative_h = 0
         self.lock = None
 
