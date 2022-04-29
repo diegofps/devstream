@@ -2,6 +2,10 @@
 from evdev import InputDevice, AbsInfo, UInput, list_devices, ecodes as e
 from keys import Key, WheelKey, DirectKey, DelayedKey
 
+import traceback
+import time
+import sys
+
 
 def grab_device(name):
     devices = [InputDevice(path) for path in list_devices()]
@@ -14,6 +18,39 @@ def grab_device(name):
 
 def smooth(v):
     return int(v * 1.5)
+
+
+def run_main_loop(device_name, event_processor, context):
+
+    while True:
+        try:
+            dev = grab_device(device_name)
+
+            if dev is None:
+                print(device_name + " not found, retrying in 3s")
+                time.sleep(3)
+            
+            else:
+                print("Connected to " + device_name)
+
+                for event in dev.read_loop():
+                    event_processor(event)
+            
+        except OSError:
+            print("OSError, resuming in 3s")
+            traceback.print_exc(file=sys.stdout)
+            time.sleep(3)
+        
+        except KeyboardInterrupt:
+            break
+
+    if dev is not None:
+        dev.close()
+
+    if context is not None:
+        context.close()
+    
+    print("Bye")
 
 
 class BaseState:

@@ -1,6 +1,6 @@
 # What is this?
 
-This is a daemon to enhance the features in the Logitech Trackball Marble and Logitech MX Anywhere 2S in Linux. It contains services that map the mouse inputs info keys like Back, Forward, Scrolling, Alt+Tab, and so on.
+This is a system service to enhance the features in the Logitech Trackball Marble and Logitech MX Anywhere 2S in Linux. It contains scripts that start during system boot and map the device inputs into custom commands, like Back, Forward, Scrolling, Alt+Tab, and so on.
 
 # Usage
 
@@ -45,15 +45,6 @@ Normal Mode
 - G : Back
 - H : Forward
 
-Browser Mode
-
-- G + A : Go to Declaration (Ctrl + Click)
-- G + B : Close Tab
-- G + C : Restore Tab
-- G + D : Zoom In
-- G + E : Switch Tabs
-- G + F : Zoom Out
-
 Multimedia Mode
 
 - H + A : Play / Pause
@@ -63,13 +54,22 @@ Multimedia Mode
 - H + E : Volume Up / Down
 - H + F : Previous Track
 
+Browser Mode
+
+- G + A : Go to Declaration (Ctrl + Click)
+- G + B : Close Tab
+- G + C : Restore Tab
+- G + D : Zoom In
+- G + E : Switch Tabs
+- G + F : Zoom Out
+
 System mode
 
-- H + G : Show windows (Meta key)
-- H + G + A : Ctrl + Z
-- H + G + B : Close Window
-- H + G + C : Ctrl + Shift + Z
-- H + G + E : Switch Window
+- G + H : Show windows (Meta key)
+- G + H + A : Ctrl + Z
+- G + H + B : Close Window
+- G + H + C : Ctrl + Shift + Z
+- G + H + E : Switch Window
 
 # Dependencies
 

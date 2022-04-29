@@ -1,17 +1,15 @@
 from utils import BaseState
 
 
-class StateNormal(BaseState): # N
+class StateN(BaseState): # Normal
 
     def __init__(self, context):
         super().__init__(context)
     
     def on_left_click(self, event):
-        # Left
         self.c.bt_left.update(event.value)
 
     def on_middle_click(self, event):
-        # Middle
         self.c.bt_middle.update(event.value)
         
     def on_right_click(self, event):
@@ -27,7 +25,6 @@ class StateNormal(BaseState): # N
             self.c.set_state(self.c.state_G)
     
     def on_scroll(self, event):
-        # Vertical scroll
         self.c.bt_wheel_v.update(event.value)
     
     def on_scroll_left_click(self, event):
@@ -37,15 +34,13 @@ class StateNormal(BaseState): # N
         self.c.bt_wheel_h.update(-120)
     
     def on_move_rel_x(self, event):
-        # Horizontal movement
         self.c.bt_rel_x.update(event.value)
 
     def on_move_rel_y(self, event):
-        # Vertical movement
         self.c.bt_rel_y.update(event.value)
 
 
-class StateBrowser(BaseState): # G
+class StateG(BaseState): # Navigator
 
     def __init__(self, context):
         super().__init__(context)
@@ -56,6 +51,7 @@ class StateBrowser(BaseState): # G
     
     def on_left_click(self, event): # A
         self.clean = False
+
         if event.value == 1:
             self.c.key_leftctrl.press()
             self.c.bt_left.press()
@@ -64,9 +60,9 @@ class StateBrowser(BaseState): # G
             self.c.bt_left.release()
             self.c.key_leftctrl.release()
 
-
     def on_middle_click(self, event): # B
         self.clean = False
+
         if event.value == 0:
             self.c.key_leftctrl.press()
             self.c.key_w.press()
@@ -75,6 +71,7 @@ class StateBrowser(BaseState): # G
         
     def on_right_click(self, event): # C
         self.clean = False
+
         if event.value == 0:
             self.c.key_leftctrl.press()
             self.c.key_leftshift.press()
@@ -89,9 +86,11 @@ class StateBrowser(BaseState): # G
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
+
             if self.clean:
                 self.c.key_back.press()
                 self.c.key_back.release()
+
             self.c.set_state(self.c.state_N)
     
     def on_scroll(self, event): # E
@@ -100,9 +99,11 @@ class StateBrowser(BaseState): # G
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
+
         if event.value != 0:
             self.c.key_leftctrl.press()
             self.c.key_equal.press()
+
         else:
             self.c.key_equal.release()
             self.c.key_leftctrl.release()
@@ -113,6 +114,7 @@ class StateBrowser(BaseState): # G
         if event.value != 0:
             self.c.key_leftctrl.press()
             self.c.key_minus.press()
+        
         else:
             self.c.key_minus.release()
             self.c.key_leftctrl.release()
@@ -124,7 +126,7 @@ class StateBrowser(BaseState): # G
         self.c.bt_rel_y.update(event.value)
 
 
-class StateMultimedia(BaseState): # H
+class StateH(BaseState): # Multimedia
 
     def __init__(self, context):
         super().__init__(context)
@@ -135,56 +137,49 @@ class StateMultimedia(BaseState): # H
     
     def on_left_click(self, event): # A
         self.clean = False
-        # Play / pause music
         self.c.key_play_pause.update(event.value)
 
     def on_middle_click(self, event): # B
         self.clean = False
-        # Stop music
         self.c.key_stop.update(event.value)
         
     def on_right_click(self, event): # C
         self.clean = False
-        # Mute / unmute
         self.c.key_mute_unmute.update(event.value)
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
+
             if self.clean:
                 self.c.key_forward.press()
                 self.c.key_forward.release()
+            
             self.c.set_state(self.c.state_N)
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            # Move to system state
             self.c.set_state(self.c.state_HG)
     
     def on_scroll(self, event): # E
         self.clean = False
-        # Change volume
         self.c.key_volume.update(event.value)
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
-        # Next track
         self.c.key_next_song.update(event.value)
     
     def on_scroll_right_click(self, event): # F
         self.clean = False
-        # Previous track
         self.c.key_previous_song.update(event.value)
     
     def on_move_rel_x(self, event):
-        # Horizontal movement
         self.c.bt_rel_x.update(event.value)
 
     def on_move_rel_y(self, event):
-        # Vertical movement
         self.c.bt_rel_y.update(event.value)
 
 
-class StateSystem(BaseState): # HG
+class StateHG(BaseState): # System
 
     def __init__(self, context):
         super().__init__(context)
@@ -195,6 +190,14 @@ class StateSystem(BaseState): # HG
     
     def on_left_click(self, event): # A
         self.clean = False
+
+        if event.value != 0:
+            self.c.key_leftctrl.press()
+            self.c.key_z.press()
+        else:
+            self.c.key_z.release()
+            self.c.key_leftctrl.release()
+
 
     def on_middle_click(self, event): # B
         self.clean = False
@@ -220,7 +223,6 @@ class StateSystem(BaseState): # HG
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
-            # Move to browser state
             self.c.set_state(self.c.state_G)
             self.c.state_G.clean = False
 
@@ -234,7 +236,6 @@ class StateSystem(BaseState): # HG
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
-            # Move to multimedia state
             self.c.set_state(self.c.state_H)
             self.c.state_H.clean = False
 
@@ -252,16 +253,12 @@ class StateSystem(BaseState): # HG
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
-        pass
     
     def on_scroll_right_click(self, event): # F
         self.clean = False
-        pass
     
     def on_move_rel_x(self, event):
-        # Horizontal movement
         self.c.bt_rel_x.update(event.value)
 
     def on_move_rel_y(self, event):
-        # Vertical movement
         self.c.bt_rel_y.update(event.value)
