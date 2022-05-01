@@ -53,12 +53,10 @@ Normal Mode
 Multimedia Mode
 
 - H : Forward
-- H + A : Play / Pause
-- H + B : Stop
-- H + C : Mute / Unmute
-- H + D : Next Track
-- H + E : Volume Up / Down
-- H + F : Previous Track
+- H + A : Ctrl + Z
+- H + B : Close Window
+- H + C : Ctrl + Shift + Z
+- H + E : Switch Window
 
 Browser Mode
 
@@ -73,10 +71,12 @@ Browser Mode
 System mode
 
 - G + H : Show All Windows
-- G + H + A : Ctrl + Z
-- G + H + B : Close Window
-- G + H + C : Ctrl + Shift + Z
-- G + H + E : Switch Window
+- G + H + A : Play / Pause
+- G + H + B : Stop
+- G + H + C : Mute / Unmute
+- G + H + D : Next Track
+- G + H + E : Volume Up / Down
+- G + H + F : Previous Track
 
 # Dependencies
 

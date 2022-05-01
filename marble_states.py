@@ -58,7 +58,7 @@ class StateB(BaseState):
             if self.clean:
                 self.c.key_leftctrl.press()
                 self.c.bt_left.press()
-                time.sleep(0.25)
+                time.sleep(0.25) # The click must happen after the IDE has created the "button"
                 self.c.bt_left.release()
                 self.c.key_leftctrl.release()
             
@@ -125,8 +125,7 @@ class StateC(BaseState):
         if event.value == 1:
             self.c.key_leftctrl.press()
             self.c.key_c.press()
-        
-        elif event.value == 0:
+        else:
             self.c.key_c.release()
             self.c.key_leftctrl.release()
     

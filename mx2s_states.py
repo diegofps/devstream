@@ -1,4 +1,5 @@
 from utils import BaseState
+import time
 
 
 class StateN(BaseState): # Normal
@@ -126,60 +127,7 @@ class StateG(BaseState): # Navigator
         self.c.bt_rel_y.update(event.value)
 
 
-class StateH(BaseState): # Multimedia
-
-    def __init__(self, context):
-        super().__init__(context)
-        self.clean = True
-    
-    def on_activate(self):
-        self.clean = True
-    
-    def on_left_click(self, event): # A
-        self.clean = False
-        self.c.key_play_pause.update(event.value)
-
-    def on_middle_click(self, event): # B
-        self.clean = False
-        self.c.key_stop.update(event.value)
-        
-    def on_right_click(self, event): # C
-        self.clean = False
-        self.c.key_mute_unmute.update(event.value)
-
-    def on_side_up_click(self, event): # H
-        if event.value == 0: # -H
-
-            if self.clean:
-                self.c.key_forward.press()
-                self.c.key_forward.release()
-            
-            self.c.set_state(self.c.state_N)
-    
-    def on_side_down_click(self, event): # G
-        if event.value == 1: # +G
-            self.c.set_state(self.c.state_HG)
-    
-    def on_scroll(self, event): # E
-        self.clean = False
-        self.c.key_volume.update(event.value)
-    
-    def on_scroll_left_click(self, event): # D
-        self.clean = False
-        self.c.key_next_song.update(event.value)
-    
-    def on_scroll_right_click(self, event): # F
-        self.clean = False
-        self.c.key_previous_song.update(event.value)
-    
-    def on_move_rel_x(self, event):
-        self.c.bt_rel_x.update(event.value)
-
-    def on_move_rel_y(self, event):
-        self.c.bt_rel_y.update(event.value)
-
-
-class StateHG(BaseState): # System
+class StateH(BaseState): # System
 
     def __init__(self, context):
         super().__init__(context)
@@ -191,10 +139,10 @@ class StateHG(BaseState): # System
     def on_left_click(self, event): # A
         self.clean = False
 
-        if event.value != 0:
+        if event.value == 1:
             self.c.key_leftctrl.press()
             self.c.key_z.press()
-        else:
+            time.sleep(0.25)
             self.c.key_z.release()
             self.c.key_leftctrl.release()
 
@@ -220,6 +168,57 @@ class StateHG(BaseState): # System
             self.c.key_z.release()
             self.c.key_leftshift.release()
             self.c.key_leftctrl.release()
+
+    def on_side_up_click(self, event): # H
+        if event.value == 0: # -H
+
+            if self.clean:
+                self.c.key_forward.press()
+                self.c.key_forward.release()
+            
+            self.c.set_state(self.c.state_N)
+    
+    def on_side_down_click(self, event): # G
+        if event.value == 1: # +G
+            self.c.set_state(self.c.state_HG)
+    
+    def on_scroll(self, event): # E
+        self.clean = False
+        self.c.key_windows.update(event.value)
+    
+    def on_scroll_left_click(self, event): # D
+        self.clean = False
+    
+    def on_scroll_right_click(self, event): # F
+        self.clean = False
+    
+    def on_move_rel_x(self, event):
+        self.c.bt_rel_x.update(event.value)
+
+    def on_move_rel_y(self, event):
+        self.c.bt_rel_y.update(event.value)
+
+
+class StateHG(BaseState): # Multimedia
+
+    def __init__(self, context):
+        super().__init__(context)
+        self.clean = True
+    
+    def on_activate(self):
+        self.clean = True
+    
+    def on_left_click(self, event): # A
+        self.clean = False
+        self.c.key_play_pause.update(event.value)
+
+    def on_middle_click(self, event): # B
+        self.clean = False
+        self.c.key_stop.update(event.value)
+        
+    def on_right_click(self, event): # C
+        self.clean = False
+        self.c.key_mute_unmute.update(event.value)
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
@@ -249,16 +248,19 @@ class StateHG(BaseState): # System
     
     def on_scroll(self, event): # E
         self.clean = False
-        self.c.key_windows.update(event.value)
+        self.c.key_volume.update(event.value)
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
+        self.c.key_next_song.update(event.value)
     
     def on_scroll_right_click(self, event): # F
         self.clean = False
+        self.c.key_previous_song.update(event.value)
     
     def on_move_rel_x(self, event):
         self.c.bt_rel_x.update(event.value)
 
     def on_move_rel_y(self, event):
         self.c.bt_rel_y.update(event.value)
+

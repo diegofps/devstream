@@ -1,6 +1,7 @@
 from evdev import ecodes as e
 import time
 
+
 class Key:
     
     def __init__(self, name, device, type, code, scan=None):
@@ -28,7 +29,8 @@ class Key:
     
     def release(self):
         self.update(0)
-    
+
+
 class DirectKey:
     
     def __init__(self, name, device, type, code, scan=None):
@@ -50,18 +52,18 @@ class DirectKey:
     
     def release(self):
         self.update(0)
-    
+
 
 class WheelKey:
 
     def __init__(self, name, device, type, code, code_high, size):
+        self.code_high = code_high
         self.device = device
+        self.cumulative = 0
         self.size = size
         self.name = name
         self.type = type
         self.code = code
-        self.code_high = code_high
-        self.cumulative = 0
     
     def update(self, value):
         
@@ -82,15 +84,16 @@ class WheelKey:
 
         self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
 
+
 class DelayedKey:
 
     def __init__(self, name, callback, size):
+        self.upper_size =  size / 2
+        self.lower_size = -size / 2
         self.callback = callback
         self.cumulative = 0
         self.last_event = 0
         self.max_delay = 1
-        self.upper_size =  size / 2
-        self.lower_size = -size / 2
         self.size = size
         self.name = name
     
@@ -98,10 +101,9 @@ class DelayedKey:
         current = time.time()
 
         if current - self.last_event > self.max_delay:
-            self.cumulative = value
-        else:
-            self.cumulative += value
-
+            self.cumulative = 0
+        
+        self.cumulative += value
         self.last_event = current
 
         while self.cumulative >= self.upper_size:

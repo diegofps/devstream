@@ -114,8 +114,8 @@ class Context:
         self.key_escape        = Key("KEY_ESCAPE",             self.vdev, e.EV_KEY, e.KEY_ESC)
 
         self.key_volume   = DelayedKey("DELAYED_VOLUME",   self.on_update_volume,  200)
-        self.key_tabs     = DelayedKey("DELAYED_CTRLTAB",  self.on_switch_tabs,    200)
-        self.key_windows  = DelayedKey("DELAYED_ALTTAB",   self.on_switch_windows, 200)
+        self.key_tabs     = DelayedKey("DELAYED_CTRLTAB",  self.on_switch_tabs,    500)
+        self.key_windows  = DelayedKey("DELAYED_ALTTAB",   self.on_switch_windows, 500)
         self.key_zoom     = DelayedKey("DELAYED_ZOOM",     self.on_switch_zoom,    200)
         self.key_undoredo = DelayedKey("DELAYED_UNDOREDO", self.on_undo_redo,      200)
 
