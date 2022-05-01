@@ -58,7 +58,9 @@ class StateB(BaseState):
             if self.clean:
                 self.c.key_leftctrl.press()
                 self.c.bt_left.press()
+
                 time.sleep(0.25) # The click must happen after the IDE has created the "button"
+
                 self.c.bt_left.release()
                 self.c.key_leftctrl.release()
             
@@ -80,6 +82,7 @@ class StateB(BaseState):
         self.clean = False
         self.c.bt_wheel_v.update(-event.value * 10)
 
+
 class StateC(BaseState):
 
     def __init__(self, context):
@@ -94,19 +97,25 @@ class StateC(BaseState):
         self.clean = False
 
         if event.value == 1:
-            self.c.key_play_pause.press()
+            self.c.key_leftctrl.press()
+            self.c.key_t.press()
         
-        elif event.value == 0:
-            self.c.key_play_pause.release()
+        else:
+            self.c.key_t.release()
+            self.c.key_leftctrl.release()
 
     def on_down_click(self, event): # B
         self.clean = False
 
         if event.value == 1:
-            self.c.key_mute_unmute.press()
+            self.c.key_leftctrl.press()
+            self.c.key_leftshift.press()
+            self.c.key_t.press()
         
-        elif event.value == 0:
-            self.c.key_mute_unmute.release()
+        else:
+            self.c.key_t.release()
+            self.c.key_leftshift.release()
+            self.c.key_leftctrl.release()
     
     def on_up_click(self, event): # C
 
@@ -121,13 +130,19 @@ class StateC(BaseState):
 
     def on_right_click(self, event): # D
         self.clean = False
+        
+        if event.value == 0:
+            self.c.key_leftalt.press()
 
-        if event.value == 1:
-            self.c.key_leftctrl.press()
-            self.c.key_c.press()
-        else:
-            self.c.key_c.release()
-            self.c.key_leftctrl.release()
+            self.c.bt_right.press()
+            self.c.bt_right.release()
+
+            time.sleep(0.2)
+
+            self.c.key_s.press()
+            self.c.key_s.release()
+
+            self.c.key_leftalt.release()
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -153,26 +168,13 @@ class StateD(BaseState):
 
         if event.value == 1:
             self.c.key_leftctrl.press()
-            self.c.key_leftshift.press()
-            self.c.key_t.press()
-        
-        else:
-            self.c.key_t.release()
-            self.c.key_leftshift.release()
-            self.c.key_leftctrl.release()
-
-    def on_down_click(self, event): # B
-        self.clean = False
-
-        if event.value == 1:
-            self.c.key_leftctrl.press()
             self.c.key_w.press()
 
         else:
             self.c.key_w.release()
             self.c.key_leftctrl.release()
     
-    def on_up_click(self, event): # C
+    def on_down_click(self, event): # B
         self.clean = False
 
         if event.value == 1:
@@ -183,6 +185,17 @@ class StateD(BaseState):
             self.c.key_f4.release()
             self.c.key_leftalt.release()
 
+    def on_up_click(self, event): # C
+        self.clean = False
+
+        if event.value == 1:
+            self.c.key_leftctrl.press()
+            self.c.key_d.press()
+
+        else:
+            self.c.key_d.release()
+            self.c.key_leftctrl.release()
+    
     def on_right_click(self, event): # D
         if event.value == 0:
 

@@ -25,16 +25,16 @@ Holding B
 
 Holding C
 
-- C + A : Play / Pause
-- C + C : Mute
-- C + D : Copy / Interrupt Script (Ctrl + C)
+- C + A : New Tab (Ctrl + T)
+- C + B : Reopen Tab (Ctrl + Shift + T)
+- C + D : Search Selection (+Alt RightClick S -Alt)
 - C + E : Change Volume (Vertical) or Undo / Redo (Horizontal)
 
 Holding D
 
-- D + A : Reopen Tab (Ctrl + Shift + T)
-- D + B : Close Tab (Ctrl + W)
-- D + C : Close Window (Alt + F4)
+- D + A : Close Tab (Ctrl + W)
+- D + B : Close Window (Alt + F4)
+- D + C : Close Terminal (Ctrl + D)
 - D + E : Switch Tabs (Vertical) or Switch Windows (Horizontal)
 
 ## Logitech MX Anywhere 2S
