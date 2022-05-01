@@ -41,7 +41,7 @@ class StateN(BaseState): # Normal
         self.c.bt_rel_y.update(event.value)
 
 
-class StateG(BaseState): # Navigator
+class StateH(BaseState): # Navigator
 
     def __init__(self, context):
         super().__init__(context)
@@ -82,17 +82,17 @@ class StateG(BaseState): # Navigator
             self.c.key_leftctrl.release()
 
     def on_side_up_click(self, event): # H
-        if event.value == 1: # +H
-            self.c.set_state(self.c.state_HG)
-    
-    def on_side_down_click(self, event): # G
-        if event.value == 0: # -G
+        if event.value == 0: # -H
 
             if self.clean:
-                self.c.key_back.press()
-                self.c.key_back.release()
-
+                self.c.key_forward.press()
+                self.c.key_forward.release()
+            
             self.c.set_state(self.c.state_N)
+    
+    def on_side_down_click(self, event): # G
+        if event.value == 1: # +G
+            self.c.set_state(self.c.state_HG)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -127,7 +127,7 @@ class StateG(BaseState): # Navigator
         self.c.bt_rel_y.update(event.value)
 
 
-class StateH(BaseState): # System
+class StateG(BaseState): # System
 
     def __init__(self, context):
         super().__init__(context)
@@ -170,17 +170,17 @@ class StateH(BaseState): # System
             self.c.key_leftctrl.release()
 
     def on_side_up_click(self, event): # H
-        if event.value == 0: # -H
-
-            if self.clean:
-                self.c.key_forward.press()
-                self.c.key_forward.release()
-            
-            self.c.set_state(self.c.state_N)
+        if event.value == 1: # +H
+            self.c.set_state(self.c.state_HG)
     
     def on_side_down_click(self, event): # G
-        if event.value == 1: # +G
-            self.c.set_state(self.c.state_HG)
+        if event.value == 0: # -G
+
+            if self.clean:
+                self.c.key_back.press()
+                self.c.key_back.release()
+
+            self.c.set_state(self.c.state_N)
     
     def on_scroll(self, event): # E
         self.clean = False

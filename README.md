@@ -49,34 +49,34 @@ Normal Mode
 - D : Horizontal Scroll
 - E : Vertical Scroll
 - F : Horizontal Scroll
-
-Multimedia Mode
-
-- H : Forward
-- H + A : Ctrl + Z
-- H + B : Close Window
-- H + C : Ctrl + Shift + Z
-- H + E : Switch Window
+- H : Back
+- G : Forward
+- G + H : Show All Windows
 
 Browser Mode
 
-- G : Back
-- G + A : Go to Declaration (Ctrl + Click)
-- G + B : Close Tab
-- G + C : Reopen Tab (Ctrl + Shift + T)
-- G + D : Zoom In
-- G + E : Switch Tabs
-- G + F : Zoom Out
+- H + A : Go to Declaration (Ctrl + Click)
+- H + B : Close Tab
+- H + C : Reopen Tab (Ctrl + Shift + T)
+- H + D : Zoom In
+- H + E : Switch Tabs
+- H + F : Zoom Out
 
 System mode
 
-- G + H : Show All Windows
-- G + H + A : Play / Pause
-- G + H + B : Stop
-- G + H + C : Mute / Unmute
-- G + H + D : Next Track
-- G + H + E : Volume Up / Down
-- G + H + F : Previous Track
+- G + A : Play / Pause
+- G + B : Stop
+- G + C : Mute / Unmute
+- G + D : Next Track
+- G + E : Volume Up / Down
+- G + F : Previous Track
+
+Multimedia Mode
+
+- G + H + A : Ctrl + Z
+- G + H + B : Close Window
+- G + H + C : Ctrl + Shift + Z
+- G + H + E : Switch Window
 
 # Dependencies
 
