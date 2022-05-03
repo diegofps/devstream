@@ -120,8 +120,6 @@ class LockableDelayedKey:
     def __init__(self, name, callback_h, callback_v, size):
         self.callback_h   = callback_h
         self.callback_v   = callback_v
-        self.upper_size   =  size / 2
-        self.lower_size   = -size / 2
         self.size         = size
         self.name         = name
         self.lock         = None
@@ -143,13 +141,16 @@ class LockableDelayedKey:
 
         self.cumulative_h += value
 
-        while self.cumulative_h >= self.upper_size:
-            self.cumulative_h -= self.upper_size
+        upper_threshold = self.size / 4 if self.lock is None else self.size / 2
+        lower_threshold = -upper_threshold
+        
+        while self.cumulative_h >= upper_threshold:
+            self.cumulative_h -= upper_threshold
             self.callback_h(True)
             self.lock = "h"
 
-        while self.cumulative_h <= self.lower_size:
-            self.cumulative_h -= self.lower_size
+        while self.cumulative_h <= lower_threshold:
+            self.cumulative_h -= lower_threshold
             self.callback_h(False)
             self.lock = "h"
     
@@ -168,13 +169,16 @@ class LockableDelayedKey:
 
         self.cumulative_v += value
 
-        while self.cumulative_v >= self.upper_size:
-            self.cumulative_v -= self.upper_size
+        upper_threshold = self.size / 4 if self.lock is None else self.size / 2
+        lower_threshold = -upper_threshold
+        
+        while self.cumulative_v >= upper_threshold:
+            self.cumulative_v -= upper_threshold
             self.callback_v(True)
             self.lock = "v"
 
-        while self.cumulative_v <= self.lower_size:
-            self.cumulative_v -= self.lower_size
+        while self.cumulative_v <= lower_threshold:
+            self.cumulative_v -= lower_threshold
             self.callback_v(False)
             self.lock = "v"
     
