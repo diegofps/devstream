@@ -1,41 +1,69 @@
 #!/usr/bin/env python3
 
-from utils import BaseProducer, Context, load_device_consumer
 from concurrent.futures import ThreadPoolExecutor
-from collections import defaultdict
+from utils import BaseProducer, Context
 
+import importlib
 import time
 import os
 
 os.nice(-20)
 
-context   = Context("device_streamer")
-listeners = defaultdict(list)
-producers = []
+class Core:
 
-load_device_consumer("marble", context, listeners)
-load_device_consumer("mx2s", context, listeners)
+    def __init__(self):
 
-def process_event(device_name, event):
-    global listeners
-    for listener in listeners[device_name]:
-        listener.on_event(event)
+        self.out = Context("device_streamer")
+        self.consumers = {}
+        self.listeners = {}
+        self.producers = []
 
-with ThreadPoolExecutor(max_workers=1) as executor:
-
-    # Start all producers
-    for filter_name in listeners.keys():
-        producer = BaseProducer(filter_name, executor, process_event)
-        producers.append(producer)
-        producer.start()
+        self.load_device_consumer("marble")
+        self.load_device_consumer("mx2s")
     
-    try:
-        while True:
-            time.sleep(1000)
-    except KeyboardInterrupt:
-        pass
-    
-if context is not None:
-    context.close()
+    def load_device_consumer(self, name):
+        mod = importlib.import_module(name)
+        mod.on_init(self)
 
-print("Bye!")
+    def set_consumer(self, device_name, consumer_name):
+        
+        if not consumer_name in self.consumers:
+            print("Can't set consumer. Unknown consumer with name", consumer_name)
+            return
+        
+        if device_name in self.listeners:
+            self.listeners[device_name].on_deactivate()
+        
+        consumer = self.consumers[consumer_name]
+        self.listeners[device_name] = consumer
+        consumer.on_activate()
+
+        return consumer
+
+    def start(self):
+        
+        with ThreadPoolExecutor(max_workers=1) as executor:
+
+            # Start all producers
+            for filter_name in self.listeners.keys():
+                producer = BaseProducer(filter_name, executor, self.process_event)
+                self.producers.append(producer)
+                producer.start()
+            
+            try:
+                while True:
+                    time.sleep(1000)
+            except KeyboardInterrupt:
+                pass
+            
+        self.out.close()
+
+        print("Bye!")
+
+    def process_event(self, device_name, event):
+        if device_name in self.listeners:
+            self.listeners[device_name].on_event(event)
+
+core = Core()
+core.start()
+

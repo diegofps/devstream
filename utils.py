@@ -22,24 +22,16 @@ def smooth(v):
     return int(v * 1.5)
 
 
-def load_device_consumer(name, context, listeners):
-    mod = importlib.import_module(name)
-    consumer = mod.Consumer(context)
-
-    for filter_name in mod.FILTERS:
-        listeners[filter_name].append(consumer)
-
-
 class BaseConsumer:
 
-    def __init__(self, context):
-        self.context = context
-        self.state = None
-        
-    def set_state(self, state):
-        self.state.on_deactivate()
-        self.state = state
-        self.state.on_activate()
+    def __init__(self, core):
+        self.core = core
+
+    def on_activate(self):
+        pass
+
+    def on_deactivate(self):
+        pass
 
 
 class BaseProducer(Thread):
@@ -81,13 +73,14 @@ class BaseProducer(Thread):
 
 class BaseState:
 
-    def __init__(self, context):
-        self.c = context
+    def __init__(self, core):
+        self.core = core
 
     def on_deactivate(self):
-        if self.c.alt_mode:
-            self.c.alt_mode = False
-            self.c.KEY_LEFTALT.release()
+        pass
+        # if self.core.alt_mode:
+        #     self.core.alt_mode = False
+        #     self.core.KEY_LEFTALT.release()
 
     def on_activate(self):
         pass
@@ -100,7 +93,7 @@ class Context:
         cap = {
             e.EV_KEY : [
                 e.BTN_LEFT, e.BTN_RIGHT, e.BTN_MIDDLE, e.BTN_SIDE, e.BTN_EXTRA, 
-                
+
                 e.KEY_LEFTALT, e.KEY_LEFTCTRL, e.KEY_LEFTSHIFT, e.KEY_LEFTMETA, 
                 e.KEY_RIGHTALT, e.KEY_RIGHTCTRL, e.KEY_RIGHTSHIFT, e.KEY_RIGHTMETA, 
                 e.KEY_TAB, e.KEY_PAGEUP, e.KEY_PAGEDOWN, 
@@ -136,7 +129,6 @@ class Context:
         }
 
         self.vdev     = UInput(cap, name=vdev_name, version=0x3)
-        self.alt_mode = False
 
         self.bt_abs_x   = DirectKey("abs_x",   self.vdev, e.EV_ABS, e.ABS_X)
         self.bt_abs_y   = DirectKey("abs_y",   self.vdev, e.EV_ABS, e.ABS_Y)
@@ -244,9 +236,7 @@ class Context:
             self.KEY_LEFTCTRL.release()
     
     def on_switch_windows(self, value):
-        if not self.alt_mode:
-            self.alt_mode = True
-            self.KEY_LEFTALT.press()
+        self.KEY_LEFTALT.press()
         
         if value:
             self.KEY_TAB.press()

@@ -91,16 +91,14 @@ sudo pip3 install evdev
 # Install
 
 ```shell
-# Install the services and python sources for all devices
+# Install the service and python sources
 sudo ./install.sh
 
-# Start the service you want
-sudo service marble-svc start # For Logitech Trackball Marble
-sudo service mx2s-svc start   # For Logitech MX Anywhere 2S
+# Start the service in the system
+sudo service devstream start
 
 # Activate autostart during system boot
-sudo systemctl enable marble-svc # For Logitech Trackball Marble
-sudo systemctl enable mx2s-svc   # For Logitech MX Anywhere 2S
+sudo systemctl enable devstream
 ```
 
 # Uninstall
