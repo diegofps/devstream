@@ -1,21 +1,19 @@
 #!/usr/bin/env bash
 
+
 set -e
 
+
 echo "Stopping service..."
-service marble-svc stop
-service mx2s-svc stop
+service devstream stop
 
 
 echo "Removing service..."
-update-rc.d marble-svc remove
-update-rc.d mx2s-svc remove
+update-rc.d devstream remove
 
 
 echo "Removing files..."
-rm /etc/init.d/marble-svc
-rm /etc/init.d/mx2s-svc
-
-rm -rf /etc/logitech_wrappers
+rm /etc/init.d/devstream
+rm -rf /etc/devstream
 
 echo "Uninstall completed"

@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 
+
 set -e
 
+
 echo "Copying files..."
-mkdir -p /etc/logitech_wrappers
-cp ./*.py /etc/logitech_wrappers/
-cp ./marble-svc /etc/init.d/marble-svc
-cp ./mx2s-svc /etc/init.d/mx2s-svc
+mkdir -p /etc/devstream
+cp ./*.py /etc/devstream/
+cp ./devstream /etc/init.d/devstream
 
 
 echo "Configuring service..."
-chmod +x /etc/init.d/marble-svc
-chmod +x /etc/init.d/mx2s-svc
-
-update-rc.d marble-svc defaults
-update-rc.d mx2s-svc defaults
+chmod +x /etc/init.d/devstream
+update-rc.d devstream defaults
 
 
 echo "Installation completed"

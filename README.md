@@ -64,19 +64,19 @@ Browser Mode
 
 System mode
 
-- G + A : Play / Pause
-- G + B : Stop
-- G + C : Mute / Unmute
-- G + D : Next Track
-- G + E : Volume Up / Down
-- G + F : Previous Track
+- G + A : Ctrl + Z
+- G + B : Close Window
+- G + C : Ctrl + Shift + Z
+- G + E : Switch Window
 
 Multimedia Mode
 
-- G + H + A : Ctrl + Z
-- G + H + B : Close Window
-- G + H + C : Ctrl + Shift + Z
-- G + H + E : Switch Window
+- G + H + A : Play / Pause
+- G + H + B : Stop
+- G + H + C : Mute / Unmute
+- G + H + D : Next Track
+- G + H + E : Volume Up / Down
+- G + H + F : Previous Track
 
 # Dependencies
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          logitech_marble_wrapper
+# Provides:          devstream
 # Required-Start:    $local_fs $network $syslog
 # Required-Stop:     $local_fs $network $syslog
 # Default-Start:     2 3 4 5
@@ -10,11 +10,11 @@
 # Description:       Logitech Trackball Marble daemon - Ubuntu
 ### END INIT INFO
 
-NAME="logitech_marble_wrapper"
+NAME="devstream"
 PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
-APPDIR="/etc/logitech_wrappers"
+APPDIR="/etc/devstream"
 APPBIN="/usr/bin/python3"
-APPARGS="/etc/logitech_wrappers/marble.py"
+APPARGS="/etc/devstream/main.py"
 USER="root"
 GROUP="root"
 
