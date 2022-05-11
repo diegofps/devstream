@@ -3,7 +3,6 @@ from keys import Key, WheelKey, DirectKey, DelayedKey, LockableDelayedKey
 from evdev import list_devices, InputDevice, AbsInfo, UInput, ecodes as e
 from threading import Thread
 
-import importlib
 import traceback
 import time
 import sys
@@ -78,9 +77,6 @@ class BaseState:
 
     def on_deactivate(self):
         pass
-        # if self.core.alt_mode:
-        #     self.core.alt_mode = False
-        #     self.core.KEY_LEFTALT.release()
 
     def on_activate(self):
         pass
@@ -96,7 +92,12 @@ class Context:
 
                 e.KEY_LEFTALT, e.KEY_LEFTCTRL, e.KEY_LEFTSHIFT, e.KEY_LEFTMETA, 
                 e.KEY_RIGHTALT, e.KEY_RIGHTCTRL, e.KEY_RIGHTSHIFT, e.KEY_RIGHTMETA, 
-                e.KEY_TAB, e.KEY_PAGEUP, e.KEY_PAGEDOWN, 
+                e.KEY_TAB, e.KEY_PAGEUP, e.KEY_PAGEDOWN, e.KEY_PRINT, e.KEY_HOME, e.KEY_END,
+                e.KEY_MINUS, e.KEY_EQUAL, e.KEY_ESC, e.KEY_COMMA, e.KEY_SLASH, e.KEY_DOT,
+                e.KEY_APOSTROPHE, e.KEY_BACKSLASH, e.KEY_LEFTBRACE, e.KEY_RIGHTBRACE, 
+                e.KEY_SEMICOLON, e.KEY_SPACE, e.KEY_CAPSLOCK, e.KEY_GRAVE, e.KEY_SCROLLLOCK,
+                e.KEY_SYSRQ, e.KEY_PAUSE, e.KEY_DELETE, e.KEY_INSERT, e.KEY_RO, e.KEY_BACKSPACE,
+                e.KEY_LEFT, e.KEY_RIGHT, e.KEY_UP, e.KEY_DOWN, e.KEY_ENTER, e.KEY_102ND,
 
                 e.KEY_0, e.KEY_1, e.KEY_2, e.KEY_3, e.KEY_4, e.KEY_5, e.KEY_6, e.KEY_7, e.KEY_8, e.KEY_9, 
 
@@ -109,7 +110,6 @@ class Context:
 
                 e.KEY_PLAYPAUSE, e.KEY_NEXTSONG, e.KEY_PREVIOUSSONG, e.KEY_STOPCD, 
                 e.KEY_MUTE, e.KEY_VOLUMEUP, e.KEY_VOLUMEDOWN, e.KEY_PRESENTATION, 
-                e.KEY_MINUS, e.KEY_EQUAL, e.KEY_ESC,
 
             ],
 
@@ -128,7 +128,12 @@ class Context:
             ]
         }
 
-        self.vdev     = UInput(cap, name=vdev_name, version=0x3)
+        self.keys = set()
+        self.keys.update(cap[1])
+        self.keys.update([x[0] for x in cap[2]])
+        self.keys.update([x[0] for x in cap[3]])
+
+        self.vdev = UInput(cap, name=vdev_name, version=0x3)
 
         self.bt_abs_x   = DirectKey("abs_x",   self.vdev, e.EV_ABS, e.ABS_X)
         self.bt_abs_y   = DirectKey("abs_y",   self.vdev, e.EV_ABS, e.ABS_Y)
@@ -256,6 +261,11 @@ class Context:
         else:
             self.KEY_VOLUMEDOWN.press()
             self.KEY_VOLUMEDOWN.release()
+
+    def forward(self, event):
+        if not event.code in self.keys:
+            print("Missing key", e.KEY[event.code])
+        self.vdev.write(event.type, event.code, event.value)
 
     def close(self):
         if self.vdev is not None:

@@ -20,6 +20,7 @@ class Core:
 
         self.load_device_consumer("marble")
         self.load_device_consumer("mx2s")
+        self.load_device_consumer("vostrokbd")
     
     def load_device_consumer(self, name):
         mod = importlib.import_module(name)
@@ -52,7 +53,10 @@ class Core:
             
             try:
                 while True:
-                    time.sleep(1000)
+                    time.sleep(10000)
+                    # print("Leaving in 4s...")
+                    # time.sleep(4)
+                    # break
             except KeyboardInterrupt:
                 pass
             
