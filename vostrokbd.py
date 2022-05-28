@@ -1,8 +1,9 @@
-from utils import BaseConsumer, info, warn
+from utils import BaseConsumer, debug, info, warn, error
 from evdev import ecodes as e
 
-import pickle
 import traceback
+import pickle
+import time
 import sys
 
 MACRO_KEYBOARDS = [
@@ -48,11 +49,10 @@ class VostroKBD_N(BaseConsumer):
         self.import_macros()
 
     def on_event(self, device_name, event):
-        # info("Processing event", device_name)
-        #import pdb; pdb.set_trace()
+        #debug("Processing event", device_name)
 
         if device_name == "AT Translated Set 2 keyboard":
-            #info("Event from vostro keyboard")
+            debug("Event from vostro keyboard")
 
             if event.type == e.EV_KEY:
                 mapping = self.vostro_map.get(event.code)
@@ -71,28 +71,30 @@ class VostroKBD_N(BaseConsumer):
             # This is a key to play a macro
             if event.code in MACRO_PLAY:
                 macro_name = MACRO_PLAY[event.code]
-                #info("Playing macro - ", macro_name)
+                debug("Playing macro - ", macro_name)
 
                 if macro_name in self.recorded:
                     sequence = self.recorded[macro_name]
 
                     for event in sequence:
                         self.core.out.forward(event)
+                    
+                    time.sleep(0.01)
                 
                 else:
-                    warn("Attempting to execute a macro that does not exists - ", macro_name)
+                    error("Attempting to execute a macro that does not exists - ", macro_name)
             
             # This is a key to start recording a macro
             elif event.code in MACRO_RECORD:
                 macro_name = MACRO_RECORD[event.code]
-                #info("Recording macro - ", macro_name)
+                debug("Recording macro - ", macro_name)
 
                 self.recording[macro_name] = []
 
             # This is a key to finish recording a macro
             elif event.code in MACRO_FINISH:
                 macro_name = MACRO_FINISH[event.code]
-                #info("Finishing macro - ", macro_name)
+                debug("Finishing macro - ", macro_name)
 
                 if macro_name in self.recording:
                     self.recorded[macro_name] = self.recording[macro_name]
@@ -100,10 +102,10 @@ class VostroKBD_N(BaseConsumer):
                     self.export_macros()
 
                 else:
-                    warn("Supposed to finish recording a macro that is not being recorded - ", macro_name)
+                    error("Supposed to finish recording a macro that is not being recorded - ", macro_name)
             
             else:
-                warn("Unmapped macro keyboard event - ", e.KEY[event.code])
+                error("Unmapped macro keyboard event - ", e.KEY[event.code])
             
             # We do not forward the key event, otherwise it may be recorded 
             # or received as input as text input by current the program.
@@ -116,7 +118,7 @@ class VostroKBD_N(BaseConsumer):
         
         # We register the key in any macro being recorded
         for macro_name, sequence in self.recording.items():
-            info("Saving event to macro - ", macro_name)
+            debug("Saving event to macro - ", macro_name)
             sequence.append(event)
 
         # Finally, we use our virtual device to input the processed event
@@ -125,15 +127,12 @@ class VostroKBD_N(BaseConsumer):
     
     def export_macros(self):
         try:
-            info("Exporting macros")
             with open("./macros.bin", "wb") as fout:
                 data = pickle.dumps(self.recorded)
-                info("Data created")
                 fout.write(data)
-                info("Data written")
             info("Macros exported successfully")
         except:
-            warn("Could not export macros")
+            error("Could not export macros")
             traceback.print_exc(file=sys.stdout)
 
 

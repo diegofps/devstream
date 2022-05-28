@@ -1,6 +1,6 @@
 # What is this?
 
-These are system services to enhance the compatibility of the Logitech Trackball Marble and Logitech MX Anywhere 2S with Linux. It contains scripts that start during system boot and map the device inputs into commands, like Back, Forward, Scrolling, Alt+Tab, and so on.
+These is a system service to enhance the compatibility of the Logitech Trackball Marble, Logitech MX Anywhere 2S, and other devices I may have with the Linux OS. It contains scripts that start during system boot and map the device inputs into special commands, like Back, Forward, Scrolling, Alt+Tab, macros, and so on. If a device is not present/detected it simply ignores the enhancements.
 
 # Usage
 
@@ -8,75 +8,103 @@ These are system services to enhance the compatibility of the Logitech Trackball
 
 ![Buttons](images/keys_marble.png)
 
-Normal Mode
+### Normal Mode
 
-- A : Left Click
-- B : Go to Declaration / Open New (Ctrl + Left Click)
-- C : Right Click
-- D : Middle Click
-- E : Move Cursor
+| Shortcut | Action                                           |
+| -------- | ------------------------------------------------ |
+| A        | Left Click                                       |
+| B        | Go to Declaration / Open New (Ctrl + Left Click) |
+| C        | Right Click                                      |
+| D        | Middle Click                                     |
+| E        | Move Cursor                                      |
 
-Holding B
+### Holding B
 
-- B + A : Show All Windows (Super)
-- B + C : Back
-- B + D : Forward
-- B + E : Vertical and Horizontal Scrolling
+| Shortcut | Action                            |
+| -------- | --------------------------------- |
+| B + A    | Show All Windows (Super)          |
+| B + C    | Back                              |
+| B + D    | Forward                           |
+| B + E    | Vertical and Horizontal Scrolling |
 
-Holding C
+### Holding C
 
-- C + A : Search Selection {+Alt RightClick -Alt S}
-- C + B : Reopen Tab (Ctrl + Shift + T)
-- C + D : New Tab (Ctrl + T)
-- C + E : Change Volume (Vertical) or Undo / Redo (Horizontal)
+| Shortcut | Action                                               |
+| -------- | ---------------------------------------------------- |
+| C + A    | Search Selection {+Alt RightClick -Alt S}            |
+| C + B    | Reopen Tab (Ctrl + Shift + T)                        |
+| C + D    | New Tab (Ctrl + T)                                   |
+| C + E    | Change Volume (Vertical) or Undo / Redo (Horizontal) |
 
-Holding D
+### Holding D
 
-- D + A : Close Tab (Ctrl + W)
-- D + B : Close Window (Alt + F4)
-- D + C : Close Terminal (Ctrl + D)
-- D + E : Switch Tabs (Vertical) or Switch Windows (Horizontal)
+| Shortcut | Action                                                |
+| -------- | ----------------------------------------------------- |
+| D + A    | Close Tab (Ctrl + W)                                  |
+| D + B    | Close Window (Alt + F4)                               |
+| D + C    | Close Terminal (Ctrl + D)                             |
+| D + E    | Switch Tabs (Vertical) or Switch Windows (Horizontal) |
 
 ## Logitech MX Anywhere 2S
 
 ![Buttons](images/keys_mx2s.png)
 
-Normal Mode
+### Normal Mode
 
-- A : Left Click
-- B : Middle Click
-- C : Right Click
-- D : Horizontal Scroll
-- E : Vertical Scroll
-- F : Horizontal Scroll
-- H : Back
-- G : Forward
-- G + H : Show All Windows
+| Shortcut | Action            |
+| -------- | ----------------- |
+| A        | Left Click        |
+| B        | Middle Click      |
+| C        | Right Click       |
+| D        | Horizontal Scroll |
+| E        | Vertical Scroll   |
+| F        | Horizontal Scroll |
+| H        | Back              |
+| G        | Forward           |
+| G + H    | Show All Windows  |
 
-Browser Mode
+### Browser Mode
 
-- H + A : Go to Declaration (Ctrl + Click)
-- H + B : Close Tab
-- H + C : Reopen Tab (Ctrl + Shift + T)
-- H + D : Zoom In
-- H + E : Switch Tabs
-- H + F : Zoom Out
+| Shortcut | Action                           |
+| -------- | -------------------------------- |
+| H + A    | Go to Declaration (Ctrl + Click) |
+| H + B    | Close Tab                        |
+| H + C    | Reopen Tab (Ctrl + Shift + T)    |
+| H + D    | Zoom In                          |
+| H + E    | Switch Tabs                      |
+| H + F    | Zoom Out                         |
 
-System mode
+### System mode
 
-- G + A : Ctrl + Z
-- G + B : Close Window
-- G + C : Ctrl + Shift + Z
-- G + E : Switch Window
+| Shortcut | Action           |
+| -------- | ---------------- |
+| G + A    | Ctrl + Z         |
+| G + B    | Close Window     |
+| G + C    | Ctrl + Shift + Z |
+| G + E    | Switch Window    |
 
-Multimedia Mode
+### Multimedia Mode
 
-- G + H + A : Play / Pause
-- G + H + B : Stop
-- G + H + C : Mute / Unmute
-- G + H + D : Next Track
-- G + H + E : Volume Up / Down
-- G + H + F : Previous Track
+| Shortcut  | Action           |
+| --------- | ---------------- |
+| G + H + A | Play / Pause     |
+| G + H + B | Stop             |
+| G + H + C | Mute / Unmute    |
+| G + H + D | Next Track       |
+| G + H + E | Volume Up / Down |
+| G + H + F | Previous Track   |
+
+## Macro Keyboard
+
+![Buttons](images/keys_macros.png)
+
+| Shortcut               | Action                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------- |
+| REC + MACRO_N          | Start recording / reset recording keyboard input sequence in buffer N (activates blue led)      |
+| MACRO_N (blue led on)  | Finish recording the macro (deactivates led)                                                    |
+| MACRO_N (blue led off) | Play the recorded sequence of keys                                                              |
+| TOGGLE_N               | Toggle macro MACRO_N between two sets, MACRO_1 to MACRO_6 (left) or MACRO_7 to MACRO_12 (right) |
+| Yellow led             | Indicates a key is being pressed                                                                |
 
 # Dependencies
 
