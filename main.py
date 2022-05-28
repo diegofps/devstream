@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from utils import BaseProducer, Context
 
 import importlib
+import evdev
 import time
 import os
 
@@ -17,6 +18,10 @@ class Core:
         self.consumers = {}
         self.listeners = {}
         self.producers = []
+        # import pdb
+        # pdb.set_trace()
+        self.devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+        self.device_names = set([dev.name for dev in self.devices])
 
         self.load_device_consumer("marble")
         self.load_device_consumer("mx2s")
@@ -28,10 +33,19 @@ class Core:
 
     def set_consumer(self, device_name, consumer_name):
         
+        if isinstance(device_name, list):
+            for name in device_name:
+                self.set_consumer(name, consumer_name)
+            return
+
         if not consumer_name in self.consumers:
             print("Can't set consumer. Unknown consumer with name", consumer_name)
             return
         
+        if not device_name in self.device_names:
+            print("Ignoring listener for missing device", device_name)
+            return
+
         if device_name in self.listeners:
             self.listeners[device_name].on_deactivate()
         
@@ -66,7 +80,7 @@ class Core:
 
     def process_event(self, device_name, event):
         if device_name in self.listeners:
-            self.listeners[device_name].on_event(event)
+            self.listeners[device_name].on_event(device_name, event)
 
 core = Core()
 core.start()

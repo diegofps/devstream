@@ -4,8 +4,17 @@ from evdev import list_devices, InputDevice, AbsInfo, UInput, ecodes as e
 from threading import Thread
 
 import traceback
+import logging
 import time
 import sys
+
+
+logging.basicConfig(
+    level=logging.INFO, 
+    filename="main.log", 
+    filemode="w", 
+    format='%(name)s - %(levelname)s - %(message)s' 
+)
 
 
 def grab_device(name):
@@ -19,6 +28,14 @@ def grab_device(name):
 
 def smooth(v):
     return int(v * 1.5)
+
+
+def info(*args):
+    logging.info(" ".join([str(x) for x in args]))
+
+
+def warn(*args):
+    logging.warn(" ".join([str(x) for x in args]))
 
 
 class BaseConsumer:

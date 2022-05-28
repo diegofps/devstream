@@ -3,7 +3,7 @@ from evdev import ecodes as e
 import time
 
 
-TARGET_DEVICE = "Logitech MX Anywhere 2S"
+TARGET_DEVICE = ["Logitech MX Anywhere 2S"]
 
 
 class BaseMX2SConsumer(BaseConsumer):
@@ -11,7 +11,7 @@ class BaseMX2SConsumer(BaseConsumer):
     def __init__(self, core):
         super().__init__(core)
 
-    def on_event(self, event):
+    def on_event(self, device_name, event):
 
         if event.type == e.EV_KEY:
 
@@ -322,4 +322,8 @@ def on_init(core):
     core.consumers["MX2S_H"]  = MX2S_H(core)
     core.consumers["MX2S_HG"] = MX2S_HG(core)
 
-    core.listeners[TARGET_DEVICE] = core.consumers["MX2S_N"]
+    core.set_consumer(TARGET_DEVICE, "MX2S_N")
+
+    # for target_device in TARGET_DEVICE:
+    #     if target_device in device_names:
+    #         core.listeners[target_device] = core.consumers["MX2S_N"]

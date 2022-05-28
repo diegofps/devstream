@@ -3,7 +3,7 @@ from evdev import ecodes as e
 import time
 
 
-TARGET_DEVICE = "Logitech USB Trackball"
+TARGET_DEVICE = ["Logitech USB Trackball"]
 
 
 class BaseMarbleConsumer(BaseConsumer):
@@ -11,7 +11,7 @@ class BaseMarbleConsumer(BaseConsumer):
     def __init__(self, core):
         super().__init__(core)
 
-    def on_event(self, event):
+    def on_event(self, device_name, event):
 
         if event.type == e.EV_KEY:
 
@@ -133,14 +133,19 @@ class Marble_C(BaseMarbleConsumer):
     
     def on_left_click(self, event): # A
         self.clean = False
-
-        if event.value == 1:
-            self.core.out.KEY_LEFTCTRL.press()
-            self.core.out.KEY_T.press()
         
-        else:
-            self.core.out.KEY_T.release()
-            self.core.out.KEY_LEFTCTRL.release()
+        if event.value == 0:
+            self.core.out.KEY_LEFTALT.press()
+
+            self.core.out.BTN_RIGHT.press()
+            self.core.out.BTN_RIGHT.release()
+
+            time.sleep(0.2)
+
+            self.core.out.KEY_LEFTALT.release()
+
+            self.core.out.KEY_S.press()
+            self.core.out.KEY_S.release()
 
     def on_down_click(self, event): # B
         self.clean = False
@@ -168,19 +173,14 @@ class Marble_C(BaseMarbleConsumer):
 
     def on_right_click(self, event): # D
         self.clean = False
+
+        if event.value == 1:
+            self.core.out.KEY_LEFTCTRL.press()
+            self.core.out.KEY_T.press()
         
-        if event.value == 0:
-            self.core.out.KEY_LEFTALT.press()
-
-            self.core.out.BTN_RIGHT.press()
-            self.core.out.BTN_RIGHT.release()
-
-            time.sleep(0.2)
-
-            self.core.out.KEY_S.press()
-            self.core.out.KEY_S.release()
-
-            self.core.out.KEY_LEFTALT.release()
+        else:
+            self.core.out.KEY_T.release()
+            self.core.out.KEY_LEFTCTRL.release()
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -264,4 +264,5 @@ def on_init(core):
     core.consumers["Marble_C"] = Marble_C(core)
     core.consumers["Marble_D"] = Marble_D(core)
 
-    core.listeners[TARGET_DEVICE] = core.consumers["Marble_N"]
+    core.set_consumer(TARGET_DEVICE, "Marble_N")
+

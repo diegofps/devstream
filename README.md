@@ -25,9 +25,9 @@ Holding B
 
 Holding C
 
-- C + A : New Tab (Ctrl + T)
+- C + A : Search Selection {+Alt RightClick -Alt S}
 - C + B : Reopen Tab (Ctrl + Shift + T)
-- C + D : Search Selection (+Alt RightClick S -Alt)
+- C + D : New Tab (Ctrl + T)
 - C + E : Change Volume (Vertical) or Undo / Redo (Horizontal)
 
 Holding D
