@@ -48,6 +48,10 @@ class BaseConsumer:
 
     def on_deactivate(self):
         pass
+    
+    def terminate(self):
+        # This is not relliable for now, we can't intercept kill events from the service
+        pass
 
 
 class BaseProducer(Thread):

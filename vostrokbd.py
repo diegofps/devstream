@@ -1,6 +1,9 @@
 from utils import BaseConsumer, info, warn
 from evdev import ecodes as e
 
+import pickle
+import traceback
+import sys
 
 MACRO_KEYBOARDS = [
     "Arduino LLC Arduino Leonardo", 
@@ -41,6 +44,8 @@ class VostroKBD_N(BaseConsumer):
 
         self.recording = {}
         self.recorded = {}
+
+        self.import_macros()
 
     def on_event(self, device_name, event):
         # info("Processing event", device_name)
@@ -92,6 +97,7 @@ class VostroKBD_N(BaseConsumer):
                 if macro_name in self.recording:
                     self.recorded[macro_name] = self.recording[macro_name]
                     del self.recording[macro_name]
+                    self.export_macros()
 
                 else:
                     warn("Supposed to finish recording a macro that is not being recorded - ", macro_name)
@@ -116,9 +122,33 @@ class VostroKBD_N(BaseConsumer):
         # Finally, we use our virtual device to input the processed event
         # info("forwarding event to virtual device")
         self.core.out.forward(event)
+    
+    def export_macros(self):
+        try:
+            info("Exporting macros")
+            with open("./macros.bin", "wb") as fout:
+                data = pickle.dumps(self.recorded)
+                info("Data created")
+                fout.write(data)
+                info("Data written")
+            info("Macros exported successfully")
+        except:
+            warn("Could not export macros")
+            traceback.print_exc(file=sys.stdout)
+
+
+    def import_macros(self):
+        try:
+            with open("./macros.bin", "rb") as fin:
+                self.recorded = pickle.loads(fin.read())
+            info("Macros imported successfully")
+        except:
+            warn("Could not import macros, creating new buffers")
+            traceback.print_exc(file=sys.stdout)
+            self.recorded = {}
 
 
 def on_init(core):
 
-    core.consumers["VostroKBD_N"] = VostroKBD_N(core)
+    core.add_consumer("VostroKBD_N", VostroKBD_N(core))
     core.set_consumer(TARGET_DEVICE, "VostroKBD_N")

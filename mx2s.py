@@ -317,13 +317,9 @@ class MX2S_HG(BaseMX2SConsumer): # Multimedia
 
 def on_init(core):
 
-    core.consumers["MX2S_N"]  = MX2S_N(core)
-    core.consumers["MX2S_G"]  = MX2S_G(core)
-    core.consumers["MX2S_H"]  = MX2S_H(core)
-    core.consumers["MX2S_HG"] = MX2S_HG(core)
-
+    core.add_consumer("MX2S_N", MX2S_N(core))
+    core.add_consumer("MX2S_G", MX2S_G(core))
+    core.add_consumer("MX2S_H", MX2S_H(core))
+    core.add_consumer("MX2S_HG", MX2S_HG(core))
+    
     core.set_consumer(TARGET_DEVICE, "MX2S_N")
-
-    # for target_device in TARGET_DEVICE:
-    #     if target_device in device_names:
-    #         core.listeners[target_device] = core.consumers["MX2S_N"]

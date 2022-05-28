@@ -18,8 +18,7 @@ class Core:
         self.consumers = {}
         self.listeners = {}
         self.producers = []
-        # import pdb
-        # pdb.set_trace()
+        
         self.devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
         self.device_names = set([dev.name for dev in self.devices])
 
@@ -31,6 +30,9 @@ class Core:
         mod = importlib.import_module(name)
         mod.on_init(self)
 
+    def add_consumer(self, consumer_name, consumer):
+        self.consumers[consumer_name] = consumer
+    
     def set_consumer(self, device_name, consumer_name):
         
         if isinstance(device_name, list):
@@ -71,10 +73,13 @@ class Core:
                     # print("Leaving in 4s...")
                     # time.sleep(4)
                     # break
-            except KeyboardInterrupt:
+            except:
                 pass
-            
+        
         self.out.close()
+
+        for consumer in self.consumers.values():
+            consumer.terminate()
 
         print("Bye!")
 

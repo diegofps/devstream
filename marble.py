@@ -258,11 +258,11 @@ class Marble_D(BaseMarbleConsumer):
 
 def on_init(core):
 
-    core.consumers["Marble_N"] = Marble_N(core)
-    # core.consumers["MarbleA"] = MarbleA(core)
-    core.consumers["Marble_B"] = Marble_B(core)
-    core.consumers["Marble_C"] = Marble_C(core)
-    core.consumers["Marble_D"] = Marble_D(core)
+    core.add_consumer("Marble_N", Marble_N(core))
+    # core.add_consumer("MarbleA", MarbleA(core))
+    core.add_consumer("Marble_B", Marble_B(core))
+    core.add_consumer("Marble_C", Marble_C(core))
+    core.add_consumer("Marble_D", Marble_D(core))
 
     core.set_consumer(TARGET_DEVICE, "Marble_N")
 
