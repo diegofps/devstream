@@ -12,7 +12,9 @@ MACRO_KEYBOARDS = [
 
 INPUT_KEYBOARDS = [
     "AT Translated Set 2 keyboard", 
+    "CORSAIR CORSAIR K63 Wireless Mechanical Gaming Keyboard", 
     "CORSAIR CORSAIR K63 Wireless USB Receiver Keyboard", 
+    "CORSAIR CORSAIR K63 Wireless USB Receiver", 
 ]
 
 TARGET_DEVICE = INPUT_KEYBOARDS + MACRO_KEYBOARDS
@@ -49,7 +51,7 @@ class VostroKBD_N(BaseConsumer):
         self.import_macros()
 
     def on_event(self, device_name, event):
-        #debug("Processing event", device_name)
+        debug("Processing event from", device_name)
 
         if device_name == "AT Translated Set 2 keyboard":
             debug("Event from vostro keyboard")
@@ -115,14 +117,13 @@ class VostroKBD_N(BaseConsumer):
             # info("Event from a generic keyboard")
             pass
         
-        
         # We register the key in any macro being recorded
         for macro_name, sequence in self.recording.items():
             debug("Saving event to macro - ", macro_name)
             sequence.append(event)
 
         # Finally, we use our virtual device to input the processed event
-        # info("forwarding event to virtual device")
+        debug("Forwarding event to virtual device")
         self.core.out.forward(event)
     
     def export_macros(self):
@@ -134,7 +135,6 @@ class VostroKBD_N(BaseConsumer):
         except:
             error("Could not export macros")
             traceback.print_exc(file=sys.stdout)
-
 
     def import_macros(self):
         try:

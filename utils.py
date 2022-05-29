@@ -37,13 +37,13 @@ def error(*args):
     logging.error(" ".join([str(x) for x in args]))
 
 
-def grab_device(name):
-    devices = [InputDevice(path) for path in list_devices()]
-    for d in devices:
-        if d.name == name:
-            d.grab()
-            return d
-    return None
+# def grab_device(name):
+#     devices = [InputDevice(path) for path in list_devices()]
+#     for d in devices:
+#         if d.name == name:
+#             d.grab()
+#             return d
+#     return None
 
 
 def smooth(v):
@@ -68,28 +68,32 @@ class BaseConsumer:
 
 class BaseProducer(Thread):
 
-    def __init__(self, dev_name, executor, callback):
-        super().__init__(name=dev_name, daemon=True)
+    def __init__(self, dev, executor, callback):
+        super().__init__(name=dev.name, daemon=True)
 
-        self.dev_name = dev_name
+        self.dev_name = dev.name
         self.executor = executor
         self.callback = callback
         self.done = False
+        self.dev = dev
+
+        self.dev.grab()
     
     def run(self):
         while not self.done:
             try:
-                dev = grab_device(self.dev_name)
-
-                if dev is None:
+                if self.dev is None:
                     warn(self.dev_name, "not found, retrying in 3s")
                     time.sleep(3)
                 
                 else:
                     info("Connected to", self.dev_name)
 
-                    for event in dev.read_loop():
-                        self.executor.submit(self.callback, self.dev_name, event)
+                    for event in self.dev.read_loop():
+                        try:
+                            self.executor.submit(self.callback, self.dev_name, event)
+                        except RuntimeError:
+                            warn("Could not parse event, maybe we are shutting down")
                 
             except OSError:
                 error("OSError, resuming in 3s")
@@ -99,8 +103,8 @@ class BaseProducer(Thread):
             except KeyboardInterrupt:
                 break
         
-        if dev is not None:
-            dev.close()
+        if self.dev is not None:
+            self.dev.close()
 
 
 class BaseState:
@@ -357,11 +361,18 @@ class Core:
         with ThreadPoolExecutor(max_workers=1) as executor:
 
             # Start all producers
-            for filter_name in self.listeners.keys():
-                producer = BaseProducer(filter_name, executor, self.process_event)
-                self.producers.append(producer)
-                producer.start()
+            # for filter_name in self.listeners.keys():
+            #     producer = BaseProducer(filter_name, executor, self.process_event)
+            #     self.producers.append(producer)
+            #     producer.start()
             
+            devices = [InputDevice(path) for path in list_devices()]
+            for d in devices:
+                if d.name in self.listeners:
+                    producer = BaseProducer(d, executor, self.process_event)
+                    self.producers.append(producer)
+                    producer.start()
+
             try:
                 while True:
                     time.sleep(10000)
