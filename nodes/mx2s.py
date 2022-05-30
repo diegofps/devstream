@@ -191,6 +191,9 @@ class MX2S_G(BaseMX2SConsumer): # System
     def on_activate(self):
         self.clean = True
     
+    def on_deactivate(self):
+        self.core.out.KEY_LEFTALT.release()
+    
     def on_left_click(self, event): # A
         self.clean = False
 
