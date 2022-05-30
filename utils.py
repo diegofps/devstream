@@ -13,14 +13,6 @@ import time
 import sys
 
 
-logging.basicConfig(
-    level=logging.INFO, 
-    filename="main.log", 
-    filemode="w", 
-    format='%(name)s - %(levelname)s - %(message)s' 
-)
-
-
 def debug(*args):
     logging.debug(" ".join([str(x) for x in args]))
 
@@ -37,13 +29,16 @@ def error(*args):
     logging.error(" ".join([str(x) for x in args]))
 
 
-# def grab_device(name):
-#     devices = [InputDevice(path) for path in list_devices()]
-#     for d in devices:
-#         if d.name == name:
-#             d.grab()
-#             return d
-#     return None
+def init_logger(env):
+
+    logging.basicConfig(
+        level=logging.INFO if env == "PRODUCTION" else logging.DEBUG, 
+        filename="main.log", 
+        filemode="w", 
+        format='%(name)s - %(levelname)s - %(message)s' 
+    )
+
+    info("Starting in", env, "environment")
 
 
 def smooth(v):
@@ -71,7 +66,6 @@ class BaseProducer(Thread):
     def __init__(self, dev, executor, callback):
         super().__init__(name=dev.name, daemon=True)
 
-        self.dev_name = dev.name
         self.executor = executor
         self.callback = callback
         self.done = False
@@ -83,25 +77,26 @@ class BaseProducer(Thread):
         while not self.done:
             try:
                 if self.dev is None:
-                    warn(self.dev_name, "not found, retrying in 3s")
+                    warn(self.dev.name, "not found, retrying in 3s")
                     time.sleep(3)
                 
                 else:
-                    info("Connected to", self.dev_name)
+                    info("Listening to", self.dev.name, "at", self.dev.path)
 
                     for event in self.dev.read_loop():
                         try:
-                            self.executor.submit(self.callback, self.dev_name, event)
-                        except RuntimeError:
-                            warn("Could not parse event, maybe we are shutting down")
+                            self.executor.submit(self.callback, self.dev.name, event)
+                        except RuntimeError as e:
+                            warn("Could not parse event, maybe we are shutting down -", e)
                 
-            except OSError:
-                error("OSError, resuming in 3s")
+            except OSError as e:
+                error("OSError, resuming in 3s -", e)
+
                 traceback.print_exc(file=sys.stdout)
                 time.sleep(3)
             
             except KeyboardInterrupt:
-                break
+                info("Received a KeyboardInterrupt, terminating app")
         
         if self.dev is not None:
             self.dev.close()
@@ -340,11 +335,11 @@ class Core:
             return
 
         if not consumer_name in self.consumers:
-            print("Can't set consumer. Unknown consumer with name", consumer_name)
+            error("Can't set consumer. Unknown consumer with name", consumer_name)
             return
         
         if not device_name in self.device_names:
-            print("Ignoring listener for missing device", device_name)
+            warn("Ignoring listener for missing device", device_name)
             return
 
         if device_name in self.listeners:
@@ -361,11 +356,6 @@ class Core:
         with ThreadPoolExecutor(max_workers=1) as executor:
 
             # Start all producers
-            # for filter_name in self.listeners.keys():
-            #     producer = BaseProducer(filter_name, executor, self.process_event)
-            #     self.producers.append(producer)
-            #     producer.start()
-            
             devices = [InputDevice(path) for path in list_devices()]
             for d in devices:
                 if d.name in self.listeners:
@@ -376,18 +366,15 @@ class Core:
             try:
                 while True:
                     time.sleep(10000)
-                    # print("Leaving in 4s...")
-                    # time.sleep(4)
-                    # break
             except:
-                pass
+                print("\nTerminating app...")
         
         self.out.close()
 
         for consumer in self.consumers.values():
             consumer.terminate()
 
-        print("Bye!")
+        debug("Bye!")
 
     def process_event(self, device_name, event):
         if device_name in self.listeners:
