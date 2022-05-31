@@ -17,11 +17,12 @@ if __name__ == '__main__':
     _main()
 
 
-# FROM: Device
+# NODE: BaseDevice
+# NAME: Corsair Keyboard
 # PATH: /dev/input/event21
-# TYPE: 
-# CODE: 
-# VALUE: 
-# RAW:  
+# TYPE: EV_KEY
+# CODE: KEY_ENTER
+# EVENT_VALUE: 1
+# RAW: ...
 
 

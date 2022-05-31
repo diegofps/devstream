@@ -1,15 +1,26 @@
-from utils import smooth, BaseConsumer
+from nodes.device_writer import OutputEvent
+from utils import smooth, BaseNode
 from evdev import ecodes as e
 import time
 
 
-TARGET_DEVICE = ["Logitech USB Trackball"]
+REQUIRED_DEVICES = ["Logitech USB Trackball"]
+TOPIC_DEVICE_MARBLE = "Device:Logitech USB Trackball"
+TOPIC_MARBLE_STATE = "Marble:State"
 
 
-class BaseMarbleConsumer(BaseConsumer):
+class BaseMarbleNode(BaseNode):
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, core, name):
+        super().__init__(core, name, None, None)
+        core.register_listener(TOPIC_MARBLE_STATE, self.on_state_changed)
+
+    def on_state_changed(self, topic_name, package):
+        if package.startswith(self.name):
+            self.core.register_listener(TOPIC_DEVICE_MARBLE, self.on_event)
+
+        else:
+            self.core.unregister_listener(TOPIC_DEVICE_MARBLE, self.on_event)
 
     def on_event(self, device_name, event):
 
@@ -42,37 +53,49 @@ class BaseMarbleConsumer(BaseConsumer):
                 self.on_move_rel_y(event)
 
 
-class Marble_N(BaseMarbleConsumer): # N
+class Marble_N(BaseMarbleNode): # N
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "Marble_N")
     
     def on_left_click(self, event): # A
-        self.core.out.BTN_LEFT.update(event.value)
-
+        # self.core.out.BTN_LEFT.update(event.value)
+        # self.core.emit(TOPIC_DEVICEWRITER_EVENT, EventType.UPDATE, "BTN_LEFT", event.value)
+        #self.emitUpdate("BTN_LEFT", event.value)
+        with OutputEvent(self.core) as eb:
+            eb.update("BTN_LEFT", event.value)
+        
     def on_down_click(self, event): # B
         if event.value == 1: # +B
-            self.core.set_consumer(TARGET_DEVICE, "Marble_B")
+            self.core.emit(TOPIC_MARBLE_STATE, "Marble_B")
     
     def on_up_click(self, event): # C
         if event.value == 1: # +C
-            self.core.set_consumer(TARGET_DEVICE, "Marble_C")
+            self.core.emit(TOPIC_MARBLE_STATE, "Marble_C")
 
     def on_right_click(self, event): # D
         if event.value == 1: # +D
-            self.core.set_consumer(TARGET_DEVICE, "Marble_D")
+            self.core.emit(TOPIC_MARBLE_STATE, "Marble_D")
     
     def on_move_rel_x(self, event):
-        self.core.out.bt_rel_x.update(smooth(event.value))
-
+        # self.core.out.REL_X.update(smooth(event.value))
+        # self.core.emit(TOPIC_DEVICEWRITER_EVENT, EventType.UPDATE, "REL_X", smooth(event.value))
+        # self.emitUpdate("REL_X", smooth(event.value))
+        with OutputEvent(self.core) as eb:
+            eb.update("REL_X", smooth(event.value))
+        
     def on_move_rel_y(self, event):
-        self.core.out.bt_rel_y.update(smooth(event.value))
+        # self.core.out.REL_Y.update(smooth(event.value))
+        # self.core.emit(TOPIC_DEVICEWRITER_EVENT, EventType.UPDATE, "REL_Y", smooth(event.value))
+        # self.emitUpdate("REL_Y", smooth(event.value))
+        with OutputEvent(self.core) as eb:
+            eb.update("REL_Y", smooth(event.value))
 
 
-class Marble_B(BaseMarbleConsumer):
+class Marble_B(BaseMarbleNode):
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "Marble_B")
         self.clean = True
     
     def on_activate(self):
@@ -86,46 +109,76 @@ class Marble_B(BaseMarbleConsumer):
         self.clean = False
 
         if event.value == 1:
-            self.core.out.KEY_LEFTMETA.press()
+            # self.core.out.KEY_LEFTMETA.press()
+            # self.emitPress("KEY_LEFTMETA")
+
+            with OutputEvent(self.core) as eb:
+                eb.press("KEY_LEFTMETA")
 
         elif event.value == 0:
-            self.core.out.KEY_LEFTMETA.release()
+            # self.core.out.KEY_LEFTMETA.release()
+            # self.emitRelease("KEY_LEFTMETA")
+            with OutputEvent(self.core) as eb:
+                eb.release("KEY_LEFTMETA")
 
     def on_down_click(self, event): # B
         if event.value == 0:
 
             if self.clean:
-                self.core.out.KEY_LEFTCTRL.press()
-                self.core.out.BTN_LEFT.press()
+                # self.emitFunction("control_left_click")
 
-                time.sleep(0.25) # The click must happen after the IDE has created the "button"
+                with OutputEvent(self.core) as eb:
+                    eb.press("KEY_LEFTCTRL")
+                    eb.press("BTN_LEFT")
+                    eb.sleep(0.25)
+                    eb.release("BTN_LEFT")
+                    eb.release("KEY_LEFTCTRL")
+                
+                # self.core.out.KEY_LEFTCTRL.press()
+                # self.core.out.BTN_LEFT.press()
 
-                self.core.out.BTN_LEFT.release()
-                self.core.out.KEY_LEFTCTRL.release()
+                # time.sleep(0.25) # The click must happen after the IDE has created the "button"
+
+                # self.core.out.BTN_LEFT.release()
+                # self.core.out.KEY_LEFTCTRL.release()
             
-            self.core.set_consumer(TARGET_DEVICE, "Marble_N")
+            self.core.emit(TOPIC_MARBLE_STATE, "Marble_N")
     
     def on_up_click(self, event): # C
         self.clean = False
-        self.core.out.BTN_SIDE.update(event.value)
+        # self.core.out.BTN_SIDE.update(event.value)
+        # self.emitUpdate("BTN_SIDE", event.value)
+        with OutputEvent(self.core) as eb:
+            eb.update("BTN_SIDE", event.value)
 
     def on_right_click(self, event): # D
         self.clean = False
-        self.core.out.BTN_EXTRA.update(event.value)
+        # self.core.out.BTN_EXTRA.update(event.value)
+        # self.emitUpdate("BTN_EXTRA", event.value)
+
+        with OutputEvent(self.core) as eb:
+            eb.update("BTN_EXTRA", event.value)
     
     def on_move_rel_x(self, event):
         self.clean = False
-        self.core.out.bt_wheel_h.update(event.value * 20)
+        # self.core.out.bt_wheel_h.update(event.value * 20)
+        # self.emitUpdate("WHEEL_H", event.value * 20)
+        with OutputEvent(self.core) as eb:
+            eb.update("WHEEL_H", event.value * 20)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        self.core.out.bt_wheel_v.update(-event.value * 10)
+        # self.core.out.bt_wheel_v.update(-event.value * 10)
+        # self.emitUpdate("WHEEL_V", event.value * 10)
+        with OutputEvent(self.core) as eb:
+            eb.update("WHEEL_V", event.value * 10)
 
 
-class Marble_C(BaseMarbleConsumer):
+
+class Marble_C(BaseMarbleNode):
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "Marble_C")
         self.clean = True
     
     def on_activate(self):
@@ -135,134 +188,196 @@ class Marble_C(BaseMarbleConsumer):
         self.clean = False
         
         if event.value == 0:
-            self.core.out.KEY_LEFTALT.press()
+            # self.core.out.KEY_LEFTALT.press()
 
-            self.core.out.BTN_RIGHT.press()
-            self.core.out.BTN_RIGHT.release()
+            # self.core.out.BTN_RIGHT.press()
+            # self.core.out.BTN_RIGHT.release()
 
-            time.sleep(0.2)
+            # time.sleep(0.2)
 
-            self.core.out.KEY_LEFTALT.release()
+            # self.core.out.KEY_LEFTALT.release()
 
-            self.core.out.KEY_S.press()
-            self.core.out.KEY_S.release()
+            # self.core.out.KEY_S.press()
+            # self.core.out.KEY_S.release()
+            with OutputEvent(self.core) as eb:
+                eb.press("KEY_LEFTALT")
+                eb.press("BTN_RIGHT")
+                eb.release("BTN_RIGHT")
+                eb.sleep(0.2)
+                eb.release("KEY_LEFTALT")
+                eb.press("KEY_S")
+                eb.release("KEY_S")
+
 
     def on_down_click(self, event): # B
         self.clean = False
 
         if event.value == 1:
-            self.core.out.KEY_LEFTCTRL.press()
-            self.core.out.KEY_LEFTSHIFT.press()
-            self.core.out.KEY_T.press()
-        
+            # self.core.out.KEY_LEFTCTRL.press()
+            # self.core.out.KEY_LEFTSHIFT.press()
+            # self.core.out.KEY_T.press()
+            with OutputEvent(self.core) as eb:
+                eb.press("KEY_LEFTCTRL")
+                eb.press("KEY_LEFTSHIFT")
+                eb.press("KEY_T")
+
         else:
-            self.core.out.KEY_T.release()
-            self.core.out.KEY_LEFTSHIFT.release()
-            self.core.out.KEY_LEFTCTRL.release()
+            # self.core.out.KEY_T.release()
+            # self.core.out.KEY_LEFTSHIFT.release()
+            # self.core.out.KEY_LEFTCTRL.release()
+            with OutputEvent(self.core) as eb:
+                eb.release("KEY_T")
+                eb.release("KEY_LEFTSHIFT")
+                eb.release("KEY_LEFTCTRL")
     
     def on_up_click(self, event): # C
 
         if event.value == 0: # -C
 
-            if self.clean:
-                self.core.out.BTN_RIGHT.press()
-                self.core.out.BTN_RIGHT.release()
+            with OutputEvent(self.core) as eb:
+                if self.clean:
+                    # self.core.out.BTN_RIGHT.press()
+                    # self.core.out.BTN_RIGHT.release()
+                    eb.press("BTN_RIGHT")
+                    eb.release("BTN_RIGHT")
             
-            self.core.out.lockable2.unlock()
-            self.core.set_consumer(TARGET_DEVICE, "Marble_N")
+                #self.core.out.lockable2.unlock()
+                eb.unlock("DUAL_UNDO_VOLUME")
+            
+            self.core.emit(TOPIC_MARBLE_STATE, "Marble_N")
 
     def on_right_click(self, event): # D
         self.clean = False
 
         if event.value == 1:
-            self.core.out.KEY_LEFTCTRL.press()
-            self.core.out.KEY_T.press()
+            # self.core.out.KEY_LEFTCTRL.press()
+            # self.core.out.KEY_T.press()
+            with OutputEvent(self.core) as eb:
+                eb.press("KEY_LEFTCTRL")
+                eb.press("KEY_T")
         
         else:
-            self.core.out.KEY_T.release()
-            self.core.out.KEY_LEFTCTRL.release()
+            # self.core.out.KEY_T.release()
+            # self.core.out.KEY_LEFTCTRL.release()
+            with OutputEvent(self.core) as eb:
+                eb.release("KEY_T")
+                eb.release("KEY_LEFTCTRL")
     
     def on_move_rel_x(self, event):
         self.clean = False
-        self.core.out.lockable2.update_h(event.value * 5)
+        # self.core.out.lockable2.update_h(event.value * 5)
+        with OutputEvent(self.core) as eb:
+            eb.update_h("DUAL_UNDO_VOLUME", event.value * 5)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        self.core.out.lockable2.update_v(-event.value * 5)
+        # self.core.out.lockable2.update_v(-event.value * 5)
+        with OutputEvent(self.core) as eb:
+            eb.update_v("DUAL_UNDO_VOLUME", -event.value * 5)
 
 
-class Marble_D(BaseMarbleConsumer):
+class Marble_D(BaseMarbleNode):
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "Marble_D")
         self.clean = True
     
     def on_activate(self):
         self.clean = True
     
     def on_deactivate(self):
-        self.core.out.KEY_LEFTALT.release()
+        # self.core.out.KEY_LEFTALT.release()
+        with OutputEvent(self.core) as eb:
+            eb.release("KEY_LEFTALT")
     
     def on_left_click(self, event): # A
         self.clean = False
 
         if event.value == 1:
-            self.core.out.KEY_LEFTCTRL.press()
-            self.core.out.KEY_W.press()
+            # self.core.out.KEY_LEFTCTRL.press()
+            # self.core.out.KEY_W.press()
+            with OutputEvent(self.core) as eb:
+                eb.press("KEY_LEFTCTRL")
+                eb.press("KEY_W")
 
         else:
-            self.core.out.KEY_W.release()
-            self.core.out.KEY_LEFTCTRL.release()
+            # self.core.out.KEY_W.release()
+            # self.core.out.KEY_LEFTCTRL.release()
+            with OutputEvent(self.core) as eb:
+                eb.release("KEY_W")
+                eb.release("KEY_LEFTCTRL")
     
     def on_down_click(self, event): # B
         self.clean = False
 
         if event.value == 1:
-            self.core.out.KEY_LEFTALT.press()
-            self.core.out.KEY_F4.press()
+            # self.core.out.KEY_LEFTALT.press()
+            # self.core.out.KEY_F4.press()
+            with OutputEvent(self.core) as eb:
+                eb.press("KEY_LEFTALT")
+                eb.press("KEY_F4")
 
         else:
-            self.core.out.KEY_F4.release()
-            self.core.out.KEY_LEFTALT.release()
+            # self.core.out.KEY_F4.release()
+            # self.core.out.KEY_LEFTALT.release()
+            with OutputEvent(self.core) as eb:
+                eb.release("KEY_F4")
+                eb.release("KEY_LEFTALT")
 
     def on_up_click(self, event): # C
         self.clean = False
 
         if event.value == 1:
-            self.core.out.KEY_LEFTCTRL.press()
-            self.core.out.KEY_D.press()
+            # self.core.out.KEY_LEFTCTRL.press()
+            # self.core.out.KEY_D.press()
+            with OutputEvent(self.core) as eb:
+                eb.press("KEY_LEFTCTRL")
+                eb.press("KEY_D")
 
         else:
-            self.core.out.KEY_D.release()
-            self.core.out.KEY_LEFTCTRL.release()
+            # self.core.out.KEY_D.release()
+            # self.core.out.KEY_LEFTCTRL.release()
+            with OutputEvent(self.core) as eb:
+                eb.release("KEY_D")
+                eb.release("KEY_LEFTCTRL")
     
     def on_right_click(self, event): # D
         if event.value == 0:
 
-            if self.clean:
-                self.core.out.BTN_MIDDLE.press()
-                self.core.out.BTN_MIDDLE.release()
+            with OutputEvent(self.core) as eb:
+                if self.clean:
+                    # self.core.out.BTN_MIDDLE.press()
+                    # self.core.out.BTN_MIDDLE.release()
+                    eb.press("BTN_MIDDLE")
+                    eb.release("BTN_MIDDLE")
             
-            self.core.out.lockable1.unlock()
+                # self.core.out.lockable1.unlock()
+                eb.unlock("DUAL_WINDOWS_TABS")
 
-            self.core.set_consumer(TARGET_DEVICE, "Marble_N")
+            self.core.emit(TOPIC_MARBLE_STATE, "Marble_N")
     
     def on_move_rel_x(self, event):
         self.clean = False
-        self.core.out.lockable1.update_h(event.value * 5)
+        # self.core.out.lockable1.update_h(event.value * 5)
+        with OutputEvent(self.core) as eb:
+            eb.update_h("DUAL_WINDOWS_TABS", event.value * 5)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        self.core.out.lockable1.update_v(-event.value * 5)
+        # self.core.out.lockable1.update_v(-event.value * 5)
+        with OutputEvent(self.core) as eb:
+            eb.update_v("DUAL_WINDOWS_TABS", -event.value * 5)
 
 
 def on_init(core):
 
-    core.add_consumer("Marble_N", Marble_N(core))
+    core.add_node("Marble_N", Marble_N(core))
     # core.add_consumer("MarbleA", MarbleA(core))
-    core.add_consumer("Marble_B", Marble_B(core))
-    core.add_consumer("Marble_C", Marble_C(core))
-    core.add_consumer("Marble_D", Marble_D(core))
+    core.add_node("Marble_B", Marble_B(core))
+    core.add_node("Marble_C", Marble_C(core))
+    core.add_node("Marble_D", Marble_D(core))
 
-    core.set_consumer(TARGET_DEVICE, "Marble_N")
+    core.request_device(REQUIRED_DEVICES)
+    core.emit(TOPIC_MARBLE_STATE, "Marble_N")
+
 

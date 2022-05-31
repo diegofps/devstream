@@ -4,9 +4,9 @@ from concurrent.futures import ThreadPoolExecutor
 from nodes.device_writer import DeviceWriter
 from nodes.device_reader import DeviceReader
 from evdev import list_devices, InputDevice
+from nodes.watch_windows import WatchWindows
 from utils import warn, error, info, debug
 from utils import init_logger
-
 
 
 import importlib
@@ -28,79 +28,97 @@ class Core:
 
     def __init__(self):
 
-        self.out = DeviceWriter("devstream")
-        self.consumers = {}
         self.listeners = {}
-        self.producers = []
+        self.nodes = {}
         
         self.devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
         self.device_names = set([dev.name for dev in self.devices])
+        self.required_devices = set()
 
-        self.load_device_consumer("nodes.marble")
-        self.load_device_consumer("nodes.mx2s")
-        self.load_device_consumer("nodes.vostrokbd")
+    def require_device(self, device_name):
+        self.required_devices.add(device_name)
     
-    def load_device_consumer(self, name):
+    def load_node_module(self, name):
         mod = importlib.import_module(name)
         mod.on_init(self)
 
-    def add_consumer(self, consumer_name, consumer):
-        self.consumers[consumer_name] = consumer
+    def add_node(self, consumer_name, consumer):
+        self.nodes[consumer_name] = consumer
     
-    def set_consumer(self, device_name, consumer_name):
+    def register_listener(self, topic_name, node):
         
-        if isinstance(device_name, list):
-            for name in device_name:
-                self.set_consumer(name, consumer_name)
-            return
-
-        if not consumer_name in self.consumers:
-            error("Can't set consumer. Unknown consumer with name", consumer_name)
-            return
+        if isinstance(topic_name, list):
+            for name in topic_name:
+                self.register_listener(name, topic_name)
         
-        if not device_name in self.device_names:
-            warn("Ignoring listener for missing device", device_name)
-            return
-
-        if device_name in self.listeners:
-            self.listeners[device_name].on_deactivate()
+        elif not topic_name in self.listeners:
+            self.listeners[topic_name] = [node]
         
-        consumer = self.consumers[consumer_name]
-        self.listeners[device_name] = consumer
-        consumer.on_activate()
+        else:
+            self.listeners[topic_name].append(node)
 
-        return consumer
+    def unregister_listener(self, topic_name, node):
+    
+        if isinstance(topic_name, list):
+            for name in topic_name:
+                self.unregister_listener(name, topic_name)
+
+        elif topic_name in self.listeners:
+            self.listeners[topic_name].remove(node)
+    
 
     def start(self):
-        
+
         with ThreadPoolExecutor(max_workers=1) as executor:
+            self.executor = executor
 
-            # Start all producers
-            devices = [InputDevice(path) for path in list_devices()]
-            for d in devices:
-                if d.name in self.listeners:
-                    producer = DeviceReader(d, executor, self.process_event)
-                    self.producers.append(producer)
-                    producer.start()
+            # Start output virtual device node
+            self.add_node("DeviceWriter", DeviceWriter(self))
 
+            # Start window manager monitor
+            self.add_node("WatchWindows", WatchWindows(self))
+
+            # Start disk monitor
+            # TODO
+
+            # Start device monitor
+            # TODO
+
+            # Start consumers
+            self.load_node_module("nodes.marble")
+            self.load_node_module("nodes.mx2s")
+            self.load_node_module("nodes.vostrokbd")
+            
+            # Start device listeners
+            for dev in [InputDevice(path) for path in list_devices()]:
+                if dev.name in self.required_devices:
+                    self.add_node("Device:" + dev.name, DeviceReader(dev, self))
+            
+            # Infinity loop until KeyboardInterrupt is received or the system terminates
             try:
                 while True:
                     time.sleep(10000)
             except:
                 print("\nTerminating...")
         
-        self.out.close()
+        # self.out.close()
 
-        for consumer in self.consumers.values():
-            consumer.terminate()
+        # for consumer in self.consumers.values():
+        #     consumer.terminate()
 
         debug("Bye!")
 
-    def process_event(self, device_name, event):
-        if device_name in self.listeners:
-            self.listeners[device_name].on_event(device_name, event)
+    def emit(self, topic, package):
+        try:
+            self.executor.submit(self.process_emit, topic, package)
+        except RuntimeError as e:
+            warn("Could not emit event, maybe we are shutting down -", e)
+
+    def process_emit(self, topic, package):
+        if topic in self.listeners:
+            for listener in self.listeners[topic]:
+                listener(topic, package)
 
 
 core = Core()
 core.start()
-

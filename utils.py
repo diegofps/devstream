@@ -1,3 +1,5 @@
+from threading import Thread
+
 import logging
 
 
@@ -33,32 +35,14 @@ def smooth(v):
     return int(v * 1.5)
 
 
-class BaseConsumer:
+class BaseNode:
 
-    def __init__(self, core):
+    def __init__(self, core, name):
         self.core = core
+        self.name = name
 
-    def on_activate(self):
-        pass
-
-    def on_deactivate(self):
-        pass
+    def start(self):
+        self.thread = Thread(target=self.run, name=self.name, daemon=True)
     
-    def terminate(self):
-        # This is not relliable for now, we can't intercept kill events from the service
-        pass
-
-
-class BaseState:
-
-    def __init__(self, core):
-        self.core = core
-
-    def on_deactivate(self):
-        pass
-
-    def on_activate(self):
-        pass
-
-
-
+    # def emit(self, topic, package):
+    #     self.core.emit(topic, package)

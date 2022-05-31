@@ -1,15 +1,25 @@
-from utils import BaseConsumer
+from utils import BaseNode
 from evdev import ecodes as e
 import time
 
 
-TARGET_DEVICE = ["Logitech MX Anywhere 2S"]
+REQUIRED_DEVICES = ["Logitech MX Anywhere 2S"]
+TOPIC_DEVICE_MX2S = "Device:Logitech MX Anywhere 2S"
+TOPIC_MX2S_STATE = "MX2S:State"
 
+class BaseMX2SNode(BaseNode):
 
-class BaseMX2SConsumer(BaseConsumer):
+    def __init__(self, core, name):
+        super().__init__(core, name, None, None)
+        core.register_listener(TOPIC_MX2S_STATE, self.on_state_changed)
 
-    def __init__(self, core):
-        super().__init__(core)
+    def on_state_changed(self, topic_name, package):
+        if package.startswith(self.name):
+            self.core.register_listener(TOPIC_DEVICE_MX2S, self.on_event)
+            self.clean = package[-1] != '*'
+
+        else:
+            self.core.unregister_listener(TOPIC_DEVICE_MX2S, self.on_event)
 
     def on_event(self, device_name, event):
 
@@ -58,10 +68,10 @@ class BaseMX2SConsumer(BaseConsumer):
                     self.on_scroll_left_click(event)
 
 
-class MX2S_N(BaseMX2SConsumer): # Normal
+class MX2S_N(BaseMX2SNode): # Normal
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "MX2S_N")
     
     def on_left_click(self, event):
         self.core.out.BTN_LEFT.update(event.value)
@@ -74,11 +84,13 @@ class MX2S_N(BaseMX2SConsumer): # Normal
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
-            self.core.set_consumer(TARGET_DEVICE, "MX2S_H")
+            self.emit(TOPIC_MX2S_STATE, "MX2S_H")
+            # self.core.set_consumer(TARGET_DEVICE, "MX2S_H")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            self.core.set_consumer(TARGET_DEVICE, "MX2S_G")
+            self.emit(TOPIC_MX2S_STATE, "MX2S_G")
+            # self.core.set_consumer(TARGET_DEVICE, "MX2S_G")
     
     def on_scroll(self, event):
         self.core.out.bt_wheel_v.update(event.value)
@@ -96,10 +108,10 @@ class MX2S_N(BaseMX2SConsumer): # Normal
         self.core.out.bt_rel_y.update(event.value)
 
 
-class MX2S_H(BaseMX2SConsumer): # Navigator
+class MX2S_H(BaseMX2SNode): # Navigator
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "MX2S_H")
         self.clean = True
     
     def on_activate(self):
@@ -143,11 +155,13 @@ class MX2S_H(BaseMX2SConsumer): # Navigator
                 self.core.out.BTN_EXTRA.press()
                 self.core.out.BTN_EXTRA.release()
             
-            self.core.set_consumer(TARGET_DEVICE, "MX2S_N")
+            self.emit(TOPIC_MX2S_STATE, "MX2S_N")
+            # self.core.set_consumer(TARGET_DEVICE, "MX2S_N")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            self.core.set_consumer(TARGET_DEVICE, "MX2S_HG")
+            self.emit(TOPIC_MX2S_STATE, "MX2S_HG")
+            # self.core.set_consumer(TARGET_DEVICE, "MX2S_HG")
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -182,10 +196,10 @@ class MX2S_H(BaseMX2SConsumer): # Navigator
         self.core.out.bt_rel_y.update(event.value)
 
 
-class MX2S_G(BaseMX2SConsumer): # System
+class MX2S_G(BaseMX2SNode): # System
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "MX2S_G")
         self.clean = True
     
     def on_activate(self):
@@ -228,7 +242,8 @@ class MX2S_G(BaseMX2SConsumer): # System
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
-            self.core.set_consumer(TARGET_DEVICE, "MX2S_HG")
+            self.emit(TOPIC_MX2S_STATE, "MX2S_HG")
+            #self.core.set_consumer(TARGET_DEVICE, "MX2S_HG")
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
@@ -237,7 +252,8 @@ class MX2S_G(BaseMX2SConsumer): # System
                 self.core.out.BTN_SIDE.press()
                 self.core.out.BTN_SIDE.release()
 
-            self.core.set_consumer(TARGET_DEVICE, "MX2S_N")
+            self.emit(TOPIC_MX2S_STATE, "MX2S_N")
+            # self.core.set_consumer(TARGET_DEVICE, "MX2S_N")
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -256,10 +272,10 @@ class MX2S_G(BaseMX2SConsumer): # System
         self.core.out.bt_rel_y.update(event.value)
 
 
-class MX2S_HG(BaseMX2SConsumer): # Multimedia
+class MX2S_HG(BaseMX2SNode): # Multimedia
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "MX2S_HG")
         self.clean = True
     
     def on_activate(self):
@@ -279,8 +295,9 @@ class MX2S_HG(BaseMX2SConsumer): # Multimedia
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
-            consumer = self.core.set_consumer(TARGET_DEVICE, "MX2S_G")
-            consumer.clean = False
+            self.emit(TOPIC_MX2S_STATE, "MX2S_G*")
+            # consumer = self.core.set_consumer(TARGET_DEVICE, "MX2S_G")
+            # consumer.clean = False
 
             if self.clean:
                 self.core.out.KEY_LEFTMETA.press()
@@ -290,8 +307,9 @@ class MX2S_HG(BaseMX2SConsumer): # Multimedia
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
-            consumer = self.core.set_consumer(TARGET_DEVICE, "MX2S_H")
-            consumer.clean = False
+            self.emit(TOPIC_MX2S_STATE, "MX2S_H*")
+            #consumer = self.core.set_consumer(TARGET_DEVICE, "MX2S_H")
+            #consumer.clean = False
 
             if self.clean:
                 self.core.out.KEY_LEFTMETA.press()
@@ -320,9 +338,15 @@ class MX2S_HG(BaseMX2SConsumer): # Multimedia
 
 def on_init(core):
 
-    core.add_consumer("MX2S_N", MX2S_N(core))
-    core.add_consumer("MX2S_G", MX2S_G(core))
-    core.add_consumer("MX2S_H", MX2S_H(core))
-    core.add_consumer("MX2S_HG", MX2S_HG(core))
+    core.add_node("MX2S_N", MX2S_N(core))
+    core.add_node("MX2S_G", MX2S_G(core))
+    core.add_node("MX2S_H", MX2S_H(core))
+    core.add_node("MX2S_HG", MX2S_HG(core))
     
-    core.set_consumer(TARGET_DEVICE, "MX2S_N")
+    core.request_device(REQUIRED_DEVICES)
+    core.emit(TOPIC_MX2S_STATE, "MX2S_N")
+
+    import pdb
+    pdb.set_trace()
+    # TODO: Check if the nodes have the same self.on_event
+    a=10

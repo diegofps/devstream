@@ -38,7 +38,7 @@ MACRO_FINISH = {
 class VostroKBD_N(BaseConsumer):
 
     def __init__(self, core):
-        super().__init__(core)
+        super().__init__(core, "VostroKBD", None, None)
 
         self.vostro_map = {
             e.KEY_F10:e.KEY_PRINT, e.KEY_F11:e.KEY_HOME, e.KEY_F12:e.KEY_END,

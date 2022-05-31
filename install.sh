@@ -6,7 +6,7 @@ set -e
 
 echo "Copying files..."
 mkdir -p /etc/devstream
-cp ./*.py /etc/devstream/
+cp -r ./*.py nodes /etc/devstream/
 cp ./devstream /etc/init.d/devstream
 
 

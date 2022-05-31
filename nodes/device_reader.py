@@ -1,22 +1,21 @@
-from utils import warn, error, info, debug
-from threading import Thread
+from utils import warn, error, info, debug, BaseNode
 
 import traceback
 import time
 import sys
 
 
-class DeviceReader(Thread):
+class DeviceReader(BaseNode):
 
-    def __init__(self, dev, executor, callback):
-        super().__init__(name=dev.name, daemon=True)
+    def __init__(self, dev, core):
+        super().__init__(core)
 
-        self.executor = executor
-        self.callback = callback
         self.done = False
+        self.core = core
         self.dev = dev
 
         self.dev.grab()
+        self.start()
     
     def run(self):
         while not self.done:
@@ -29,10 +28,7 @@ class DeviceReader(Thread):
                     info("Listening to", self.dev.name, "at", self.dev.path)
 
                     for event in self.dev.read_loop():
-                        try:
-                            self.executor.submit(self.callback, self.dev.name, event)
-                        except RuntimeError as e:
-                            warn("Could not parse event, maybe we are shutting down -", e)
+                        self.emit(self.name, event)
                 
             except OSError as e:
                 error("OSError, resuming in 3s -", e)
