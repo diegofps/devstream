@@ -24,7 +24,7 @@ class DeviceReader(BaseNode):
         while not self.done:
             try:
                 if self.dev is None:
-                    warn(self.dev.name, "not found, retrying in 3s")
+                    warn(self.dev.name, "not found, retrying in 3s...")
                     time.sleep(3)
                 
                 else:

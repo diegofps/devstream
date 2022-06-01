@@ -24,20 +24,23 @@ class WatchWindows(BaseNode):
                 proc = Popen(cmd, stdout=PIPE)
 
                 while True:
-                    line = proc.stdout.readline()
-                    idd = line[40, -1]
+                    line = proc.stdout.readline().decode("utf-8")
+                    idd = line[40:-1]
                     props = self.get_window_props(idd)
 
                     if "WM_CLASS(STRING)" in props:
                         info("Changed to window:", props["WM_CLASS(STRING)"])
-                        wm_class = props["WM_CLASS(STRING)"]
+                        wm_class = props["WM_CLASS(STRING)"].replace("\"", "").split(", ")
                         self.core.emit(TOPIC_WINDOW_CHANGED, wm_class)
-            except:
-                error("Fail during window manager monitoring, retrying in 3s...")
+            except Exception as e:
+                error("Fail during window manager monitoring, retrying in 3s...", e)
                 time.sleep(3)
 
     def get_window_props(self, idd):
-        cmd = shlex.split("xprop -id " + idd.decode("utf-8"))
+        if idd is None or idd == "":
+            return {}
+        
+        cmd = shlex.split("xprop -id " + idd)
         proc = Popen(cmd, stdout=PIPE)
         props = {}
         

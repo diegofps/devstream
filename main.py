@@ -88,7 +88,7 @@ class Core:
 
             # Virtual nodes
             self.load_package("nodes.device_writer")
-            # self.load_package("nodes.watch_windows")
+            self.load_package("nodes.watch_windows")
             # self.load_package("nodes.watch_disks")
             # self.load_package("nodes.watch_devices")
 

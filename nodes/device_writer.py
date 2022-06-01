@@ -1,6 +1,6 @@
-from cupshelpers import Device
 from keys import Key, WheelKey, DirectKey, DelayedKey, LockableDelayedKey
 from utils import warn, error, info, debug, BaseNode
+from nodes.watch_windows import TOPIC_WINDOW_CHANGED
 from evdev import AbsInfo, UInput, ecodes as e
 
 import time
@@ -89,7 +89,11 @@ class DeviceWriter(BaseNode):
         self.init_virtual_device()
         self.init_keys()
 
+        self.core.register_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
         self.core.register_listener(TOPIC_DEVICEWRITER_EVENT, self.on_event)
+
+    def on_window_changed(self, topic_name, event):
+        debug("receiving window changed event in DeviceWriter", topic_name, event)
 
     def init_virtual_device(self):
 
