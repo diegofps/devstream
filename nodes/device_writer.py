@@ -1,10 +1,13 @@
+from cupshelpers import Device
 from keys import Key, WheelKey, DirectKey, DelayedKey, LockableDelayedKey
 from utils import warn, error, info, debug, BaseNode
 from evdev import AbsInfo, UInput, ecodes as e
 
 import time
 
+
 TOPIC_DEVICEWRITER_EVENT = "DeviceWriter"
+
 
 class OutputEvent:
 
@@ -66,10 +69,11 @@ class OutputEvent:
         self.sequence.append(event)
     
     def emit(self):
-        if len(self.sequence == 0):
+        sequenceLen = len(self.sequence)
+        if sequenceLen == 0:
             return
         
-        elif len(self.sequence) == 1:
+        elif sequenceLen == 1:
             self.core.emit(TOPIC_DEVICEWRITER_EVENT, self.sequence[0])
 
         else:
@@ -166,6 +170,7 @@ class DeviceWriter(BaseNode):
         ])
 
     def on_event(self, topic_name, event):
+        # debug("DevideWriter received an event:", topic_name, event)
         event_type = event[0]
 
         if event_type == OutputEvent.SEQUENCE:
@@ -318,12 +323,12 @@ class DeviceWriter(BaseNode):
             self.KEY_VOLUMEDOWN.press()
             self.KEY_VOLUMEDOWN.release()
 
-    def on_forward(self, event):
-        if not event.code in self.acquired_keys:
-            error("Missing key", e.KEY[event.code])
-        self.vdev.write(event.type, event.code, event.value)
+    # def on_forward(self, event):
+    #     if not event.code in self.acquired_keys:
+    #         error("Missing key", e.KEY[event.code])
+    #     self.vdev.write(event.type, event.code, event.value)
 
-    def on_terminate(self):
+    def terminate(self):
         if self.vdev is not None:
             self.vdev.close()
 
@@ -338,4 +343,8 @@ class DeviceWriter(BaseNode):
             value = getattr(e, name)
             key = Key(name, self.vdev, e.EV_KEY, value, scan_code)
             setattr(self, name, key)
-    
+
+
+def on_init(core):
+    core.add_node("DeviceWriter", DeviceWriter(core))
+

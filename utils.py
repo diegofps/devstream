@@ -38,11 +38,19 @@ def smooth(v):
 class BaseNode:
 
     def __init__(self, core, name):
+        self.thread = None
         self.core = core
         self.name = name
 
     def start(self):
-        self.thread = Thread(target=self.run, name=self.name, daemon=True)
+        self.thread = Thread(target=self._call_run, name=self.name, daemon=True)
+        self.thread.start()
     
-    # def emit(self, topic, package):
-    #     self.core.emit(topic, package)
+    def terminate(self):
+        pass
+    
+    def _call_run(self):
+        try:
+            self.run()
+        except Exception as e:
+            error(self.name, "- Failure during thread execution -", e)

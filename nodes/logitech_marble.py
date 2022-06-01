@@ -1,28 +1,42 @@
+from utils import smooth, BaseNode, debug, info, warn, error
 from nodes.device_writer import OutputEvent
-from utils import smooth, BaseNode
 from evdev import ecodes as e
 import time
 
 
-REQUIRED_DEVICES = ["Logitech USB Trackball"]
-TOPIC_DEVICE_MARBLE = "Device:Logitech USB Trackball"
+REQUIRED_DEVICES = [
+    "Logitech USB Trackball"
+]
+
+TOPIC_DEVICE_MARBLE = "DeviceReader:Logitech USB Trackball"
 TOPIC_MARBLE_STATE = "Marble:State"
 
 
 class BaseMarbleNode(BaseNode):
 
     def __init__(self, core, name):
-        super().__init__(core, name, None, None)
+        super().__init__(core, name)
         core.register_listener(TOPIC_MARBLE_STATE, self.on_state_changed)
+        self.active = False
 
     def on_state_changed(self, topic_name, package):
+        # debug(self.name, "received state_changed event", topic_name, package)
         if package.startswith(self.name):
+            if not self.active:
+                self.active = True
+                self.on_activate()
+            
             self.core.register_listener(TOPIC_DEVICE_MARBLE, self.on_event)
 
         else:
+            if self.active:
+                self.active = False
+                self.on_deactivate()
+            
             self.core.unregister_listener(TOPIC_DEVICE_MARBLE, self.on_event)
 
-    def on_event(self, device_name, event):
+    def on_event(self, topic_name, event):
+        # debug("Marble is receiving a mouse event", topic_name, event)
 
         if event.type == e.EV_KEY:
 
@@ -51,6 +65,12 @@ class BaseMarbleNode(BaseNode):
             # Ball rotates vertically
             elif event.code == e.REL_Y:
                 self.on_move_rel_y(event)
+    
+    def on_activate(self):
+        pass
+
+    def on_deactivate(self):
+        pass
 
 
 class Marble_N(BaseMarbleNode): # N
@@ -171,7 +191,7 @@ class Marble_B(BaseMarbleNode):
         # self.core.out.bt_wheel_v.update(-event.value * 10)
         # self.emitUpdate("WHEEL_V", event.value * 10)
         with OutputEvent(self.core) as eb:
-            eb.update("WHEEL_V", event.value * 10)
+            eb.update("WHEEL_V", -event.value * 10)
 
 
 
@@ -377,7 +397,6 @@ def on_init(core):
     core.add_node("Marble_C", Marble_C(core))
     core.add_node("Marble_D", Marble_D(core))
 
-    core.request_device(REQUIRED_DEVICES)
+    core.require_device(REQUIRED_DEVICES)
     core.emit(TOPIC_MARBLE_STATE, "Marble_N")
-
 

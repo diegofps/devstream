@@ -1,19 +1,18 @@
 
 from utils import warn, error, info, debug, BaseNode
 from subprocess import Popen, PIPE
-from threading import Thread
 
 import shlex
 import time
 
+
 TOPIC_WINDOW_CHANGED = "WindowChanged"
+
 
 class WatchWindows(BaseNode):
 
     def __init__(self, core):
-        super().__init__(core, "WatchWindows", None, None)
-        self.thread = None
-        self.done = False
+        super().__init__(core, "WatchWindows")
         self.start()
 
     def run(self):
@@ -57,4 +56,8 @@ class WatchWindows(BaseNode):
             props[key] = value
         
         return props
+
+
+def on_init(core):
+    core.add_node("WatchWindows", WatchWindows(core))
 
