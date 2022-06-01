@@ -2,7 +2,6 @@ from keys import Key, WheelKey, DirectKey, DelayedKey, LockableDelayedKey
 from utils import warn, error, info, debug, BaseNode
 from nodes.watch_windows import TOPIC_WINDOW_CHANGED
 from evdev import AbsInfo, UInput, ecodes as e
-
 import time
 
 
@@ -18,7 +17,7 @@ class OutputEvent:
     UPDATE_V = 4
     UNLOCK   = 5
     FORWARD  = 6
-    # FUNCTION = 7
+    FUNCTION = 7
     SLEEP    = 8
     SEQUENCE = 9
 
@@ -60,9 +59,9 @@ class OutputEvent:
         event = (OutputEvent.FORWARD, type, code, value)
         self.sequence.append(event)
 
-    # def function(self, function_name, *args):
-    #     event = (OutputEvent.FUNCTION, function_name, *args)
-    #     self.sequence.append(event)
+    def function(self, function_name, *args):
+        event = (OutputEvent.FUNCTION, function_name, *args)
+        self.sequence.append(event)
 
     def sleep(self, delay):
         event = (OutputEvent.SLEEP, delay)
@@ -92,8 +91,52 @@ class DeviceWriter(BaseNode):
         self.core.register_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
         self.core.register_listener(TOPIC_DEVICEWRITER_EVENT, self.on_event)
 
+        self.function_change_windows = self.change_windows_1
+        self.function_change_history = self.change_history_1
+        self.function_change_volume = self.change_volume_1
+        self.function_change_zoom = self.change_zoom_1
+        self.function_change_tabs = self.change_tabs_1
+
+        self.preferred_change_windows = {}
+        self.preferred_change_history = {}
+        self.preferred_change_volume = {}
+        self.preferred_change_zoom = {}
+        self.preferred_change_tabs = {
+            "Code": self.change_tabs_2,
+            "Terminator": self.change_tabs_2,
+            "Gedit": self.change_tabs_3,
+            "Org.gnome.Nautilus": self.change_tabs_2,
+        }
+
     def on_window_changed(self, topic_name, event):
-        debug("receiving window changed event in DeviceWriter", topic_name, event)
+        window_class, app_name = event
+        debug("Receiving window changed event in DeviceWriter", topic_name, event)
+
+        if app_name in self.preferred_change_windows:
+            self.function_change_windows = self.preferred_change_windows[app_name]
+        else:
+            self.function_change_windows = self.change_windows_1
+
+        if app_name in self.preferred_change_history:
+            self.function_change_history = self.preferred_change_history[app_name]
+        else:
+            self.function_change_history = self.change_history_1
+
+        if app_name in self.preferred_change_volume:
+            self.function_change_volume = self.preferred_change_volume[app_name]
+        else:
+            self.function_change_volume = self.change_volume_1
+
+        if app_name in self.preferred_change_zoom:
+            self.function_change_zoom = self.preferred_change_zoom[app_name]
+        else:
+            self.function_change_zoom = self.change_zoom_1
+
+        if app_name in self.preferred_change_tabs:
+            self.function_change_tabs = self.preferred_change_tabs[app_name]
+        else:
+            self.function_change_tabs = self.change_tabs_1
+
 
     def init_virtual_device(self):
 
@@ -155,18 +198,28 @@ class DeviceWriter(BaseNode):
         self.WHEEL_H = WheelKey ("WHEEL_H", self.vdev, e.EV_REL, e.REL_HWHEEL, e.REL_HWHEEL_HI_RES, 120)
         self.WHEEL_V = WheelKey ("WHEEL_V", self.vdev, e.EV_REL, e.REL_WHEEL,  e.REL_WHEEL_HI_RES,  120)
 
-        self.SCROLL_VOLUME  = DelayedKey("SCROLL_VOLUME",  self.on_update_volume,  200)
-        self.SCROLL_TABS    = DelayedKey("SCROLL_TABS",    self.on_switch_tabs,    500)
-        self.SCROLL_WINDOWS = DelayedKey("SCROLL_WINDOWS", self.on_switch_windows, 500)
-        self.SCROLL_ZOOM    = DelayedKey("SCROLL_ZOOM",    self.on_switch_zoom,    200)
-        self.SCROLL_UNDO    = DelayedKey("SCROLL_UNDO",    self.on_undo_redo,      200)
+        self.SCROLL_VOLUME  = DelayedKey("SCROLL_VOLUME",  lambda v: self.function_change_volume(v),  200)
+        self.SCROLL_TABS    = DelayedKey("SCROLL_TABS",    lambda v: self.function_change_tabs(v),    500)
+        self.SCROLL_WINDOWS = DelayedKey("SCROLL_WINDOWS", lambda v: self.function_change_windows(v), 500)
+        self.SCROLL_ZOOM    = DelayedKey("SCROLL_ZOOM",    lambda v: self.function_change_zoom(v),    200)
+        self.SCROLL_UNDO    = DelayedKey("SCROLL_UNDO",    lambda v: self.function_change_history(v), 200)
 
-        self.DUAL_WINDOWS_TABS = LockableDelayedKey("DUAL_WINDOWS_TABS", self.on_switch_windows, self.on_switch_tabs,   800) # lockable1
-        self.DUAL_UNDO_VOLUME  = LockableDelayedKey("DUAL_UNDO_VOLUME",  self.on_undo_redo,      self.on_update_volume, 500) # lockable2
+        self.DUAL_WINDOWS_TABS = LockableDelayedKey(
+                "DUAL_WINDOWS_TABS", 
+                lambda v: self.function_change_windows(v), 
+                lambda v: self.function_change_tabs(v),
+                800) # lockable1
+        
+        self.DUAL_UNDO_VOLUME  = LockableDelayedKey(
+                "DUAL_UNDO_VOLUME",  
+                lambda v: self.function_change_history(v),      
+                lambda v: self.function_change_volume(v), 
+                500) # lockable2
     
         self.add_keys([
             ("BTN_RIGHT", 90001), ("BTN_LEFT", 90004), ("BTN_MIDDLE", 90005), ("BTN_SIDE", 90004), ("BTN_EXTRA", 90005), 
-            "LEFTALT", "LEFTCTRL", "LEFTMETA", "LEFTSHIFT", "RIGHTALT", "RIGHTCTRL", "RIGHTMETA", "RIGHTSHIFT", "TAB", "PAGEDOWN", "PAGEUP",
+            "LEFTALT", "LEFTCTRL", "LEFTMETA", "LEFTSHIFT", "RIGHTALT", "RIGHTCTRL", "RIGHTMETA", "RIGHTSHIFT", 
+            "TAB", "PAGEDOWN", "PAGEUP",
             "PLAYPAUSE", "NEXTSONG", "PREVIOUSSONG", "STOPCD", "MUTE", "VOLUMEUP", "VOLUMEDOWN", "EQUAL", "MINUS", "ESC",
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
             "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
@@ -224,12 +277,12 @@ class DeviceWriter(BaseNode):
             
             self.vdev.write(type, code, value)
         
-        # elif event_type == OutputEvent.FUNCTION:
-        #     function_name = event[1]
+        elif event_type == OutputEvent.FUNCTION:
+            function_name = event[1]
             
-        #     if hasattr(self, function_name):
-        #         params = event[2:]
-        #         getattr(self, function_name)(*params)
+            if function_name.startswith("function_") and hasattr(self, function_name):
+                params = event[2:]
+                getattr(self, function_name)(*params)
         
         elif event_type == OutputEvent.SLEEP:
             delay = event[1]
@@ -261,8 +314,8 @@ class DeviceWriter(BaseNode):
 
     #     self.KEY_S.press()
     #     self.KEY_S.release()
-        
-    def on_undo_redo(self, value):
+    
+    def change_history_1(self, value):
         if value:
             self.KEY_LEFTCTRL.press()
             self.KEY_LEFTSHIFT.press()
@@ -277,20 +330,7 @@ class DeviceWriter(BaseNode):
             self.KEY_Z.release()
             self.KEY_LEFTCTRL.release()
     
-    def on_switch_zoom(self, value):
-        if value:
-            self.KEY_LEFTCTRL.press()
-            self.KEY_EQUAL.press()
-            self.KEY_EQUAL.release()
-            self.KEY_LEFTCTRL.release()
-
-        else:
-            self.KEY_LEFTCTRL.press()
-            self.KEY_MINUS.press()
-            self.KEY_MINUS.release()
-            self.KEY_LEFTCTRL.release()
-    
-    def on_switch_tabs(self, value):
+    def change_tabs_1(self, value):
         if value:
             self.KEY_LEFTCTRL.press()
             self.KEY_LEFTSHIFT.press()
@@ -305,7 +345,37 @@ class DeviceWriter(BaseNode):
             self.KEY_TAB.release()
             self.KEY_LEFTCTRL.release()
     
-    def on_switch_windows(self, value):
+    def change_tabs_2(self, value):
+        if value:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_PAGEUP.press()
+            self.KEY_PAGEUP.release()
+            self.KEY_LEFTCTRL.release()
+
+        else:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_PAGEDOWN.press()
+            self.KEY_PAGEDOWN.release()
+            self.KEY_LEFTCTRL.release()
+    
+    def change_tabs_3(self, value):
+        if value:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_LEFTALT.press()
+            self.KEY_PAGEUP.press()
+            self.KEY_PAGEUP.release()
+            self.KEY_LEFTALT.release()
+            self.KEY_LEFTCTRL.release()
+
+        else:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_LEFTALT.press()
+            self.KEY_PAGEDOWN.press()
+            self.KEY_PAGEDOWN.release()
+            self.KEY_LEFTALT.release()
+            self.KEY_LEFTCTRL.release()
+    
+    def change_windows_1(self, value):
         self.KEY_LEFTALT.press()
         
         if value:
@@ -318,7 +388,20 @@ class DeviceWriter(BaseNode):
             self.KEY_TAB.release()
             self.KEY_LEFTSHIFT.release()
     
-    def on_update_volume(self, value):
+    def change_zoom_1(self, value):
+        if value:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_EQUAL.press()
+            self.KEY_EQUAL.release()
+            self.KEY_LEFTCTRL.release()
+
+        else:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_MINUS.press()
+            self.KEY_MINUS.release()
+            self.KEY_LEFTCTRL.release()
+    
+    def change_volume_1(self, value):
         if value:
             self.KEY_VOLUMEUP.press()
             self.KEY_VOLUMEUP.release()
@@ -326,11 +409,6 @@ class DeviceWriter(BaseNode):
         else:
             self.KEY_VOLUMEDOWN.press()
             self.KEY_VOLUMEDOWN.release()
-
-    # def on_forward(self, event):
-    #     if not event.code in self.acquired_keys:
-    #         error("Missing key", e.KEY[event.code])
-    #     self.vdev.write(event.type, event.code, event.value)
 
     def terminate(self):
         if self.vdev is not None:
