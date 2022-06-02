@@ -227,7 +227,6 @@ class DeviceWriter(BaseNode):
         ])
 
     def on_event(self, topic_name, event):
-        # debug("DevideWriter received an event:", topic_name, event)
         event_type = event[0]
 
         if event_type == OutputEvent.SEQUENCE:
@@ -291,30 +290,6 @@ class DeviceWriter(BaseNode):
         else:
             error("Invalid event_type in DeviceWriter event:", event_type)
 
-    # def control_left_click(self):
-
-    #     self.KEY_LEFTCTRL.press()
-    #     self.BTN_LEFT.press()
-
-    #     time.sleep(0.25) # The click must happen after the IDE has created the "button"
-
-    #     self.BTN_LEFT.release()
-    #     self.KEY_LEFTCTRL.release()
-    
-    # def search_selection(self):
-
-    #     self.KEY_LEFTALT.press()
-
-    #     self.BTN_RIGHT.press()
-    #     self.BTN_RIGHT.release()
-
-    #     time.sleep(0.2)
-
-    #     self.KEY_LEFTALT.release()
-
-    #     self.KEY_S.press()
-    #     self.KEY_S.release()
-    
     def change_history_1(self, value):
         if value:
             self.KEY_LEFTCTRL.press()

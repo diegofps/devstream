@@ -22,9 +22,6 @@ class BasicKeyboards(BaseNode):
             core.register_listener("DeviceReader:" + device, self.on_event)
 
     def on_event(self, topic_name, event):
-        # debug("Processing event from topic ", topic_name)
-        
-        # self.core.out.forward(event)
         with OutputEvent(self.core) as eb:
             eb.forward(event.type, event.code, event.value)
 

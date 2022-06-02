@@ -22,16 +22,11 @@ class VostroKeyboard(BaseNode):
             core.register_listener("DeviceReader:" + device_name, self.on_event)
 
     def on_event(self, device_name, event):
-        debug("Processing event from vostro keyboard -", device_name)
-
         if event.type == e.EV_KEY:
             mapping = self.vostro_map.get(event.code)
             if mapping is not None:
                 event.code = mapping
         
-        # Finally, we use our virtual device to input the processed event
-        debug("Forwarding event to virtual device")
-        # self.core.out.forward(event)
         with OutputEvent(self.core) as eb:
             eb.forward(event.type, event.code, event.value)
 

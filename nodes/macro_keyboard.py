@@ -63,11 +63,7 @@ class MacroKeyboard(BaseNode):
 
                 for event2 in sequence:
                     self.core.emit(TOPIC_DEVICEWRITER_EVENT, event2)
-
-                # with OutputEvent(self.core) as eb:
-                #     for event in sequence:
-                #         eb.forward(event.type, event.code, event.value)
-                
+                    
                 # TODO: Required? :/
                 time.sleep(0.01)
             

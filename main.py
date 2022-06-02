@@ -6,13 +6,6 @@ from evdev import list_devices, InputDevice
 from utils import warn, error, info, debug
 from utils import init_logger
 
-
-# from nodes.device_writer import DeviceWriter
-# from nodes.watch_windows import WatchWindows
-# from nodes.watch_disks import WatchDisks
-# from nodes.watch_devices import WatchDevices
-
-
 import importlib
 import evdev
 import time
@@ -61,11 +54,9 @@ class Core:
                 self.register_listener(name, topic_name)
         
         elif not topic_name in self.listeners:
-            # debug("Registering first listener for topic", topic_name)
             self.listeners[topic_name] = [callback]
         
         else:
-            # debug("Registering another listener for topic", topic_name, "new_size:", str(1+len(self.listeners[topic_name])))
             self.listeners[topic_name].append(callback)
 
     def unregister_listener(self, topic_name, callback):
@@ -77,7 +68,6 @@ class Core:
         elif topic_name in self.listeners:
             listeners = self.listeners[topic_name]
             if callback in listeners:
-                # debug("Unregistering listener for topic", topic_name, "new_size:", str(len(listeners)-1))
                 listeners.remove(callback)
     
 
@@ -93,8 +83,8 @@ class Core:
             # self.load_package("nodes.watch_devices")
 
             self.load_package("nodes.logitech_marble")
-            # self.load_package("nodes.logitech_mx2s")
-            # self.load_package("nodes.vostro_keyboard")
+            self.load_package("nodes.logitech_mx2s")
+            self.load_package("nodes.vostro_keyboard")
             self.load_package("nodes.basic_keyboards")
             self.load_package("nodes.macro_keyboard")
             
@@ -113,16 +103,10 @@ class Core:
             for node in self.nodes.values():
                 node.terminate()
         
-        # self.out.close()
-
-        # for consumer in self.consumers.values():
-        #     consumer.terminate()
-
         debug("Bye!")
 
     def emit(self, topic_name, package):
         try:
-            # debug("Emitting event for topic", topic_name)
             self.executor.submit(self.process_emit, topic_name, package)
         except RuntimeError as e:
             warn("Could not emit event, maybe we are shutting down -", e)
