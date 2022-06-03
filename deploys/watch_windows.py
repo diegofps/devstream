@@ -1,50 +1,50 @@
 
-from utils import warn, error, info, debug, BaseNode
 from subprocess import Popen, PIPE
+from node import Node
 
 import shlex
 import time
+import log
 
 
 TOPIC_WINDOW_CHANGED = "WindowChanged"
 
 
-class WatchWindows(BaseNode):
+class WatchWindows(Node):
 
-    def __init__(self, core, username):
-        super().__init__(core)
+    def __init__(self, deploy, username, display):
+        super().__init__(deploy)
         self.username = username
+        self.display = display
         self.start()
+
+        # log.debug("Username:", username, "Display:", display)
 
     def run(self):
         self.done = False
 
         while not self.done:
             try:
-                # TODO: Fix. This is not working when running inside the service.
-                # Probably due to missing DISPLAY configuration. Move it to systemctl in user space?
-                cmd = shlex.split("su %s -c 'xprop -spy -root _NET_ACTIVE_WINDOW'" % self.username)
-                # debug("WatchWindows event, cmd:", cmd)
+                cmd = shlex.split("su %s -c 'xprop -spy -root _NET_ACTIVE_WINDOW -display %s'" % (self.username, self.display))
                 proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
                 
                 while True:
                     line = proc.stdout.readline().decode("utf-8")
-                    # debug("WatchWindows event, line:", line)
 
                     if line is None or line == "":
                         error_msg = proc.stderr.readlines()
-                        error("returncode:", str(proc.returncode), "error_mmsg:", error_msg)
+                        log.error("returncode:", str(proc.returncode), "error_mmsg:", error_msg)
                         break
 
                     idd = line[40:-1]
                     props = self.get_window_props(idd)
 
                     if "WM_CLASS(STRING)" in props:
-                        info("Changed to window:", props["WM_CLASS(STRING)"])
+                        log.info("Changed to window:", props["WM_CLASS(STRING)"])
                         wm_class = props["WM_CLASS(STRING)"].replace("\"", "").split(", ")
                         self.core.emit(TOPIC_WINDOW_CHANGED, wm_class)
             except Exception as e:
-                error("Fail during window manager monitoring, retrying in 3s...", e)
+                log.error("Fail during window manager monitoring, retrying in 3s...", e)
             
             time.sleep(3)
 
@@ -52,11 +52,13 @@ class WatchWindows(BaseNode):
         if idd is None or idd == "":
             return {}
         
-        cmd = shlex.split("xprop -id " + idd)
+        cmd = shlex.split("su %s -c 'xprop -display %s -id %s'" % (self.username, self.display, idd))
         proc = Popen(cmd, stdout=PIPE)
         props = {}
         
-        for line in proc.stdout.readlines():
+        lines = proc.stdout.readlines()
+
+        for line in lines:
             line = line.decode("utf-8")
             cells = line.split("=", 1)
         
@@ -73,8 +75,5 @@ class WatchWindows(BaseNode):
         return props
 
 
-def on_load(core, username):
-    core.add_node(WatchWindows(core, username))
-
-def on_unload(core, username):
-    core.add_node(WatchWindows(core, username))
+def on_load(deploy, username, display):
+    WatchWindows(deploy, username, display)

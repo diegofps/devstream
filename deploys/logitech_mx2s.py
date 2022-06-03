@@ -1,48 +1,51 @@
-from utils import BaseNode, debug, info, warn, error
-from nodes.device_writer import OutputEvent
+from deploys.device_writer import OutputEvent
 from evdev import ecodes as e
+from node import Node
+
+import log
 
 
 REQUIRED_DEVICES = [
     "Logitech MX Anywhere 2S"
 ]
 
+
 TOPIC_DEVICE_MX2S = "DeviceReader:Logitech MX Anywhere 2S"
 TOPIC_MX2S_STATE  = "MX2S:State"
 
 
-class BaseMX2SNode(BaseNode):
+class BaseMX2SNode(Node):
 
-    def __init__(self, core):
-        super().__init__(core)
-        core.register_listener(self, TOPIC_MX2S_STATE, self.on_state_changed)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         self.active = False
+        self.add_listener(TOPIC_MX2S_STATE, self.on_state_changed)
 
-    def on_state_changed(self, topic_name, package):
+    def on_state_changed(self, topic_name, event):
         clean = True
         
-        if package[-1] == '*':
-            package = package[:-1]
+        if event[-1] == '*':
+            event = event[:-1]
             clean = False
         
-        if self.name == package:
-            self.core.register_listener(self, TOPIC_DEVICE_MX2S, self.on_event)
+        if self.name == event:
+            self.add_listener(TOPIC_DEVICE_MX2S, self.on_event)
             self.clean = clean
             
             if not self.active:
                 self.active = True
                 self.on_activate()
 
-            debug("Registering listener", type(self).__name__)
+            log.debug("Registering listener", type(self).__name__)
             
         else:
             if self.active:
                 self.active = False
                 self.on_deactivate()
             
-            self.core.unregister_listener(self, TOPIC_DEVICE_MX2S, self.on_event)
+            self.remove_listener(TOPIC_DEVICE_MX2S, self.on_event)
 
-            debug("Unregistering listener", type(self).__name__)
+            log.debug("Removing listener", type(self).__name__)
 
     def on_event(self, device_name, event):
 
@@ -99,8 +102,8 @@ class BaseMX2SNode(BaseNode):
 
 class MX2S_N(BaseMX2SNode): # Normal
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
     
     def on_left_click(self, event):
         with OutputEvent(self.core) as eb:
@@ -116,12 +119,12 @@ class MX2S_N(BaseMX2SNode): # Normal
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
-            debug("Pressing H from MX2S_N")
+            log.debug("Pressing H from MX2S_N")
             self.core.emit(TOPIC_MX2S_STATE, "MX2S_H")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            debug("Pressing G from MX2S_N")
+            log.debug("Pressing G from MX2S_N")
             self.core.emit(TOPIC_MX2S_STATE, "MX2S_G")
     
     def on_scroll(self, event):
@@ -147,8 +150,8 @@ class MX2S_N(BaseMX2SNode): # Normal
 
 class MX2S_H(BaseMX2SNode): # Navigator
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
     
     def on_left_click(self, event): # A
         self.clean = False
@@ -187,7 +190,7 @@ class MX2S_H(BaseMX2SNode): # Navigator
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
-            debug("Releasing H from MX2S_H, clean is", self.clean)
+            log.debug("Releasing H from MX2S_H, clean is", self.clean)
 
             if self.clean:
                 with OutputEvent(self.core) as eb:
@@ -198,7 +201,7 @@ class MX2S_H(BaseMX2SNode): # Navigator
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            debug("Pressing G from MX2S_H, clean is", self.clean)
+            log.debug("Pressing G from MX2S_H, clean is", self.clean)
             self.core.emit(TOPIC_MX2S_STATE, "MX2S_HG")
     
     def on_scroll(self, event): # E
@@ -243,8 +246,8 @@ class MX2S_H(BaseMX2SNode): # Navigator
 
 class MX2S_G(BaseMX2SNode): # System
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         self.clean = True
     
     def on_deactivate(self):
@@ -291,12 +294,12 @@ class MX2S_G(BaseMX2SNode): # System
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
-            debug("Pressing H from MX2S_H, clean is", self.clean)
+            log.debug("Pressing H from MX2S_H, clean is", self.clean)
             self.core.emit(TOPIC_MX2S_STATE, "MX2S_HG")
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
-            debug("Releasing G from MX2S_G, clean is", self.clean)
+            log.debug("Releasing G from MX2S_G, clean is", self.clean)
 
             if self.clean:
                 with OutputEvent(self.core) as eb:
@@ -327,8 +330,8 @@ class MX2S_G(BaseMX2SNode): # System
 
 class MX2S_HG(BaseMX2SNode): # Multimedia
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         self.clean = True
     
     def on_left_click(self, event): # A
@@ -348,7 +351,7 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
-            debug("Releasing H from MX2S_HG, clean is", self.clean)
+            log.debug("Releasing H from MX2S_HG, clean is", self.clean)
 
             self.core.emit(TOPIC_MX2S_STATE, "MX2S_G*")
 
@@ -361,7 +364,7 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
-            debug("Releasing G from MX2S_HG, clean is", self.clean)
+            log.debug("Releasing G from MX2S_HG, clean is", self.clean)
 
             self.core.emit(TOPIC_MX2S_STATE, "MX2S_H*")
 
@@ -395,14 +398,13 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
         with OutputEvent(self.core) as eb:
             eb.update("REL_Y", event.value)
 
+def on_load(deploy):
 
-def on_load(core):
-
-    core.add_node(MX2S_N(core))
-    core.add_node(MX2S_G(core))
-    core.add_node(MX2S_H(core))
-    core.add_node(MX2S_HG(core))
+    MX2S_N(deploy)
+    MX2S_G(deploy)
+    MX2S_H(deploy)
+    MX2S_HG(deploy)
     
-    core.require_device(REQUIRED_DEVICES)
-    core.emit(TOPIC_MX2S_STATE, "MX2S_N")
+    deploy.require_device(REQUIRED_DEVICES)
+    deploy.core.emit(TOPIC_MX2S_STATE, "MX2S_N")
 

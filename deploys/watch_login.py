@@ -1,21 +1,24 @@
-
-from utils import warn, error, info, debug, BaseNode
 from subprocess import Popen, PIPE
+from node import Node
 
 import shlex
 import time
+import log
 
 TOPIC_LOGIN_CHANGED = "LoginChanged"
 
 
-class WatchLogin(BaseNode):
+class WatchLogin(Node):
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         self.start()
 
     def run(self):
         self.done = False
+
+        logins = self.get_logins()
+        self.core.emit(TOPIC_LOGIN_CHANGED, logins)
 
         while not self.done:
             try:
@@ -29,22 +32,15 @@ class WatchLogin(BaseNode):
 
                     if line is None or line == "":
                         error_msg = proc.stderr.readlines()
-                        error("returncode:", str(proc.returncode), "error_msg:", error_msg)
+                        log.error("returncode:", str(proc.returncode), "error_msg:", error_msg)
                         break
 
                     if "CLOSE_WRITE" in line:
                         logins = self.get_logins()
                         self.core.emit(TOPIC_LOGIN_CHANGED, logins)
 
-                        # for login in logins:
-                        #     info("Login entry:", login)
-
-                    # if "WM_CLASS(STRING)" in props:
-                    #     info("Changed to window:", props["WM_CLASS(STRING)"])
-                    #     wm_class = props["WM_CLASS(STRING)"].replace("\"", "").split(", ")
-                    #     self.core.emit(TOPIC_WINDOW_CHANGED, wm_class)
             except Exception as e:
-                error("Fail during login monitoring, retrying in 3s...", e)
+                log.error("Fail during login monitoring, retrying in 3s...", e)
             
             time.sleep(3)
 
@@ -60,12 +56,13 @@ class WatchLogin(BaseNode):
                 break
 
             if "still logged in" in line:
-                username = line[:line.index(" ")]
-                logins.append(username)
+                username_display = line.split()[:2]
+                logins.append(username_display)
         
+        log.debug(logins)
         return logins
 
 
-def on_load(core):
-    core.add_node(WatchLogin(core))
+def on_load(deploy):
+    WatchLogin(deploy)
 

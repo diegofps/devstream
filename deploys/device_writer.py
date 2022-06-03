@@ -1,8 +1,10 @@
 from keys import Key, WheelKey, DirectKey, DelayedKey, LockableDelayedKey
-from utils import warn, error, info, debug, BaseNode
-from nodes.watch_windows import TOPIC_WINDOW_CHANGED
+from deploys.watch_windows import TOPIC_WINDOW_CHANGED
 from evdev import AbsInfo, UInput, ecodes as e
+from node import Node
+
 import time
+import log
 
 
 TOPIC_DEVICEWRITER_EVENT = "DeviceWriter"
@@ -80,16 +82,16 @@ class OutputEvent:
             self.core.emit(TOPIC_DEVICEWRITER_EVENT, event)
 
 
-class DeviceWriter(BaseNode):
+class DeviceWriter(Node):
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         
         self.init_virtual_device()
         self.init_keys()
 
-        self.core.register_listener(self, TOPIC_WINDOW_CHANGED, self.on_window_changed)
-        self.core.register_listener(self, TOPIC_DEVICEWRITER_EVENT, self.on_event)
+        self.add_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
+        self.add_listener(TOPIC_DEVICEWRITER_EVENT, self.on_event)
 
         self.function_change_windows = self.change_windows_1
         self.function_change_history = self.change_history_1
@@ -110,7 +112,7 @@ class DeviceWriter(BaseNode):
 
     def on_window_changed(self, topic_name, event):
         window_class, app_name = event
-        debug("Receiving window changed event in DeviceWriter", topic_name, event)
+        log.debug("Receiving window changed event in DeviceWriter", topic_name, event)
 
         if app_name in self.preferred_change_windows:
             self.function_change_windows = self.preferred_change_windows[app_name]
@@ -227,6 +229,7 @@ class DeviceWriter(BaseNode):
         ])
 
     def on_event(self, topic_name, event):
+        # log.debug("Processing DeviceWriter event", event)
         event_type = event[0]
 
         if event_type == OutputEvent.SEQUENCE:
@@ -272,7 +275,7 @@ class DeviceWriter(BaseNode):
             value = event[3]
 
             if not code in self.acquired_keys:
-                error("Missing key", e.KEY[code])
+                log.error("Missing key", e.KEY[code])
             
             self.vdev.write(type, code, value)
         
@@ -288,7 +291,7 @@ class DeviceWriter(BaseNode):
             time.sleep(delay)
         
         else:
-            error("Invalid event_type in DeviceWriter event:", event_type)
+            log.error("Invalid event_type in DeviceWriter event:", event_type)
 
     def change_history_1(self, value):
         if value:
@@ -402,6 +405,6 @@ class DeviceWriter(BaseNode):
             setattr(self, name, key)
 
 
-def on_load(core):
-    core.add_node(DeviceWriter(core))
+def on_load(deploy):
+    DeviceWriter(deploy)
 

@@ -1,17 +1,17 @@
-from utils import warn, error, info, debug, BaseNode
+from node import Node
 
 import traceback
 import time
 import sys
+import log
 
 
-class DeviceReader(BaseNode):
+class DeviceReader(Node):
 
-    def __init__(self, core, dev):
-        super().__init__(core, dev.name)
+    def __init__(self, deploy, dev):
+        super().__init__(deploy, dev.name)
 
         self.done = False
-        self.core = core
         self.dev = dev
 
         self.dev.grab()
@@ -22,26 +22,26 @@ class DeviceReader(BaseNode):
         while not self.done:
             try:
                 if self.dev is None:
-                    warn(self.dev.name, "not found, retrying in 3s...")
+                    log.warn(self.dev.name, "not found, retrying in 3s...")
                     time.sleep(3)
                 
                 else:
-                    info("Listening to", self.dev.name, "at", self.dev.path)
+                    log.info("Listening to", self.dev.name, "at", self.dev.path)
 
                     for event in self.dev.read_loop():
                         self.core.emit(self.name, event)
                 
             except OSError as e:
-                error("OSError, resuming in 3s -", e)
+                log.error("OSError, resuming in 3s -", e)
 
                 traceback.print_exc(file=sys.stdout)
                 time.sleep(3)
             
             except KeyboardInterrupt:
-                info("Received a KeyboardInterrupt, terminating app")
+                log.info("Received a KeyboardInterrupt, terminating app")
         
         if self.dev is not None:
             self.dev.close()
 
-def on_load(core, device):
-    core.add_node(DeviceReader(core, device))
+def on_load(deploy, device):
+    DeviceReader(deploy, device)

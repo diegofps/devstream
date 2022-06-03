@@ -1,7 +1,9 @@
-from utils import smooth, BaseNode, debug, info, warn, error
-from nodes.device_writer import OutputEvent
+from deploys.device_writer import OutputEvent
 from evdev import ecodes as e
+from node import Node
+
 import time
+import log
 
 
 REQUIRED_DEVICES = [
@@ -12,29 +14,38 @@ TOPIC_DEVICE_MARBLE = "DeviceReader:Logitech USB Trackball"
 TOPIC_MARBLE_STATE = "Marble:State"
 
 
-class BaseMarbleNode(BaseNode):
+class BaseMarbleNode(Node):
 
-    def __init__(self, core):
-        super().__init__(core)
-        core.register_listener(self, TOPIC_MARBLE_STATE, self.on_state_changed)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         self.active = False
+        self.add_listener(TOPIC_MARBLE_STATE, self.on_state_changed)
 
-    def on_state_changed(self, topic_name, package):
-        if package.startswith(self.name):
+    def on_state_changed(self, topic_name, event):
+        # log.debug("Marble state has changed", self.name, event)
+        clean = True
+        
+        if event[-1] == '*':
+            event = event[:-1]
+            clean = False
+        
+        if self.name == event:
+            self.add_listener(TOPIC_DEVICE_MARBLE, self.on_event)
+            self.clean = clean
+
             if not self.active:
                 self.active = True
                 self.on_activate()
-            
-            self.core.register_listener(self, TOPIC_DEVICE_MARBLE, self.on_event)
 
         else:
             if self.active:
                 self.active = False
                 self.on_deactivate()
             
-            self.core.unregister_listener(self, TOPIC_DEVICE_MARBLE, self.on_event)
+            self.remove_listener(TOPIC_DEVICE_MARBLE, self.on_event)
 
     def on_event(self, topic_name, event):
+        # log.debug("Processing marble event", self.name, event)
 
         if event.type == e.EV_KEY:
 
@@ -73,8 +84,8 @@ class BaseMarbleNode(BaseNode):
 
 class Marble_N(BaseMarbleNode): # N
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
     
     def on_left_click(self, event): # A
         with OutputEvent(self.core) as eb:
@@ -94,17 +105,17 @@ class Marble_N(BaseMarbleNode): # N
     
     def on_move_rel_x(self, event):
         with OutputEvent(self.core) as eb:
-            eb.update("REL_X", smooth(event.value))
+            eb.update("REL_X", int(event.value * 1.5))
         
     def on_move_rel_y(self, event):
         with OutputEvent(self.core) as eb:
-            eb.update("REL_Y", smooth(event.value))
+            eb.update("REL_Y", int(event.value * 1.5))
 
 
 class Marble_B(BaseMarbleNode):
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         self.clean = True
     
     def on_activate(self):
@@ -162,8 +173,8 @@ class Marble_B(BaseMarbleNode):
 
 class Marble_C(BaseMarbleNode):
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         self.clean = True
     
     def on_activate(self):
@@ -237,8 +248,8 @@ class Marble_C(BaseMarbleNode):
 
 class Marble_D(BaseMarbleNode):
 
-    def __init__(self, core):
-        super().__init__(core)
+    def __init__(self, deploy):
+        super().__init__(deploy)
         self.clean = True
     
     def on_activate(self):
@@ -310,13 +321,13 @@ class Marble_D(BaseMarbleNode):
             eb.update_v("DUAL_WINDOWS_TABS", -event.value * 5)
 
 
-def on_load(core):
+def on_load(deploy):
 
-    core.add_node(Marble_N(core))
-    core.add_node(Marble_B(core))
-    core.add_node(Marble_C(core))
-    core.add_node(Marble_D(core))
+    Marble_N(deploy)
+    Marble_B(deploy)
+    Marble_C(deploy)
+    Marble_D(deploy)
 
-    core.require_device(REQUIRED_DEVICES)
-    core.emit(TOPIC_MARBLE_STATE, "Marble_N")
+    deploy.require_device(REQUIRED_DEVICES)
+    deploy.core.emit(TOPIC_MARBLE_STATE, "Marble_N")
 
