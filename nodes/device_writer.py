@@ -83,13 +83,13 @@ class OutputEvent:
 class DeviceWriter(BaseNode):
 
     def __init__(self, core):
-        super().__init__(core, "DeviceWriter")
+        super().__init__(core)
         
         self.init_virtual_device()
         self.init_keys()
 
-        self.core.register_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
-        self.core.register_listener(TOPIC_DEVICEWRITER_EVENT, self.on_event)
+        self.core.register_listener(self, TOPIC_WINDOW_CHANGED, self.on_window_changed)
+        self.core.register_listener(self, TOPIC_DEVICEWRITER_EVENT, self.on_event)
 
         self.function_change_windows = self.change_windows_1
         self.function_change_history = self.change_history_1
@@ -402,6 +402,6 @@ class DeviceWriter(BaseNode):
             setattr(self, name, key)
 
 
-def on_init(core):
-    core.add_node("DeviceWriter", DeviceWriter(core))
+def on_load(core):
+    core.add_node(DeviceWriter(core))
 

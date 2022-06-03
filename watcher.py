@@ -11,7 +11,7 @@ def _main():
         (first, type_names, path, filename) = event
 
         print("PATH=[{}] FILENAME=[{}] EVENT_TYPES={} FIRST={}".format(
-              path, filename, type_names, first))
+                path, filename, type_names, first))
 
 if __name__ == '__main__':
     _main()

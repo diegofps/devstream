@@ -32,6 +32,8 @@ class Core:
         self.devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
         self.device_names = set([dev.name for dev in self.devices])
         self.required_devices = set()
+        self.package_lifecycles = {}
+        self.node_lifecycles = {}
 
     def require_device(self, device_name):
         if isinstance(device_name, list):
@@ -41,35 +43,88 @@ class Core:
             self.required_devices.add(device_name)
     
     def load_package(self, name, *args):
-        mod = importlib.import_module(name)
-        mod.on_init(self, *args)
-
-    def add_node(self, consumer_name, consumer):
-        self.nodes[consumer_name] = consumer
+        mod = importlib.import_module("nodes." + name)
+        mod.on_load(self, *args)
     
-    def register_listener(self, topic_name, callback):
+    def unload_package(self, name, *args):
+        mod = importlib.import_module(name)
+        mod.on_unload(self, *args)
+        # TODO: Remove nodes in this package_lifecycle
+
+    def add_node(self, node):
+        if node.name in self.nodes:
+            warn("Reusing name when adding a node. Removing previous node")
+            self.remove_node(node.name)
+        
+        self.nodes[node.name] = node
+        # TODO: Add this node to its package_lifecycle (new  parameter)
+    
+    def remove_node(self, node_name):
+        if node_name in self.nodes:
+            # node = self.nodes[node_name]
+            del self.nodes[node_name]
+
+        if node_name in self.node_lifecycles:
+            pairs = self.node_lifecycles[node_name]
+            del self.node_lifecycles[node_name]
+
+            for topic_name, callback in pairs:
+                if topic_name in self.listeners:
+                    listeners = self.listeners[topic_name]
+
+                    if callback in listeners:
+                        listeners.remove(callback)
+
+    def register_listener(self, lifecycle_node, topic_name, callback):
         
         if isinstance(topic_name, list):
             for name in topic_name:
-                self.register_listener(name, topic_name)
+                self.register_listener(lifecycle_node, name, callback)
+            return
         
-        elif not topic_name in self.listeners:
+        # Register this listener in the corresponding listeners list
+        if not topic_name in self.listeners:
             self.listeners[topic_name] = [callback]
         
         else:
             self.listeners[topic_name].append(callback)
+        
+        # Register this listener in the context given. If the node 
+        # is later removed all its listeners will be removed
+        node_name = lifecycle_node.name
+        pair = (topic_name, callback)
 
-    def unregister_listener(self, topic_name, callback):
+        if node_name in self.node_lifecycles:
+            self.node_lifecycles[node_name].append(pair)
+
+        else:
+            self.node_lifecycles[node_name] = [pair]
+
+    def unregister_listener(self, lifecycle_node, topic_name, callback):
     
         if isinstance(topic_name, list):
             for name in topic_name:
                 self.unregister_listener(name, topic_name)
+            return
 
-        elif topic_name in self.listeners:
+        # If there is a topic name with this name and the 
+        # listener is there remove it
+        if topic_name in self.listeners:
             listeners = self.listeners[topic_name]
+
             if callback in listeners:
                 listeners.remove(callback)
     
+        # If this listener is registered in the corresponding lifecycle, 
+        # remove it as well
+        node_name = lifecycle_node.name
+
+        if node_name in self.node_lifecycles:
+            listeners = self.node_lifecycles[node_name]
+            pair = (topic_name, callback)
+
+            if pair in listeners:
+                listeners.remove(pair)
 
     def start(self):
 
@@ -77,21 +132,23 @@ class Core:
             self.executor = executor
 
             # Virtual nodes
-            self.load_package("nodes.device_writer")
-            self.load_package("nodes.watch_windows")
-            # self.load_package("nodes.watch_disks")
-            # self.load_package("nodes.watch_devices")
+            self.load_package("device_writer")
+            self.load_package("watch_login")
+            self.load_package("dispatcher")
+            # self.load_package("watch_windows")
+            # self.load_package("watch_disks")
+            # self.load_package("watch_devices")
 
-            self.load_package("nodes.logitech_marble")
-            self.load_package("nodes.logitech_mx2s")
-            self.load_package("nodes.vostro_keyboard")
-            self.load_package("nodes.basic_keyboards")
-            self.load_package("nodes.macro_keyboard")
+            self.load_package("logitech_marble")
+            self.load_package("logitech_mx2s")
+            self.load_package("vostro_keyboard")
+            self.load_package("basic_keyboards")
+            self.load_package("macro_keyboard")
             
             # Physical nodes
             for dev in [InputDevice(path) for path in list_devices()]:
                 if dev.name in self.required_devices:
-                    self.add_node("Device:" + dev.name, DeviceReader(dev, self))
+                    self.load_package(self, dev)
             
             # Infinity loop until KeyboardInterrupt is received or the system terminates
             try:

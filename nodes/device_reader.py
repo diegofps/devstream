@@ -7,8 +7,8 @@ import sys
 
 class DeviceReader(BaseNode):
 
-    def __init__(self, dev, core):
-        super().__init__(core, "DeviceReader:" + dev.name)
+    def __init__(self, core, dev):
+        super().__init__(core, dev.name)
 
         self.done = False
         self.core = core
@@ -43,3 +43,5 @@ class DeviceReader(BaseNode):
         if self.dev is not None:
             self.dev.close()
 
+def on_load(core, device):
+    core.add_node(DeviceReader(core, device))

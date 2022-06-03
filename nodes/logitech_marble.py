@@ -14,9 +14,9 @@ TOPIC_MARBLE_STATE = "Marble:State"
 
 class BaseMarbleNode(BaseNode):
 
-    def __init__(self, core, name):
-        super().__init__(core, name)
-        core.register_listener(TOPIC_MARBLE_STATE, self.on_state_changed)
+    def __init__(self, core):
+        super().__init__(core)
+        core.register_listener(self, TOPIC_MARBLE_STATE, self.on_state_changed)
         self.active = False
 
     def on_state_changed(self, topic_name, package):
@@ -25,14 +25,14 @@ class BaseMarbleNode(BaseNode):
                 self.active = True
                 self.on_activate()
             
-            self.core.register_listener(TOPIC_DEVICE_MARBLE, self.on_event)
+            self.core.register_listener(self, TOPIC_DEVICE_MARBLE, self.on_event)
 
         else:
             if self.active:
                 self.active = False
                 self.on_deactivate()
             
-            self.core.unregister_listener(TOPIC_DEVICE_MARBLE, self.on_event)
+            self.core.unregister_listener(self, TOPIC_DEVICE_MARBLE, self.on_event)
 
     def on_event(self, topic_name, event):
 
@@ -74,7 +74,7 @@ class BaseMarbleNode(BaseNode):
 class Marble_N(BaseMarbleNode): # N
 
     def __init__(self, core):
-        super().__init__(core, "Marble_N")
+        super().__init__(core)
     
     def on_left_click(self, event): # A
         with OutputEvent(self.core) as eb:
@@ -104,7 +104,7 @@ class Marble_N(BaseMarbleNode): # N
 class Marble_B(BaseMarbleNode):
 
     def __init__(self, core):
-        super().__init__(core, "Marble_B")
+        super().__init__(core)
         self.clean = True
     
     def on_activate(self):
@@ -163,7 +163,7 @@ class Marble_B(BaseMarbleNode):
 class Marble_C(BaseMarbleNode):
 
     def __init__(self, core):
-        super().__init__(core, "Marble_C")
+        super().__init__(core)
         self.clean = True
     
     def on_activate(self):
@@ -238,7 +238,7 @@ class Marble_C(BaseMarbleNode):
 class Marble_D(BaseMarbleNode):
 
     def __init__(self, core):
-        super().__init__(core, "Marble_D")
+        super().__init__(core)
         self.clean = True
     
     def on_activate(self):
@@ -310,12 +310,12 @@ class Marble_D(BaseMarbleNode):
             eb.update_v("DUAL_WINDOWS_TABS", -event.value * 5)
 
 
-def on_init(core):
+def on_load(core):
 
-    core.add_node("Marble_N", Marble_N(core))
-    core.add_node("Marble_B", Marble_B(core))
-    core.add_node("Marble_C", Marble_C(core))
-    core.add_node("Marble_D", Marble_D(core))
+    core.add_node(Marble_N(core))
+    core.add_node(Marble_B(core))
+    core.add_node(Marble_C(core))
+    core.add_node(Marble_D(core))
 
     core.require_device(REQUIRED_DEVICES)
     core.emit(TOPIC_MARBLE_STATE, "Marble_N")

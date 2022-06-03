@@ -1,2 +1,2 @@
-def on_init(core):
+def on_load(core):
     pass

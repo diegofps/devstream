@@ -13,9 +13,9 @@ TOPIC_MX2S_STATE  = "MX2S:State"
 
 class BaseMX2SNode(BaseNode):
 
-    def __init__(self, core, name):
-        super().__init__(core, name)
-        core.register_listener(TOPIC_MX2S_STATE, self.on_state_changed)
+    def __init__(self, core):
+        super().__init__(core)
+        core.register_listener(self, TOPIC_MX2S_STATE, self.on_state_changed)
         self.active = False
 
     def on_state_changed(self, topic_name, package):
@@ -26,7 +26,7 @@ class BaseMX2SNode(BaseNode):
             clean = False
         
         if self.name == package:
-            self.core.register_listener(TOPIC_DEVICE_MX2S, self.on_event)
+            self.core.register_listener(self, TOPIC_DEVICE_MX2S, self.on_event)
             self.clean = clean
             
             if not self.active:
@@ -40,7 +40,7 @@ class BaseMX2SNode(BaseNode):
                 self.active = False
                 self.on_deactivate()
             
-            self.core.unregister_listener(TOPIC_DEVICE_MX2S, self.on_event)
+            self.core.unregister_listener(self, TOPIC_DEVICE_MX2S, self.on_event)
 
             debug("Unregistering listener", type(self).__name__)
 
@@ -100,7 +100,7 @@ class BaseMX2SNode(BaseNode):
 class MX2S_N(BaseMX2SNode): # Normal
 
     def __init__(self, core):
-        super().__init__(core, "MX2S_N")
+        super().__init__(core)
     
     def on_left_click(self, event):
         with OutputEvent(self.core) as eb:
@@ -148,7 +148,7 @@ class MX2S_N(BaseMX2SNode): # Normal
 class MX2S_H(BaseMX2SNode): # Navigator
 
     def __init__(self, core):
-        super().__init__(core, "MX2S_H")
+        super().__init__(core)
     
     def on_left_click(self, event): # A
         self.clean = False
@@ -244,7 +244,7 @@ class MX2S_H(BaseMX2SNode): # Navigator
 class MX2S_G(BaseMX2SNode): # System
 
     def __init__(self, core):
-        super().__init__(core, "MX2S_G")
+        super().__init__(core)
         self.clean = True
     
     def on_deactivate(self):
@@ -328,7 +328,7 @@ class MX2S_G(BaseMX2SNode): # System
 class MX2S_HG(BaseMX2SNode): # Multimedia
 
     def __init__(self, core):
-        super().__init__(core, "MX2S_HG")
+        super().__init__(core)
         self.clean = True
     
     def on_left_click(self, event): # A
@@ -396,12 +396,12 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
             eb.update("REL_Y", event.value)
 
 
-def on_init(core):
+def on_load(core):
 
-    core.add_node("MX2S_N", MX2S_N(core))
-    core.add_node("MX2S_G", MX2S_G(core))
-    core.add_node("MX2S_H", MX2S_H(core))
-    core.add_node("MX2S_HG", MX2S_HG(core))
+    core.add_node(MX2S_N(core))
+    core.add_node(MX2S_G(core))
+    core.add_node(MX2S_H(core))
+    core.add_node(MX2S_HG(core))
     
     core.require_device(REQUIRED_DEVICES)
     core.emit(TOPIC_MX2S_STATE, "MX2S_N")

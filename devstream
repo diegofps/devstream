@@ -14,7 +14,7 @@ NAME="devstream"
 PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 APPDIR="/etc/devstream"
 APPBIN="/usr/bin/python3"
-APPARGS="/etc/devstream/main.py PRODUCTION"
+APPARGS="/etc/devstream/main.py DEBUG"
 USER="root"
 GROUP="root"
 

@@ -11,8 +11,9 @@ TOPIC_WINDOW_CHANGED = "WindowChanged"
 
 class WatchWindows(BaseNode):
 
-    def __init__(self, core):
-        super().__init__(core, "WatchWindows")
+    def __init__(self, core, username):
+        super().__init__(core)
+        self.username = username
         self.start()
 
     def run(self):
@@ -20,11 +21,21 @@ class WatchWindows(BaseNode):
 
         while not self.done:
             try:
-                cmd = shlex.split("xprop -spy -root _NET_ACTIVE_WINDOW")
-                proc = Popen(cmd, stdout=PIPE)
-
+                # TODO: Fix. This is not working when running inside the service.
+                # Probably due to missing DISPLAY configuration. Move it to systemctl in user space?
+                cmd = shlex.split("su %s -c 'xprop -spy -root _NET_ACTIVE_WINDOW'" % self.username)
+                # debug("WatchWindows event, cmd:", cmd)
+                proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+                
                 while True:
                     line = proc.stdout.readline().decode("utf-8")
+                    # debug("WatchWindows event, line:", line)
+
+                    if line is None or line == "":
+                        error_msg = proc.stderr.readlines()
+                        error("returncode:", str(proc.returncode), "error_mmsg:", error_msg)
+                        break
+
                     idd = line[40:-1]
                     props = self.get_window_props(idd)
 
@@ -34,7 +45,8 @@ class WatchWindows(BaseNode):
                         self.core.emit(TOPIC_WINDOW_CHANGED, wm_class)
             except Exception as e:
                 error("Fail during window manager monitoring, retrying in 3s...", e)
-                time.sleep(3)
+            
+            time.sleep(3)
 
     def get_window_props(self, idd):
         if idd is None or idd == "":
@@ -61,6 +73,8 @@ class WatchWindows(BaseNode):
         return props
 
 
-def on_init(core):
-    core.add_node("WatchWindows", WatchWindows(core))
+def on_load(core, username):
+    core.add_node(WatchWindows(core, username))
 
+def on_unload(core, username):
+    core.add_node(WatchWindows(core, username))

@@ -16,16 +16,16 @@ TARGET_DEVICES = [
 class BasicKeyboards(BaseNode):
 
     def __init__(self, core):
-        super().__init__(core, "BasicKeyboards")
+        super().__init__(core)
 
         for device in TARGET_DEVICES:
-            core.register_listener("DeviceReader:" + device, self.on_event)
+            core.register_listener(self, "DeviceReader:" + device, self.on_event)
 
     def on_event(self, topic_name, event):
         with OutputEvent(self.core) as eb:
             eb.forward(event.type, event.code, event.value)
 
-def on_init(core):
+def on_load(core):
 
-    core.add_node("BasicKeyboards", BasicKeyboards(core))
+    core.add_node(BasicKeyboards(core))
     core.require_device(TARGET_DEVICES)

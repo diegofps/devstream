@@ -11,7 +11,7 @@ REQUIRED_DEVICES = [
 class VostroKeyboard(BaseNode):
 
     def __init__(self, core):
-        super().__init__(core, "VostroKeyboard")
+        super().__init__(core)
 
         self.vostro_map = {
             e.KEY_F10:e.KEY_PRINT, e.KEY_F11:e.KEY_HOME, e.KEY_F12:e.KEY_END,
@@ -19,7 +19,7 @@ class VostroKeyboard(BaseNode):
         }
 
         for device_name in REQUIRED_DEVICES:
-            core.register_listener("DeviceReader:" + device_name, self.on_event)
+            core.register_listener(self, "DeviceReader:" + device_name, self.on_event)
 
     def on_event(self, device_name, event):
         if event.type == e.EV_KEY:
@@ -31,7 +31,7 @@ class VostroKeyboard(BaseNode):
             eb.forward(event.type, event.code, event.value)
 
 
-def on_init(core):
+def on_load(core):
 
-    core.add_node("VostroKeyboard", VostroKeyboard(core))
+    core.add_node(VostroKeyboard(core))
     core.require_device(REQUIRED_DEVICES)

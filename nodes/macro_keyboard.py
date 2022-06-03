@@ -32,7 +32,7 @@ MACRO_FINISH = {
 class MacroKeyboard(BaseNode):
 
     def __init__(self, core):
-        super().__init__(core, "MacroKeyboard")
+        super().__init__(core)
 
         self.recording = {}
         self.recorded = {}
@@ -40,11 +40,11 @@ class MacroKeyboard(BaseNode):
         self.import_macros()
 
         # Monitor output keys sent to virtual output device
-        core.register_listener(TOPIC_DEVICEWRITER_EVENT, self.on_output_event)
+        core.register_listener(self, TOPIC_DEVICEWRITER_EVENT, self.on_output_event)
 
         # Monitor macro keyboards keys
         for device_name in REQUIRED_DEVICES:
-            core.register_listener("DeviceReader:" + device_name, self.on_macro_event)
+            core.register_listener(self, "DeviceReader:" + device_name, self.on_macro_event)
 
     def on_macro_event(self, device_name, event):
         # debug("Processing macro event from", device_name)
@@ -124,7 +124,7 @@ class MacroKeyboard(BaseNode):
             self.export_macros()
 
 
-def on_init(core):
+def on_load(core):
 
-    core.add_node("MacroKeyboard", MacroKeyboard(core))
+    core.add_node(MacroKeyboard(core))
     core.require_device(REQUIRED_DEVICES)
