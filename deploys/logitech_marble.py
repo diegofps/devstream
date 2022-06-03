@@ -4,6 +4,7 @@ from node import Node
 
 import time
 import log
+import os
 
 
 REQUIRED_DEVICES = [
@@ -152,12 +153,12 @@ class Marble_B(BaseMarbleNode):
     def on_up_click(self, event): # C
         self.clean = False
         with OutputEvent(self.core) as eb:
-            eb.update("BTN_SIDE", event.value)
+            eb.function("function_navigate_back", event.value)
 
     def on_right_click(self, event): # D
         self.clean = False
         with OutputEvent(self.core) as eb:
-            eb.update("BTN_EXTRA", event.value)
+            eb.function("function_navigate_forward", event.value)
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -193,21 +194,10 @@ class Marble_C(BaseMarbleNode):
                 eb.press("KEY_S")
                 eb.release("KEY_S")
 
-
     def on_down_click(self, event): # B
         self.clean = False
-
-        if event.value == 1:
-            with OutputEvent(self.core) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_LEFTSHIFT")
-                eb.press("KEY_T")
-
-        else:
-            with OutputEvent(self.core) as eb:
-                eb.release("KEY_T")
-                eb.release("KEY_LEFTSHIFT")
-                eb.release("KEY_LEFTCTRL")
+        with OutputEvent(self.core) as eb:
+            eb.function("function_reopen_tab", event.value)
     
     def on_up_click(self, event): # C
 
@@ -224,16 +214,8 @@ class Marble_C(BaseMarbleNode):
 
     def on_right_click(self, event): # D
         self.clean = False
-
-        if event.value == 1:
-            with OutputEvent(self.core) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_T")
-        
-        else:
-            with OutputEvent(self.core) as eb:
-                eb.release("KEY_T")
-                eb.release("KEY_LEFTCTRL")
+        with OutputEvent(self.core) as eb:
+            eb.function("function_new_tab", event.value)
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -262,41 +244,20 @@ class Marble_D(BaseMarbleNode):
     def on_left_click(self, event): # A
         self.clean = False
 
-        if event.value == 1:
-            with OutputEvent(self.core) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_W")
-
-        else:
-            with OutputEvent(self.core) as eb:
-                eb.release("KEY_W")
-                eb.release("KEY_LEFTCTRL")
+        with OutputEvent(self.core) as eb:
+            eb.function("function_close_tab", event.value)
     
     def on_down_click(self, event): # B
         self.clean = False
 
-        if event.value == 1:
-            with OutputEvent(self.core) as eb:
-                eb.press("KEY_LEFTALT")
-                eb.press("KEY_F4")
-
-        else:
-            with OutputEvent(self.core) as eb:
-                eb.release("KEY_F4")
-                eb.release("KEY_LEFTALT")
-
+        with OutputEvent(self.core) as eb:
+            eb.function("function_close_window", event.value)
+    
     def on_up_click(self, event): # C
         self.clean = False
 
-        if event.value == 1:
-            with OutputEvent(self.core) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_D")
-
-        else:
-            with OutputEvent(self.core) as eb:
-                eb.release("KEY_D")
-                eb.release("KEY_LEFTCTRL")
+        if event.value == 0:
+            os.system("su diego -c 'gnome-session-quit --power-off'")
     
     def on_right_click(self, event): # D
         if event.value == 0:

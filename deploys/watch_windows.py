@@ -49,7 +49,7 @@ class WatchWindows(Node):
             time.sleep(3)
 
     def get_window_props(self, idd):
-        if idd is None or idd == "":
+        if idd is None or idd == "" or idd == "0x0":
             return {}
         
         cmd = shlex.split("su %s -c 'xprop -display %s -id %s'" % (self.username, self.display, idd))

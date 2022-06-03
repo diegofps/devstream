@@ -98,6 +98,12 @@ class DeviceWriter(Node):
         self.function_change_volume = self.change_volume_1
         self.function_change_zoom = self.change_zoom_1
         self.function_change_tabs = self.change_tabs_1
+        self.function_close_tab = self.close_tab_1
+        self.function_close_window = self.close_window_1
+        self.function_navigate_back = self.navigate_back_1
+        self.function_navigate_forward = self.navigate_forward_1
+        self.function_reopen_tab = self.reopen_tab_1
+        self.function_new_tab = self.new_tab_1
 
         self.preferred_change_windows = {}
         self.preferred_change_history = {}
@@ -109,35 +115,58 @@ class DeviceWriter(Node):
             "Gedit": self.change_tabs_3,
             "Org.gnome.Nautilus": self.change_tabs_2,
         }
+        self.preferred_close_tab = {
+            "Terminator": self.close_tab_2,
+            "Gnome-terminal": self.close_tab_2,
+        }
+        self.preferred_close_window = {}
+        self.preferred_navigate_back = {
+            "Apache NetBeans IDE 12.5": self.navigate_back_2
+        }
+        self.preferred_navigate_forward = {
+            "Apache NetBeans IDE 12.5": self.navigate_forward_2
+        }
+        self.preferred_reopen_tab = {}
+        self.preferred_new_tab = {
+            "Code": self.new_tab_2,
+            "Apache NetBeans IDE 12.5": self.new_tab_2,
+            "Terminator": self.new_tab_3,
+            "Dia": self.new_tab_2,
+            "Inkscape": self.new_tab_2,
+            "QtCreator": self.new_tab_2,
+        }
 
     def on_window_changed(self, topic_name, event):
         window_class, app_name = event
-        log.debug("Receiving window changed event in DeviceWriter", topic_name, event)
+        # log.debug("Receiving window changed event in DeviceWriter", topic_name, event)
 
-        if app_name in self.preferred_change_windows:
-            self.function_change_windows = self.preferred_change_windows[app_name]
-        else:
-            self.function_change_windows = self.change_windows_1
+        self.configure_intent(app_name, "change_windows")
+        self.configure_intent(app_name, "change_history")
+        self.configure_intent(app_name, "change_volume")
+        self.configure_intent(app_name, "change_zoom")
+        self.configure_intent(app_name, "change_tabs")
+        self.configure_intent(app_name, "close_tab")
+        self.configure_intent(app_name, "close_window")
+        self.configure_intent(app_name, "navigate_back")
+        self.configure_intent(app_name, "navigate_forward")
+        self.configure_intent(app_name, "reopen_tab")
+        self.configure_intent(app_name, "new_tab")
+    
+    def configure_intent(self, app_name, intent_name):
+        # Example:
+        # if app_name in self.preferred_change_windows:
+        #     self.function_change_windows = self.preferred_change_windows[app_name]
+        # else:
+        #     self.function_change_windows = self.change_windows_1
 
-        if app_name in self.preferred_change_history:
-            self.function_change_history = self.preferred_change_history[app_name]
-        else:
-            self.function_change_history = self.change_history_1
+        preferred_intents = getattr(self, "preferred_" + intent_name)
 
-        if app_name in self.preferred_change_volume:
-            self.function_change_volume = self.preferred_change_volume[app_name]
+        if app_name in preferred_intents:
+            intent = preferred_intents[app_name]
+            setattr(self, "function_" + intent_name, intent) 
         else:
-            self.function_change_volume = self.change_volume_1
-
-        if app_name in self.preferred_change_zoom:
-            self.function_change_zoom = self.preferred_change_zoom[app_name]
-        else:
-            self.function_change_zoom = self.change_zoom_1
-
-        if app_name in self.preferred_change_tabs:
-            self.function_change_tabs = self.preferred_change_tabs[app_name]
-        else:
-            self.function_change_tabs = self.change_tabs_1
+            intent = getattr(self, intent_name + "_1")
+            setattr(self, "function_" + intent_name, intent)
 
 
     def init_virtual_device(self):
@@ -221,12 +250,21 @@ class DeviceWriter(Node):
         self.add_keys([
             ("BTN_RIGHT", 90001), ("BTN_LEFT", 90004), ("BTN_MIDDLE", 90005), ("BTN_SIDE", 90004), ("BTN_EXTRA", 90005), 
             "LEFTALT", "LEFTCTRL", "LEFTMETA", "LEFTSHIFT", "RIGHTALT", "RIGHTCTRL", "RIGHTMETA", "RIGHTSHIFT", 
-            "TAB", "PAGEDOWN", "PAGEUP",
-            "PLAYPAUSE", "NEXTSONG", "PREVIOUSSONG", "STOPCD", "MUTE", "VOLUMEUP", "VOLUMEDOWN", "EQUAL", "MINUS", "ESC",
+            "PLAYPAUSE", "NEXTSONG", "PREVIOUSSONG", "STOPCD", "MUTE", "VOLUMEUP", "VOLUMEDOWN", 
+
+            "TAB", "PAGEDOWN", "PAGEUP", "EQUAL", "MINUS", "ESC",
+            "PRINT", "HOME", "END", "COMMA", "SLASH", "DOT", 
+            "APOSTROPHE", "BACKSLASH", "LEFTBRACE", "RIGHTBRACE", 
+            "SEMICOLON", "SPACE", "CAPSLOCK", "GRAVE", "SCROLLLOCK", 
+            "SYSRQ", "PAUSE", "DELETE", "INSERT", "RO", "BACKSPACE", 
+            "LEFT", "RIGHT", "UP", "DOWN", "ENTER", "102ND", 
+
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
             "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
             "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
         ])
+
+        
 
     def on_event(self, topic_name, event):
         # log.debug("Processing DeviceWriter event", event)
@@ -387,6 +425,102 @@ class DeviceWriter(Node):
         else:
             self.KEY_VOLUMEDOWN.press()
             self.KEY_VOLUMEDOWN.release()
+
+    def close_tab_1(self, value):
+        if value == 1:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_W.press()
+
+        else:
+            self.KEY_W.release()
+            self.KEY_LEFTCTRL.release()
+        
+    def close_tab_2(self, value):
+        if value == 1:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_LEFTSHIFT.press()
+            self.KEY_W.press()
+
+        else:
+            self.KEY_W.release()
+            self.KEY_LEFTSHIFT.release()
+            self.KEY_LEFTCTRL.release()
+
+    def close_window_1(self, value):
+        if value == 1:
+            self.KEY_LEFTALT.press()
+            self.KEY_F4.press()
+
+        else:
+            self.KEY_F4.release()
+            self.KEY_LEFTALT.release()
+        
+    def navigate_back_1(self, value):
+        self.BTN_SIDE.update(value)
+        
+    def navigate_back_2(self, value):
+        if value == 1:
+            self.KEY_LEFTALT.press()
+            self.KEY_LEFT.press()
+
+        else:
+            self.KEY_LEFT.release()
+            self.KEY_LEFTALT.release()
+    
+    def navigate_forward_1(self, value):
+        self.BTN_EXTRA.update(value)
+        
+    def navigate_forward_2(self, value):
+        if value == 1:
+            self.KEY_LEFTALT.press()
+            self.KEY_RIGHT.press()
+
+        else:
+            self.KEY_RIGHT.release()
+            self.KEY_LEFTALT.release()
+    
+    def reopen_tab_1(self, value):
+        if value == 1:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_LEFTSHIFT.press()
+            self.KEY_T.press()
+
+        else:
+            self.KEY_T.release()
+            self.KEY_LEFTSHIFT.release()
+            self.KEY_LEFTCTRL.release()
+    
+    def new_tab_1(self, value):
+
+        if value == 1:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_T.press()
+        
+        else:
+            self.KEY_T.release()
+            self.KEY_LEFTCTRL.release()
+
+    def new_tab_2(self, value):
+
+        if value == 1:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_N.press()
+        
+        else:
+            self.KEY_N.release()
+            self.KEY_LEFTCTRL.release()
+
+    def new_tab_3(self, value):
+
+        if value == 1:
+            self.KEY_LEFTCTRL.press()
+            self.KEY_LEFTSHIFT.press()
+            self.KEY_T.press()
+        
+        else:
+            self.KEY_T.release()
+            self.KEY_LEFTSHIFT.release()
+            self.KEY_LEFTCTRL.release()
 
     def terminate(self):
         if self.vdev is not None:
