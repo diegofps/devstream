@@ -1,6 +1,6 @@
-from deploys.device_writer import OutputEvent
+from shadows.device_writer import OutputEvent
 from evdev import ecodes as e
-from node import Node
+from reflex import Reflex
 
 import time
 import log
@@ -15,10 +15,10 @@ TOPIC_DEVICE_MARBLE = "DeviceReader:Logitech USB Trackball"
 TOPIC_MARBLE_STATE = "Marble:State"
 
 
-class BaseMarbleNode(Node):
+class BaseMarbleNode(Reflex):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         self.active = False
         self.add_listener(TOPIC_MARBLE_STATE, self.on_state_changed)
 
@@ -85,38 +85,38 @@ class BaseMarbleNode(Node):
 
 class Marble_N(BaseMarbleNode): # N
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
     
     def on_left_click(self, event): # A
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("BTN_LEFT", event.value)
         
     def on_down_click(self, event): # B
         if event.value == 1: # +B
-            self.core.emit(TOPIC_MARBLE_STATE, "Marble_B")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_B")
     
     def on_up_click(self, event): # C
         if event.value == 1: # +C
-            self.core.emit(TOPIC_MARBLE_STATE, "Marble_C")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_C")
 
     def on_right_click(self, event): # D
         if event.value == 1: # +D
-            self.core.emit(TOPIC_MARBLE_STATE, "Marble_D")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_D")
     
     def on_move_rel_x(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_X", int(event.value * 1.5))
         
     def on_move_rel_y(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_Y", int(event.value * 1.5))
 
 
 class Marble_B(BaseMarbleNode):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         self.clean = True
     
     def on_activate(self):
@@ -130,52 +130,48 @@ class Marble_B(BaseMarbleNode):
         self.clean = False
 
         if event.value == 1:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTMETA")
 
         elif event.value == 0:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.release("KEY_LEFTMETA")
 
     def on_down_click(self, event): # B
         if event.value == 0:
 
             if self.clean:
-                with OutputEvent(self.core) as eb:
-                    eb.press("KEY_LEFTCTRL")
-                    eb.press("BTN_LEFT")
-                    eb.sleep(0.25)
-                    eb.release("BTN_LEFT")
-                    eb.release("KEY_LEFTCTRL")
+                with OutputEvent(self.mind) as eb:
+                    eb.function("function_go_to_declaration", event.value)
             
-            self.core.emit(TOPIC_MARBLE_STATE, "Marble_N")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
     
     def on_up_click(self, event): # C
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.function("function_navigate_back", event.value)
 
     def on_right_click(self, event): # D
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.function("function_navigate_forward", event.value)
     
     def on_move_rel_x(self, event):
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("WHEEL_H", event.value * 20)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("WHEEL_V", -event.value * 10)
 
 
 
 class Marble_C(BaseMarbleNode):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         self.clean = True
     
     def on_activate(self):
@@ -185,72 +181,66 @@ class Marble_C(BaseMarbleNode):
         self.clean = False
         
         if event.value == 0:
-            with OutputEvent(self.core) as eb:
-                eb.press("KEY_LEFTALT")
-                eb.press("BTN_RIGHT")
-                eb.release("BTN_RIGHT")
-                eb.sleep(0.2)
-                eb.release("KEY_LEFTALT")
-                eb.press("KEY_S")
-                eb.release("KEY_S")
+            with OutputEvent(self.mind) as eb:
+                eb.function("function_search_selection", event.value)
 
     def on_down_click(self, event): # B
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.function("function_reopen_tab", event.value)
     
     def on_up_click(self, event): # C
 
         if event.value == 0: # -C
 
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 if self.clean:
                     eb.press("BTN_RIGHT")
                     eb.release("BTN_RIGHT")
             
                 eb.unlock("DUAL_UNDO_VOLUME")
             
-            self.core.emit(TOPIC_MARBLE_STATE, "Marble_N")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
 
     def on_right_click(self, event): # D
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.function("function_new_tab", event.value)
     
     def on_move_rel_x(self, event):
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update_h("DUAL_UNDO_VOLUME", event.value * 5)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update_v("DUAL_UNDO_VOLUME", -event.value * 5)
 
 
 class Marble_D(BaseMarbleNode):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         self.clean = True
     
     def on_activate(self):
         self.clean = True
     
     def on_deactivate(self):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.release("KEY_LEFTALT")
     
     def on_left_click(self, event): # A
         self.clean = False
 
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.function("function_close_tab", event.value)
     
     def on_down_click(self, event): # B
         self.clean = False
 
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.function("function_close_window", event.value)
     
     def on_up_click(self, event): # C
@@ -262,33 +252,33 @@ class Marble_D(BaseMarbleNode):
     def on_right_click(self, event): # D
         if event.value == 0:
 
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 if self.clean:
                     eb.press("BTN_MIDDLE")
                     eb.release("BTN_MIDDLE")
             
                 eb.unlock("DUAL_WINDOWS_TABS")
 
-            self.core.emit(TOPIC_MARBLE_STATE, "Marble_N")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
     
     def on_move_rel_x(self, event):
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update_h("DUAL_WINDOWS_TABS", event.value * 5)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update_v("DUAL_WINDOWS_TABS", -event.value * 5)
 
 
-def on_load(deploy):
+def on_load(shadow):
 
-    Marble_N(deploy)
-    Marble_B(deploy)
-    Marble_C(deploy)
-    Marble_D(deploy)
+    Marble_N(shadow)
+    Marble_B(shadow)
+    Marble_C(shadow)
+    Marble_D(shadow)
 
-    deploy.require_device(REQUIRED_DEVICES)
-    deploy.core.emit(TOPIC_MARBLE_STATE, "Marble_N")
+    shadow.require_device(REQUIRED_DEVICES)
+    shadow.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
 

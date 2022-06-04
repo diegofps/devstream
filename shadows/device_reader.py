@@ -1,4 +1,4 @@
-from node import Node
+from reflex import Reflex
 
 import traceback
 import time
@@ -6,10 +6,10 @@ import sys
 import log
 
 
-class DeviceReader(Node):
+class DeviceReader(Reflex):
 
-    def __init__(self, deploy, dev):
-        super().__init__(deploy, dev.name)
+    def __init__(self, shadow, dev):
+        super().__init__(shadow, dev.name)
 
         self.done = False
         self.dev = dev
@@ -29,7 +29,7 @@ class DeviceReader(Node):
                     # log.info("Listening to", self.dev.name, "at", self.dev.path)
 
                     for event in self.dev.read_loop():
-                        self.core.emit(self.name, event)
+                        self.mind.emit(self.name, event)
                 
             except OSError as e:
                 log.error("OSError, resuming in 3s -", e)
@@ -43,5 +43,5 @@ class DeviceReader(Node):
         if self.dev is not None:
             self.dev.close()
 
-def on_load(deploy, device):
-    DeviceReader(deploy, device)
+def on_load(shadow, device):
+    DeviceReader(shadow, device)

@@ -1,5 +1,5 @@
 from subprocess import Popen, PIPE
-from node import Node
+from reflex import Reflex
 
 import shlex
 import time
@@ -8,17 +8,17 @@ import log
 TOPIC_LOGIN_CHANGED = "LoginChanged"
 
 
-class WatchLogin(Node):
+class WatchLogin(Reflex):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         self.start()
 
     def run(self):
         self.done = False
 
         logins = self.get_logins()
-        self.core.emit(TOPIC_LOGIN_CHANGED, logins)
+        self.mind.emit(TOPIC_LOGIN_CHANGED, logins)
 
         while not self.done:
             try:
@@ -37,7 +37,7 @@ class WatchLogin(Node):
 
                     if "CLOSE_WRITE" in line:
                         logins = self.get_logins()
-                        self.core.emit(TOPIC_LOGIN_CHANGED, logins)
+                        self.mind.emit(TOPIC_LOGIN_CHANGED, logins)
 
             except Exception as e:
                 log.error("Fail during login monitoring, retrying in 3s...", e)
@@ -63,6 +63,6 @@ class WatchLogin(Node):
         return logins
 
 
-def on_load(deploy):
-    WatchLogin(deploy)
+def on_load(shadow):
+    WatchLogin(shadow)
 

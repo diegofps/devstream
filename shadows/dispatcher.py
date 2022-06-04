@@ -1,13 +1,13 @@
-from deploys.watch_login import TOPIC_LOGIN_CHANGED
-from node import Node
+from shadows.watch_login import TOPIC_LOGIN_CHANGED
+from reflex import Reflex
 
 import log
 
 
-class Dispatcher(Node):
+class Dispatcher(Reflex):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         
         self.username = None
         self.display = None
@@ -19,14 +19,14 @@ class Dispatcher(Node):
             if len(event) != 0:
                 self.username, self.display = event[0]
                 log.info("User is now active, name =", self.username, "and display =", self.display)
-                self.core.add_deploy("watch_windows", self.username, self.display)
+                self.mind.add_shadow("watch_windows", self.username, self.display)
 
         else:
             if len(event) == 0:
                 log.info("User is inactive")
-                self.core.remove_deploy("watch_windows")
+                self.mind.remove_shadow("watch_windows")
                 self.username = None
                 self.display = None
 
-def on_load(deploy):
-    Dispatcher(deploy)
+def on_load(shadow):
+    Dispatcher(shadow)

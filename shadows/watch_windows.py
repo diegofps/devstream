@@ -1,6 +1,6 @@
 
 from subprocess import Popen, PIPE
-from node import Node
+from reflex import Reflex
 
 import shlex
 import time
@@ -10,10 +10,10 @@ import log
 TOPIC_WINDOW_CHANGED = "WindowChanged"
 
 
-class WatchWindows(Node):
+class WatchWindows(Reflex):
 
-    def __init__(self, deploy, username, display):
-        super().__init__(deploy)
+    def __init__(self, shadow, username, display):
+        super().__init__(shadow)
         self.username = username
         self.display = display
         self.start()
@@ -42,7 +42,7 @@ class WatchWindows(Node):
                     if "WM_CLASS(STRING)" in props:
                         wm_class = props["WM_CLASS(STRING)"].replace("\"", "").split(", ")
                         log.info("Changed to window:", wm_class[1])
-                        self.core.emit(TOPIC_WINDOW_CHANGED, wm_class)
+                        self.mind.emit(TOPIC_WINDOW_CHANGED, wm_class)
             except Exception as e:
                 log.error("Fail during window manager monitoring, retrying in 3s...", e)
             
@@ -75,5 +75,5 @@ class WatchWindows(Node):
         return props
 
 
-def on_load(deploy, username, display):
-    WatchWindows(deploy, username, display)
+def on_load(shadow, username, display):
+    WatchWindows(shadow, username, display)

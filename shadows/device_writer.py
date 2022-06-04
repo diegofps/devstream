@@ -1,7 +1,7 @@
 from keys import Key, WheelKey, DirectKey, DelayedKey, LockableDelayedKey
-from deploys.watch_windows import TOPIC_WINDOW_CHANGED
+from shadows.watch_windows import TOPIC_WINDOW_CHANGED
 from evdev import AbsInfo, UInput, ecodes as e
-from node import Node
+from reflex import Reflex
 
 import time
 import log
@@ -23,9 +23,9 @@ class OutputEvent:
     SLEEP    = 8
     SEQUENCE = 9
 
-    def __init__(self, core):
+    def __init__(self, mind):
         self.sequence = []
-        self.core = core
+        self.mind = mind
     
     def __enter__(self):
         return self
@@ -71,21 +71,22 @@ class OutputEvent:
     
     def emit(self):
         sequenceLen = len(self.sequence)
+
         if sequenceLen == 0:
             return
         
         elif sequenceLen == 1:
-            self.core.emit(TOPIC_DEVICEWRITER_EVENT, self.sequence[0])
+            self.mind.emit(TOPIC_DEVICEWRITER_EVENT, self.sequence[0])
 
         else:
             event = (OutputEvent.SEQUENCE, self.sequence)
-            self.core.emit(TOPIC_DEVICEWRITER_EVENT, event)
+            self.mind.emit(TOPIC_DEVICEWRITER_EVENT, event)
 
 
-class DeviceWriter(Node):
+class DeviceWriter(Reflex):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         
         self.init_virtual_device()
         self.init_keys()
@@ -104,6 +105,8 @@ class DeviceWriter(Node):
         self.function_navigate_forward = self.navigate_forward_1
         self.function_reopen_tab = self.reopen_tab_1
         self.function_new_tab = self.new_tab_1
+        self.function_go_to_declaration = self.go_to_declaration_1
+        self.function_search_selection = self.search_selection_1
 
         self.preferred_change_windows = {}
         self.preferred_change_history = {}
@@ -136,6 +139,8 @@ class DeviceWriter(Node):
             "QtCreator": self.new_tab_2,
             "Joplin": self.new_tab_2,
         }
+        self.preferred_go_to_declaration = {}
+        self.preferred_search_selection = {}
 
     def on_window_changed(self, topic_name, event):
         window_class, app_name = event
@@ -152,6 +157,8 @@ class DeviceWriter(Node):
         self.configure_intent(app_name, "navigate_forward")
         self.configure_intent(app_name, "reopen_tab")
         self.configure_intent(app_name, "new_tab")
+        self.configure_intent(app_name, "go_to_declaration")
+        self.configure_intent(app_name, "search_selection")
     
     def configure_intent(self, app_name, intent_name):
         # Example:
@@ -493,36 +500,55 @@ class DeviceWriter(Node):
     
     def new_tab_1(self, value):
 
-        if value == 1:
+        if value == 0:
             self.KEY_LEFTCTRL.press()
             self.KEY_T.press()
         
-        else:
             self.KEY_T.release()
             self.KEY_LEFTCTRL.release()
 
     def new_tab_2(self, value):
 
-        if value == 1:
+        if value == 0:
             self.KEY_LEFTCTRL.press()
             self.KEY_N.press()
         
-        else:
             self.KEY_N.release()
             self.KEY_LEFTCTRL.release()
 
     def new_tab_3(self, value):
 
-        if value == 1:
+        if value == 0:
             self.KEY_LEFTCTRL.press()
             self.KEY_LEFTSHIFT.press()
             self.KEY_T.press()
-        
-        else:
+
             self.KEY_T.release()
             self.KEY_LEFTSHIFT.release()
             self.KEY_LEFTCTRL.release()
 
+    def go_to_declaration_1(self, value):
+        if value == 0:
+            self.KEY_LEFTCTRL.press()
+            self.BTN_LEFT.press()
+            
+            time.sleep(0.25)
+
+            self.BTN_LEFT.release()
+            self.KEY_LEFTCTRL.release()
+    
+    def search_selection_1(self, value):
+        if value == 0:
+            self.KEY_LEFTALT.press()
+            self.BTN_RIGHT.press()
+            self.BTN_RIGHT.release()
+
+            time.sleep(0.2)
+
+            self.KEY_LEFTALT.release()
+            self.KEY_S.press()
+            self.KEY_S.release()
+        
     def terminate(self):
         if self.vdev is not None:
             self.vdev.close()
@@ -540,6 +566,6 @@ class DeviceWriter(Node):
             setattr(self, name, key)
 
 
-def on_load(deploy):
-    DeviceWriter(deploy)
+def on_load(shadow):
+    DeviceWriter(shadow)
 

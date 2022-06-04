@@ -1,6 +1,6 @@
-from deploys.device_writer import OutputEvent
+from shadows.device_writer import OutputEvent
 from evdev import ecodes as e
-from node import Node
+from reflex import Reflex
 
 import log
 
@@ -14,10 +14,10 @@ TOPIC_DEVICE_MX2S = "DeviceReader:Logitech MX Anywhere 2S"
 TOPIC_MX2S_STATE  = "MX2S:State"
 
 
-class BaseMX2SNode(Node):
+class BaseMX2SNode(Reflex):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         self.active = False
         self.add_listener(TOPIC_MX2S_STATE, self.on_state_changed)
 
@@ -102,67 +102,67 @@ class BaseMX2SNode(Node):
 
 class MX2S_N(BaseMX2SNode): # Normal
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
     
     def on_left_click(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("BTN_LEFT", event.value)
 
     def on_middle_click(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("BTN_MIDDLE", event.value)
         
     def on_right_click(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("BTN_RIGHT", event.value)
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
             log.debug("Pressing H from MX2S_N")
-            self.core.emit(TOPIC_MX2S_STATE, "MX2S_H")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MX2S_N")
-            self.core.emit(TOPIC_MX2S_STATE, "MX2S_G")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G")
     
     def on_scroll(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("WHEEL_V", event.value)
     
     def on_scroll_left_click(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("WHEEL_H", +120)
     
     def on_scroll_right_click(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("WHEEL_H", -120)
     
     def on_move_rel_x(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_X", event.value)
 
     def on_move_rel_y(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_Y", event.value)
 
 
 class MX2S_H(BaseMX2SNode): # Navigator
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
     
     def on_left_click(self, event): # A
         self.clean = False
 
         if event.value == 1:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTCTRL")
                 eb.press("BTN_LEFT")
 
         else:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.release("BTN_LEFT")
                 eb.release("KEY_LEFTCTRL")
 
@@ -170,7 +170,7 @@ class MX2S_H(BaseMX2SNode): # Navigator
         self.clean = False
 
         if event.value == 0:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTCTRL")
                 eb.press("KEY_W")
                 eb.release("KEY_W")
@@ -180,7 +180,7 @@ class MX2S_H(BaseMX2SNode): # Navigator
         self.clean = False
 
         if event.value == 0:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTCTRL")
                 eb.press("KEY_LEFTSHIFT")
                 eb.press("KEY_T")
@@ -193,32 +193,32 @@ class MX2S_H(BaseMX2SNode): # Navigator
             log.debug("Releasing H from MX2S_H, clean is", self.clean)
 
             if self.clean:
-                with OutputEvent(self.core) as eb:
+                with OutputEvent(self.mind) as eb:
                     eb.press("BTN_EXTRA")
                     eb.release("BTN_EXTRA")
             
-            self.core.emit(TOPIC_MX2S_STATE, "MX2S_N")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MX2S_H, clean is", self.clean)
-            self.core.emit(TOPIC_MX2S_STATE, "MX2S_HG")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG")
     
     def on_scroll(self, event): # E
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("SCROLL_TABS", event.value)
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
 
         if event.value != 0:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTCTRL")
                 eb.press("KEY_EQUAL")
 
         else:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.release("KEY_EQUAL")
                 eb.release("KEY_LEFTCTRL")
     
@@ -226,39 +226,39 @@ class MX2S_H(BaseMX2SNode): # Navigator
         self.clean = False
         
         if event.value != 0:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTCTRL")
                 eb.press("KEY_MINUS")
         
         else:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.release("KEY_MINUS")
                 eb.release("KEY_LEFTCTRL")
     
     def on_move_rel_x(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_X", event.value)
 
     def on_move_rel_y(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_Y", event.value)
 
 
 class MX2S_G(BaseMX2SNode): # System
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         self.clean = True
     
     def on_deactivate(self):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.release("KEY_LEFTALT")
     
     def on_left_click(self, event): # A
         self.clean = False
 
         if event.value == 1:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTCTRL")
                 eb.press("KEY_Z")
                 eb.sleep(0.25)
@@ -269,12 +269,12 @@ class MX2S_G(BaseMX2SNode): # System
         self.clean = False
 
         if event.value == 1:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTALT")
                 eb.press("KEY_F4")
         
         elif event.value == 0:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.release("KEY_F4")
                 eb.release("KEY_LEFTALT")
         
@@ -282,12 +282,12 @@ class MX2S_G(BaseMX2SNode): # System
         self.clean = False
         
         if event.value != 0:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.press("KEY_LEFTCTRL")
                 eb.press("KEY_LEFTSHIFT")
                 eb.press("KEY_Z")
         else:
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 eb.release("KEY_Z")
                 eb.release("KEY_LEFTSHIFT")
                 eb.release("KEY_LEFTCTRL")
@@ -295,22 +295,22 @@ class MX2S_G(BaseMX2SNode): # System
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
             log.debug("Pressing H from MX2S_H, clean is", self.clean)
-            self.core.emit(TOPIC_MX2S_STATE, "MX2S_HG")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG")
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
             log.debug("Releasing G from MX2S_G, clean is", self.clean)
 
             if self.clean:
-                with OutputEvent(self.core) as eb:
+                with OutputEvent(self.mind) as eb:
                     eb.press("BTN_SIDE")
                     eb.release("BTN_SIDE")
 
-            self.core.emit(TOPIC_MX2S_STATE, "MX2S_N")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
     
     def on_scroll(self, event): # E
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("SCROLL_WINDOWS", event.value)
     
     def on_scroll_left_click(self, event): # D
@@ -320,42 +320,42 @@ class MX2S_G(BaseMX2SNode): # System
         self.clean = False
     
     def on_move_rel_x(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_X", event.value)
 
     def on_move_rel_y(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_Y", event.value)
 
 
 class MX2S_HG(BaseMX2SNode): # Multimedia
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
         self.clean = True
     
     def on_left_click(self, event): # A
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("KEY_PLAYPAUSE", event.value)
 
     def on_middle_click(self, event): # B
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("KEY_STOPCD", event.value)
         
     def on_right_click(self, event): # C
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("KEY_MUTE", event.value)
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
             log.debug("Releasing H from MX2S_HG, clean is", self.clean)
 
-            self.core.emit(TOPIC_MX2S_STATE, "MX2S_G*")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G*")
 
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 if self.clean:
                     eb.press("KEY_LEFTMETA")
                     eb.release("KEY_LEFTMETA")
@@ -366,9 +366,9 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
         if event.value == 0: # -G
             log.debug("Releasing G from MX2S_HG, clean is", self.clean)
 
-            self.core.emit(TOPIC_MX2S_STATE, "MX2S_H*")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H*")
 
-            with OutputEvent(self.core) as eb:
+            with OutputEvent(self.mind) as eb:
                 if self.clean:
                     eb.press("KEY_LEFTMETA")
                     eb.release("KEY_LEFTMETA")
@@ -377,34 +377,34 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
     
     def on_scroll(self, event): # E
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("SCROLL_VOLUME", event.value)
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("KEY_NEXTSONG", event.value)
     
     def on_scroll_right_click(self, event): # F
         self.clean = False
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("KEY_PREVIOUSSONG", event.value)
     
     def on_move_rel_x(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_X", event.value)
 
     def on_move_rel_y(self, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.update("REL_Y", event.value)
 
-def on_load(deploy):
+def on_load(shadow):
 
-    MX2S_N(deploy)
-    MX2S_G(deploy)
-    MX2S_H(deploy)
-    MX2S_HG(deploy)
+    MX2S_N(shadow)
+    MX2S_G(shadow)
+    MX2S_H(shadow)
+    MX2S_HG(shadow)
     
-    deploy.require_device(REQUIRED_DEVICES)
-    deploy.core.emit(TOPIC_MX2S_STATE, "MX2S_N")
+    shadow.require_device(REQUIRED_DEVICES)
+    shadow.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
 

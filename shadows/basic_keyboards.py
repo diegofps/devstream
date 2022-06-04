@@ -1,6 +1,6 @@
-from deploys.device_writer import OutputEvent
+from shadows.device_writer import OutputEvent
 from evdev import ecodes as e
-from node import Node
+from reflex import Reflex
 
 import log
 
@@ -15,19 +15,19 @@ TARGET_DEVICES = [
 ]
 
 
-class BasicKeyboards(Node):
+class BasicKeyboards(Reflex):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
 
         for device in TARGET_DEVICES:
             self.add_listener("DeviceReader:" + device, self.on_event)
 
     def on_event(self, topic_name, event):
-        with OutputEvent(self.core) as eb:
+        with OutputEvent(self.mind) as eb:
             eb.forward(event.type, event.code, event.value)
 
 
-def on_load(deploy):
-    BasicKeyboards(deploy)
-    deploy.core.require_device(TARGET_DEVICES)
+def on_load(shadow):
+    BasicKeyboards(shadow)
+    shadow.mind.require_device(TARGET_DEVICES)

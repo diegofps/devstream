@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from evdev import list_devices, InputDevice
-from deploy import Deploy
+from shadow import Shadow
 
 import importlib
 import evdev
@@ -23,11 +23,11 @@ class Topic:
             self.listeners.remove(callback)
 
 
-class Core:
+class Mind:
 
     def __init__(self):
 
-        self.deploys = {}
+        self.shadows = {}
         self.topics = {}
         
         self.devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
@@ -41,21 +41,21 @@ class Core:
         else:
             self.required_devices.add(device_name)
     
-    def add_deploy(self, deploy_name, *args):
-        if deploy_name in self.deploys:
-            log.warn("Deploy is already added, skipping -", deploy_name)
+    def add_shadow(self, shadow_name, *args):
+        if shadow_name in self.shadows:
+            log.warn("Shadow is already added, skipping -", shadow_name)
             return
         
-        deploy = Deploy(self, deploy_name)
-        mod = importlib.import_module("deploys." + deploy_name)
-        mod.on_load(deploy, *args)
-        self.deploys[deploy.name] = deploy
+        shadow = Shadow(self, shadow_name)
+        mod = importlib.import_module("shadows." + shadow_name)
+        mod.on_load(shadow, *args)
+        self.shadows[shadow.name] = shadow
     
-    def remove_deploy(self, deploy_name):
-        deploy = self.deploys.get(deploy_name)
-        if deploy is not None:
-            del self.deploys[deploy_name]
-            deploy.on_remove()
+    def remove_shadow(self, shadow_name):
+        shadow = self.shadows.get(shadow_name)
+        if shadow is not None:
+            del self.shadows[shadow_name]
+            shadow.on_remove()
 
     def _add_listener(self, topic_name, callback):
         
@@ -125,22 +125,22 @@ class Core:
             self.executor = executor
 
             # Virtual nodes
-            self.add_deploy("device_writer")
-            self.add_deploy("watch_login")
-            self.add_deploy("dispatcher")
-            # self.add_deploy("watch_disks")
-            # self.add_deploy("watch_devices")
+            self.add_shadow("device_writer")
+            self.add_shadow("watch_login")
+            self.add_shadow("dispatcher")
+            # self.add_shadow("watch_disks")
+            # self.add_shadow("watch_devices")
 
-            self.add_deploy("logitech_marble")
-            self.add_deploy("vostro_keyboard")
-            self.add_deploy("basic_keyboards")
-            self.add_deploy("macro_keyboard")
-            self.add_deploy("logitech_mx2s")
+            self.add_shadow("logitech_marble")
+            self.add_shadow("vostro_keyboard")
+            self.add_shadow("basic_keyboards")
+            self.add_shadow("macro_keyboard")
+            self.add_shadow("logitech_mx2s")
             
             # Physical nodes
             for dev in [InputDevice(path) for path in list_devices()]:
                 if dev.name in self.required_devices:
-                    self.add_deploy("device_reader", dev)
+                    self.add_shadow("device_reader", dev)
             
             # Infinity loop until KeyboardInterrupt is received or the system terminates
             try:

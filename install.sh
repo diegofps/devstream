@@ -6,7 +6,7 @@ set -e
 
 echo "Copying files..."
 mkdir -p /etc/devstream
-cp -r ./*.py deploys /etc/devstream/
+cp -r ./*.py shadows /etc/devstream/
 cp ./devstream /etc/init.d/devstream
 
 

@@ -10,19 +10,19 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 ### Normal Mode
 
-| Shortcut | Action                                           |
-| -------- | ------------------------------------------------ |
-| A        | Left Click                                       |
-| B        | Go to Declaration / Open New (Ctrl + Left Click) |
-| C        | Right Click                                      |
-| D        | Middle Click                                     |
-| E        | Move Cursor                                      |
+| Shortcut | Action                              |
+| -------- | ----------------------------------- |
+| A        | Left Click                          |
+| B        | Go to Declaration / Open in new Tab |
+| C        | Right Click                         |
+| D        | Middle Click                        |
+| E        | Move Cursor                         |
 
 ### Holding B
 
 | Shortcut | Action                            |
 | -------- | --------------------------------- |
-| B + A    | Show All Windows (Super)          |
+| B + A    | Show All Windows                  |
 | B + C    | Back                              |
 | B + D    | Forward                           |
 | B + E    | Vertical and Horizontal Scrolling |
@@ -31,18 +31,18 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 | Shortcut | Action                                               |
 | -------- | ---------------------------------------------------- |
-| C + A    | Search Selection {+Alt RightClick -Alt S}            |
-| C + B    | Reopen Tab (Ctrl + Shift + T)                        |
-| C + D    | New Tab (Ctrl + T)                                   |
+| C + A    | Search Selection                                     |
+| C + B    | Reopen Tab                                           |
+| C + D    | New Tab or Document                                  |
 | C + E    | Change Volume (Vertical) or Undo / Redo (Horizontal) |
 
 ### Holding D
 
 | Shortcut | Action                                                |
 | -------- | ----------------------------------------------------- |
-| D + A    | Close Tab (Ctrl + W)                                  |
-| D + B    | Close Window (Alt + F4)                               |
-| D + C    | Close Terminal (Ctrl + D)                             |
+| D + A    | Close Tab or Terminal                                 |
+| D + B    | Close Window                                          |
+| D + C    |                                                       |
 | D + E    | Switch Tabs (Vertical) or Switch Windows (Horizontal) |
 
 ## Logitech MX Anywhere 2S
@@ -65,23 +65,23 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 ### Browser Mode
 
-| Shortcut | Action                           |
-| -------- | -------------------------------- |
-| H + A    | Go to Declaration (Ctrl + Click) |
-| H + B    | Close Tab                        |
-| H + C    | Reopen Tab (Ctrl + Shift + T)    |
-| H + D    | Zoom In                          |
-| H + E    | Switch Tabs                      |
-| H + F    | Zoom Out                         |
+| Shortcut | Action            |
+| -------- | ----------------- |
+| H + A    | Go to Declaration |
+| H + B    | Close Tab         |
+| H + C    | Reopen Tab        |
+| H + D    | Zoom In           |
+| H + E    | Switch Tabs       |
+| H + F    | Zoom Out          |
 
 ### System mode
 
-| Shortcut | Action           |
-| -------- | ---------------- |
-| G + A    | Ctrl + Z         |
-| G + B    | Close Window     |
-| G + C    | Ctrl + Shift + Z |
-| G + E    | Switch Window    |
+| Shortcut | Action        |
+| -------- | ------------- |
+| G + A    | Undo          |
+| G + B    | Close Window  |
+| G + C    | Redo          |
+| G + E    | Switch Window |
 
 ### Multimedia Mode
 

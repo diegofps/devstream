@@ -1,6 +1,6 @@
-from deploys.device_writer import TOPIC_DEVICEWRITER_EVENT
+from shadows.device_writer import TOPIC_DEVICEWRITER_EVENT
 from evdev import ecodes as e
-from node import Node
+from reflex import Reflex
 
 import traceback
 import pickle
@@ -30,10 +30,10 @@ MACRO_FINISH = {
 }
 
 
-class MacroKeyboard(Node):
+class MacroKeyboard(Reflex):
 
-    def __init__(self, deploy):
-        super().__init__(deploy)
+    def __init__(self, shadow):
+        super().__init__(shadow)
 
         self.recording = {}
         self.recorded = {}
@@ -63,7 +63,7 @@ class MacroKeyboard(Node):
                 sequence = self.recorded[macro_name]
 
                 for event2 in sequence:
-                    self.core.emit(TOPIC_DEVICEWRITER_EVENT, event2)
+                    self.mind.emit(TOPIC_DEVICEWRITER_EVENT, event2)
                     
                 # TODO: Required? :/
                 time.sleep(0.01)
@@ -123,6 +123,6 @@ class MacroKeyboard(Node):
             self.export_macros()
 
 
-def on_load(deploy):
-    MacroKeyboard(deploy)
-    deploy.require_device(REQUIRED_DEVICES)
+def on_load(shadow):
+    MacroKeyboard(shadow)
+    shadow.require_device(REQUIRED_DEVICES)

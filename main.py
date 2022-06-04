@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from core import Core
+from mind import Mind
 
 import log
 import sys
@@ -16,5 +16,5 @@ else:
     log.init_logger(sys.argv[1])
 
 
-core = Core()
-core.start()
+mind = Mind()
+mind.start()
