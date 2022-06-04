@@ -56,8 +56,10 @@ class WatchLogin(Reflex):
                 break
 
             if "still logged in" in line:
-                username_display = line.split()[:2]
-                logins.append(username_display)
+                username, display = line.split()[:2]
+                
+                if ":" in display:
+                    logins.append((username, display))
         
         # log.debug(logins)
         return logins

@@ -23,7 +23,6 @@ class BaseMarbleNode(Reflex):
         self.add_listener(TOPIC_MARBLE_STATE, self.on_state_changed)
 
     def on_state_changed(self, topic_name, event):
-        # log.debug("Marble state has changed", self.name, event)
         clean = True
         
         if event[-1] == '*':
@@ -142,19 +141,23 @@ class Marble_B(BaseMarbleNode):
 
             if self.clean:
                 with OutputEvent(self.mind) as eb:
-                    eb.function("function_go_to_declaration", event.value)
+                    eb.function("function_go_to_declaration")
             
             self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
     
     def on_up_click(self, event): # C
         self.clean = False
-        with OutputEvent(self.mind) as eb:
-            eb.function("function_navigate_back", event.value)
+
+        if event.value == 0:
+            with OutputEvent(self.mind) as eb:
+                eb.function("function_navigate_back")
 
     def on_right_click(self, event): # D
         self.clean = False
-        with OutputEvent(self.mind) as eb:
-            eb.function("function_navigate_forward", event.value)
+
+        if event.value == 0:
+            with OutputEvent(self.mind) as eb:
+                eb.function("function_navigate_forward")
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -182,12 +185,14 @@ class Marble_C(BaseMarbleNode):
         
         if event.value == 0:
             with OutputEvent(self.mind) as eb:
-                eb.function("function_search_selection", event.value)
+                eb.function("function_search_selection")
 
     def on_down_click(self, event): # B
         self.clean = False
-        with OutputEvent(self.mind) as eb:
-            eb.function("function_reopen_tab", event.value)
+
+        if event.value == 0:
+            with OutputEvent(self.mind) as eb:
+                eb.function("function_reopen_tab")
     
     def on_up_click(self, event): # C
 
@@ -204,8 +209,10 @@ class Marble_C(BaseMarbleNode):
 
     def on_right_click(self, event): # D
         self.clean = False
-        with OutputEvent(self.mind) as eb:
-            eb.function("function_new_tab", event.value)
+
+        if event.value == 0:
+            with OutputEvent(self.mind) as eb:
+                eb.function("function_new_tab")
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -234,14 +241,16 @@ class Marble_D(BaseMarbleNode):
     def on_left_click(self, event): # A
         self.clean = False
 
-        with OutputEvent(self.mind) as eb:
-            eb.function("function_close_tab", event.value)
+        if event.value == 0:
+            with OutputEvent(self.mind) as eb:
+                eb.function("function_close_tab")
     
     def on_down_click(self, event): # B
         self.clean = False
 
-        with OutputEvent(self.mind) as eb:
-            eb.function("function_close_window", event.value)
+        if event.value == 0:
+            with OutputEvent(self.mind) as eb:
+                eb.function("function_close_window")
     
     def on_up_click(self, event): # C
         self.clean = False

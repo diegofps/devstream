@@ -1,10 +1,15 @@
 from keys import Key, WheelKey, DirectKey, DelayedKey, LockableDelayedKey
 from shadows.watch_windows import TOPIC_WINDOW_CHANGED
+from shadows.watch_login import TOPIC_LOGIN_CHANGED
 from evdev import AbsInfo, UInput, ecodes as e
+from subprocess import Popen, PIPE
 from reflex import Reflex
 
+import shlex
 import time
 import log
+import os
+import re
 
 
 TOPIC_DEVICEWRITER_EVENT = "DeviceWriter"
@@ -88,9 +93,13 @@ class DeviceWriter(Reflex):
     def __init__(self, shadow):
         super().__init__(shadow)
         
+        self.username = None
+        self.userdisplay = None
+
         self.init_virtual_device()
         self.init_keys()
 
+        self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
         self.add_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
         self.add_listener(TOPIC_DEVICEWRITER_EVENT, self.on_event)
 
@@ -107,7 +116,7 @@ class DeviceWriter(Reflex):
         self.function_new_tab = self.new_tab_1
         self.function_go_to_declaration = self.go_to_declaration_1
         self.function_search_selection = self.search_selection_1
-
+        
         self.preferred_change_windows = {}
         self.preferred_change_history = {}
         self.preferred_change_volume = {}
@@ -140,7 +149,17 @@ class DeviceWriter(Reflex):
             "Joplin": self.new_tab_2,
         }
         self.preferred_go_to_declaration = {}
-        self.preferred_search_selection = {}
+        self.preferred_search_selection = {
+            "firefox": self.search_selection_2,
+            "Google-chrome": self.search_selection_2,
+        }
+
+    def on_login_changed(self, topic_name, event):
+        if len(event) == 0:
+            self.username, self.userdisplay = None, None
+        else:
+            self.username, self.userdisplay = event[0]
+        log.info("login changed received", self.username, self.userdisplay)
 
     def on_window_changed(self, topic_name, event):
         window_class, app_name = event
@@ -434,120 +453,115 @@ class DeviceWriter(Reflex):
             self.KEY_VOLUMEDOWN.press()
             self.KEY_VOLUMEDOWN.release()
 
-    def close_tab_1(self, value):
-        if value == 1:
-            self.KEY_LEFTCTRL.press()
-            self.KEY_W.press()
+    def close_tab_1(self):
+        self.KEY_LEFTCTRL.press()
+        self.KEY_W.press()
 
-        else:
-            self.KEY_W.release()
-            self.KEY_LEFTCTRL.release()
+        self.KEY_W.release()
+        self.KEY_LEFTCTRL.release()
         
-    def close_tab_2(self, value):
-        if value == 1:
-            self.KEY_LEFTCTRL.press()
-            self.KEY_LEFTSHIFT.press()
-            self.KEY_W.press()
+    def close_tab_2(self):
+        self.KEY_LEFTCTRL.press()
+        self.KEY_LEFTSHIFT.press()
+        self.KEY_W.press()
 
-        else:
-            self.KEY_W.release()
-            self.KEY_LEFTSHIFT.release()
-            self.KEY_LEFTCTRL.release()
+        self.KEY_W.release()
+        self.KEY_LEFTSHIFT.release()
+        self.KEY_LEFTCTRL.release()
 
-    def close_window_1(self, value):
-        if value == 1:
-            self.KEY_LEFTALT.press()
-            self.KEY_F4.press()
+    def close_window_1(self):
+        self.KEY_LEFTALT.press()
+        self.KEY_F4.press()
 
-        else:
-            self.KEY_F4.release()
-            self.KEY_LEFTALT.release()
+        self.KEY_F4.release()
+        self.KEY_LEFTALT.release()
         
-    def navigate_back_1(self, value):
-        self.BTN_SIDE.update(value)
+    def navigate_back_1(self):
+        self.BTN_SIDE.press()
+        self.BTN_SIDE.release()
         
-    def navigate_back_2(self, value):
-        if value == 1:
-            self.KEY_LEFTALT.press()
-            self.KEY_LEFT.press()
+    def navigate_back_2(self):
+        self.KEY_LEFTALT.press()
+        self.KEY_LEFT.press()
 
-        else:
-            self.KEY_LEFT.release()
-            self.KEY_LEFTALT.release()
+        self.KEY_LEFT.release()
+        self.KEY_LEFTALT.release()
     
-    def navigate_forward_1(self, value):
-        self.BTN_EXTRA.update(value)
+    def navigate_forward_1(self):
+        self.BTN_EXTRA.press()
+        self.BTN_EXTRA.release()
         
-    def navigate_forward_2(self, value):
-        if value == 1:
-            self.KEY_LEFTALT.press()
-            self.KEY_RIGHT.press()
+    def navigate_forward_2(self):
+        self.KEY_LEFTALT.press()
+        self.KEY_RIGHT.press()
 
-        else:
-            self.KEY_RIGHT.release()
-            self.KEY_LEFTALT.release()
+        self.KEY_RIGHT.release()
+        self.KEY_LEFTALT.release()
     
-    def reopen_tab_1(self, value):
-        if value == 1:
-            self.KEY_LEFTCTRL.press()
-            self.KEY_LEFTSHIFT.press()
-            self.KEY_T.press()
-
-        else:
-            self.KEY_T.release()
-            self.KEY_LEFTSHIFT.release()
-            self.KEY_LEFTCTRL.release()
-    
-    def new_tab_1(self, value):
-
-        if value == 0:
-            self.KEY_LEFTCTRL.press()
-            self.KEY_T.press()
+    def reopen_tab_1(self):
+        self.KEY_LEFTCTRL.press()
+        self.KEY_LEFTSHIFT.press()
+        self.KEY_T.press()
         
-            self.KEY_T.release()
-            self.KEY_LEFTCTRL.release()
-
-    def new_tab_2(self, value):
-
-        if value == 0:
-            self.KEY_LEFTCTRL.press()
-            self.KEY_N.press()
-        
-            self.KEY_N.release()
-            self.KEY_LEFTCTRL.release()
-
-    def new_tab_3(self, value):
-
-        if value == 0:
-            self.KEY_LEFTCTRL.press()
-            self.KEY_LEFTSHIFT.press()
-            self.KEY_T.press()
-
-            self.KEY_T.release()
-            self.KEY_LEFTSHIFT.release()
-            self.KEY_LEFTCTRL.release()
-
-    def go_to_declaration_1(self, value):
-        if value == 0:
-            self.KEY_LEFTCTRL.press()
-            self.BTN_LEFT.press()
-            
-            time.sleep(0.25)
-
-            self.BTN_LEFT.release()
-            self.KEY_LEFTCTRL.release()
+        self.KEY_T.release()
+        self.KEY_LEFTSHIFT.release()
+        self.KEY_LEFTCTRL.release()
     
-    def search_selection_1(self, value):
-        if value == 0:
-            self.KEY_LEFTALT.press()
-            self.BTN_RIGHT.press()
-            self.BTN_RIGHT.release()
+    def new_tab_1(self):
+        self.KEY_LEFTCTRL.press()
+        self.KEY_T.press()
+    
+        self.KEY_T.release()
+        self.KEY_LEFTCTRL.release()
 
-            time.sleep(0.2)
+    def new_tab_2(self):
+        self.KEY_LEFTCTRL.press()
+        self.KEY_N.press()
+    
+        self.KEY_N.release()
+        self.KEY_LEFTCTRL.release()
 
-            self.KEY_LEFTALT.release()
-            self.KEY_S.press()
-            self.KEY_S.release()
+    def new_tab_3(self):
+        self.KEY_LEFTCTRL.press()
+        self.KEY_LEFTSHIFT.press()
+        self.KEY_T.press()
+
+        self.KEY_T.release()
+        self.KEY_LEFTSHIFT.release()
+        self.KEY_LEFTCTRL.release()
+
+    def go_to_declaration_1(self):
+        self.KEY_LEFTCTRL.press()
+        self.BTN_LEFT.press()
+        
+        time.sleep(0.25)
+
+        self.BTN_LEFT.release()
+        self.KEY_LEFTCTRL.release()
+    
+    def search_selection_1(self):
+        if self.username is None:
+            log.error("Could not find a user session to open this search")
+        
+        cmd = "su %s -c 'xclip -selection primary -o -l 1 -d %s'" % (self.username, self.userdisplay)
+        proc = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+        selection = proc.stdout.read().decode('utf-8')
+
+        query = re.sub('\s', '%20', selection)
+        cmd = "su %s -c 'DISPLAY=%s xdg-open http://www.google.com.br/search?q=%s &'" % (self.username, self.userdisplay, query)
+
+        os.system(cmd)
+    
+    def search_selection_2(self):
+        self.KEY_LEFTALT.press()
+        self.BTN_RIGHT.press()
+        self.BTN_RIGHT.release()
+
+        time.sleep(0.2)
+
+        self.KEY_LEFTALT.release()
+        self.KEY_S.press()
+        self.KEY_S.release()
         
     def terminate(self):
         if self.vdev is not None:

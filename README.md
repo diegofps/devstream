@@ -108,11 +108,11 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 # Dependencies
 
-This daemon requires python3, pip and evdev. It has only been tested in Ubuntu 20.04 LTS, you can install its dependencies with the following commands.
+This daemon requires python3, pip, evdev, inotifywait, and xclip. It has only been tested in Ubuntu 20.04 LTS, you can install its dependencies with the following commands.
 
 ```shell
 sudo apt update
-sudo apt install -yq libpython3-dev
+sudo apt install -yq libpython3-dev inotify-tools xclip
 sudo pip3 install evdev
 ```
 

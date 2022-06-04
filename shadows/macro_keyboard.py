@@ -48,7 +48,7 @@ class MacroKeyboard(Reflex):
             self.add_listener("DeviceReader:" + device_name, self.on_macro_event)
 
     def on_macro_event(self, device_name, event):
-        # debug("Processing macro event from", device_name)
+        log.debug("Processing macro event from", device_name, event)
     
         # We only handle EV_KEY events that are not release keys
         if event.type != e.EV_KEY or event.value == 0:
