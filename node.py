@@ -25,12 +25,13 @@ class Node:
     
     def _call_run(self):
         try:
-            log.info(self.name, "started")
+            # log.info(self.name, "started")
             self.done = False
             self.run()
-            log.info(self.name, "ended")
         except Exception as e:
             log.error(self.name, "- Failure during thread execution -", e)
+
+        log.info("Ended:", self.name)
 
     def terminate(self):
         self.done = True

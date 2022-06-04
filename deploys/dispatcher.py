@@ -18,7 +18,7 @@ class Dispatcher(Node):
         if self.username is None and self.display is None:
             if len(event) != 0:
                 self.username, self.display = event[0]
-                log.info("User is active:", self.username, self.display)
+                log.info("User is now active, name =", self.username, "and display =", self.display)
                 self.core.add_deploy("watch_windows", self.username, self.display)
 
         else:

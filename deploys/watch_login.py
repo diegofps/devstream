@@ -59,7 +59,7 @@ class WatchLogin(Node):
                 username_display = line.split()[:2]
                 logins.append(username_display)
         
-        log.debug(logins)
+        # log.debug(logins)
         return logins
 
 

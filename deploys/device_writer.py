@@ -134,6 +134,7 @@ class DeviceWriter(Node):
             "Dia": self.new_tab_2,
             "Inkscape": self.new_tab_2,
             "QtCreator": self.new_tab_2,
+            "Joplin": self.new_tab_2,
         }
 
     def on_window_changed(self, topic_name, event):

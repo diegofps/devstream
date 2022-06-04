@@ -40,8 +40,8 @@ class WatchWindows(Node):
                     props = self.get_window_props(idd)
 
                     if "WM_CLASS(STRING)" in props:
-                        log.info("Changed to window:", props["WM_CLASS(STRING)"])
                         wm_class = props["WM_CLASS(STRING)"].replace("\"", "").split(", ")
+                        log.info("Changed to window:", wm_class[1])
                         self.core.emit(TOPIC_WINDOW_CHANGED, wm_class)
             except Exception as e:
                 log.error("Fail during window manager monitoring, retrying in 3s...", e)

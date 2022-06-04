@@ -36,7 +36,7 @@ class BaseMX2SNode(Node):
                 self.active = True
                 self.on_activate()
 
-            log.debug("Registering listener", type(self).__name__)
+            # log.debug("Registering listener", type(self).__name__)
             
         else:
             if self.active:
@@ -45,7 +45,7 @@ class BaseMX2SNode(Node):
             
             self.remove_listener(TOPIC_DEVICE_MX2S, self.on_event)
 
-            log.debug("Removing listener", type(self).__name__)
+            # log.debug("Removing listener", type(self).__name__)
 
     def on_event(self, device_name, event):
 
