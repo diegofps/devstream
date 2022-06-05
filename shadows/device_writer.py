@@ -162,7 +162,7 @@ class DeviceWriter(Reflex):
         log.info("login changed received", self.username, self.userdisplay)
 
     def on_window_changed(self, topic_name, event):
-        window_class, app_name = event
+        window_class, app_name, window_name = event
         # log.debug("Receiving window changed event in DeviceWriter", topic_name, event)
 
         self.configure_intent(app_name, "change_windows")
@@ -345,9 +345,9 @@ class DeviceWriter(Reflex):
             self.vdev.write(type, code, value)
         
         elif event_type == OutputEvent.FUNCTION:
-            function_name = event[1]
+            function_name = "function_" + event[1]
             
-            if function_name.startswith("function_") and hasattr(self, function_name):
+            if hasattr(self, function_name):
                 params = event[2:]
                 getattr(self, function_name)(*params)
         
