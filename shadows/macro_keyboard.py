@@ -1,4 +1,4 @@
-from shadows.device_writer import TOPIC_DEVICEWRITER_EVENT
+from shadows.device_writer import TOPIC_DEVICEWRITER_EVENT, OutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
 
@@ -9,7 +9,7 @@ import sys
 import log
 
 
-REQUIRED_DEVICES = [
+MACRO_KEYBOARDS = [
     "Arduino LLC Arduino Leonardo", 
 ]
 
@@ -44,11 +44,11 @@ class MacroKeyboard(Reflex):
         self.add_listener(TOPIC_DEVICEWRITER_EVENT, self.on_output_event)
 
         # Monitor macro keyboards keys
-        for device_name in REQUIRED_DEVICES:
+        for device_name in MACRO_KEYBOARDS:
             self.add_listener("DeviceReader:" + device_name, self.on_macro_event)
 
     def on_macro_event(self, device_name, event):
-        log.debug("Processing macro event from", device_name, event)
+        # log.debug("Processing macro event from", device_name, event)
     
         # We only handle EV_KEY events that are not release keys
         if event.type != e.EV_KEY or event.value == 0:
@@ -95,6 +95,14 @@ class MacroKeyboard(Reflex):
             log.error("Unmapped macro keyboard event - ", e.KEY[event.code])
         
     def on_output_event(self, topic_name, event):
+        # log.info("Intercepting event", topic_name, event)
+
+        # Keyboard events are always comming from Forward events
+        # These are the ones we track
+        if event[0] != OutputEvent.FORWARD:
+            return
+        
+        # print(event)
 
         # We register the key in any macro being recorded
         for macro_name, sequence in self.recording.items():
@@ -125,4 +133,4 @@ class MacroKeyboard(Reflex):
 
 def on_load(shadow):
     MacroKeyboard(shadow)
-    shadow.require_device(REQUIRED_DEVICES)
+    shadow.require_device(MACRO_KEYBOARDS)

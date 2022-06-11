@@ -115,6 +115,7 @@ class Mind:
     def _emit_all(self, topic_name, event):
         if topic_name in self.topics:
             topic = self.topics[topic_name]
+            # log.info("Calling listeners", str(topic.listeners))
             for callback in topic.listeners:
                 try:
                     callback(topic_name, event)
