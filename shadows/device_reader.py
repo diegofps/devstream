@@ -1,8 +1,6 @@
 from reflex import Reflex
 
-import traceback
 import time
-import sys
 import log
 
 
@@ -27,8 +25,6 @@ class DeviceReader(Reflex):
                     time.sleep(3)
                 
                 else:
-                    # log.info("Listening to", self.dev.name, "at", self.dev.path)
-
                     for event in self.dev.read_loop():
                         self.mind.emit(self.name, event)
                 

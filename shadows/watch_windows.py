@@ -49,6 +49,7 @@ class WatchWindows(Reflex):
                     if "WM_NAME(STRING)" in props:
                         name3 = props["WM_NAME(STRING)"]
                     
+                    log.info("Window changed '%s' '%s' '%s'" % (name1, name2, name3))
                     self.mind.emit(TOPIC_WINDOW_CHANGED, (name1, name2, name3))
             except Exception as e:
                 log.error("Fail during window manager monitoring, retrying in 3s...", e)

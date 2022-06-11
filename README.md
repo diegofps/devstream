@@ -1,6 +1,6 @@
 # What is this?
 
-These is a system service to enhance the compatibility of the Logitech Trackball Marble, Logitech MX Anywhere 2S, and other devices I may have with the Linux OS. It contains scripts that start during system boot and map the device inputs into special commands, like Back, Forward, Scrolling, Alt+Tab, macros, and so on. If a device is not present/detected it simply ignores the enhancements.
+These is a system service to enhance the compatibility of the Logitech Trackball Marble, Logitech MX Anywhere 2S, and other devices I may have with the Linux OS. It contains scripts that start during system boot and map the device inputs into special commands, like Back, Forward, Scrolling, Alt+Tab, macros, and so on. If a device is not present/detected it simply ignores the enhancements. It is also aware of the current focused window. For instance, "Switch Tabs" will map to different shortcuts deppending on your app.
 
 # Usage
 
@@ -42,7 +42,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | -------- | ----------------------------------------------------- |
 | D + A    | Close Tab or Terminal                                 |
 | D + B    | Close Window                                          |
-| D + C    |                                                       |
+| D + C    | Advanced Search: Tabs, Files, Content, Symbols, so on |
 | D + E    | Switch Tabs (Vertical) or Switch Windows (Horizontal) |
 
 ## Logitech MX Anywhere 2S

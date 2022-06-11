@@ -88,6 +88,25 @@ class OutputEvent:
             self.mind.emit(TOPIC_DEVICEWRITER_EVENT, event)
 
 
+class Shortcut:
+
+    def __init__(self, writer, *args):
+        self.keys = [getattr(writer, "KEY_" + x) if isinstance(x,str) else x for x in args]
+    
+    def __call__(self):
+        for key in self.keys:
+            if isinstance(key, float):
+                time.sleep(key)
+            else:
+                key.press()
+        
+        for key in reversed(self.keys):
+            if isinstance(key, float):
+                time.sleep(key)
+            else:
+                key.release()
+
+
 class DeviceWriter(Reflex):
 
     def __init__(self, shadow):
@@ -116,6 +135,7 @@ class DeviceWriter(Reflex):
         self.function_new_tab = self.new_tab_1
         self.function_go_to_declaration = self.go_to_declaration_1
         self.function_search_selection = self.search_selection_1
+        self.function_advanced_search = self.advanced_search_1
         
         self.preferred_change_windows = {}
         self.preferred_change_history = {}
@@ -126,6 +146,7 @@ class DeviceWriter(Reflex):
             "Terminator": self.change_tabs_2,
             "Gedit": self.change_tabs_3,
             "Org.gnome.Nautilus": self.change_tabs_2,
+            "Apache NetBeans IDE 12.5": self.change_tabs_2
         }
         self.preferred_close_tab = {
             "Terminator": self.close_tab_2,
@@ -153,6 +174,19 @@ class DeviceWriter(Reflex):
             "firefox": self.search_selection_2,
             "Google-chrome": self.search_selection_2,
         }
+        self.preferred_advanced_search = {
+            "jetbrains-studio": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "N", 0.1),
+            "Code": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "O"),
+            "QtCreator": Shortcut(self, "LEFTCTRL", "K"),
+            "Apache NetBeans IDE 12.5": Shortcut(self, "LEFTALT", "LEFTSHIFT", "O"),
+            "Joplin": Shortcut(self, "LEFTCTRL", "P"),
+            "Google-chrome": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "A"),
+            "firefox": Shortcut(self, "LEFTCTRL", "K"),
+            "Gedit": Shortcut(self, "LEFTCTRL", "H"),
+            "Terminator": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "F"),
+            "Gnome-terminal": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "F"),
+            "Org.gnome.Nautilus": self.advanced_search_1,
+        }
 
     def on_login_changed(self, topic_name, event):
         if len(event) == 0:
@@ -178,6 +212,7 @@ class DeviceWriter(Reflex):
         self.configure_intent(app_name, "new_tab")
         self.configure_intent(app_name, "go_to_declaration")
         self.configure_intent(app_name, "search_selection")
+        self.configure_intent(app_name, "advanced_search")
     
     def configure_intent(self, app_name, intent_name):
         # Example:
@@ -562,7 +597,14 @@ class DeviceWriter(Reflex):
         self.KEY_LEFTALT.release()
         self.KEY_S.press()
         self.KEY_S.release()
-        
+    
+    def advanced_search_1(self):
+        self.KEY_LEFTCTRL.press()
+        self.KEY_F.press()
+
+        self.KEY_F.release()
+        self.KEY_LEFTCTRL.release()
+    
     def terminate(self):
         if self.vdev is not None:
             self.vdev.close()

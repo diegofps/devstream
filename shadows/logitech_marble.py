@@ -2,9 +2,7 @@ from shadows.device_writer import OutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
 
-import time
 import log
-import os
 
 
 REQUIRED_DEVICES = [
@@ -253,9 +251,12 @@ class Marble_D(BaseMarbleNode):
                 eb.function("close_window")
     
     def on_up_click(self, event): # C
-        pass
-        # self.clean = False
+        self.clean = False
 
+        if event.value == 0:
+            with OutputEvent(self.mind) as eb:
+                eb.function("advanced_search")
+    
         # if event.value == 0:
         #     os.system("su diego -c 'gnome-session-quit --power-off'")
     

@@ -78,11 +78,6 @@ class WatchDevices(Reflex):
         filepath2 = proc.stdout.readline()[:-1].decode("utf-8")
         return filepath2
 
-        # print("hi", filepath)
-        # print("there", filepath2)
-
-        # return filepath2 if filepath2.startswith("/dev/input/event") else None
-
 
 def on_load(shadow):
     WatchDevices(shadow)

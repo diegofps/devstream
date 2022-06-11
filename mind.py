@@ -62,12 +62,8 @@ class Mind:
         shadow = self.shadows.get(shadow_name)
 
         if shadow is not None:
-            # log.debug("doing remove", shadow_name)
-            # log.debug("keys:", *self.shadows.keys())
             del self.shadows[shadow_name]
-            # log.debug("calling on_remove")
             shadow.on_remove()
-            # log.debug("shadow removed")
 
     def _add_listener(self, topic_name, callback):
         
@@ -136,7 +132,7 @@ class Mind:
         with ThreadPoolExecutor(max_workers=1) as executor:
             self.executor = executor
 
-            # Virtual nodes
+            # Shadows
             self.add_shadow("device_writer")
 
             self.add_shadow("logitech_marble")
@@ -150,11 +146,6 @@ class Mind:
             self.add_shadow("watch_devices")
             # self.add_shadow("watch_disks")
             
-            # Physical nodes
-            # for dev in [InputDevice(path) for path in list_devices()]:
-            #     if dev.name in self.required_devices:
-            #         self.add_shadow("device_reader", dev)
-            
             # Infinity loop until KeyboardInterrupt is received or the system terminates
             try:
                 while True:
@@ -162,7 +153,4 @@ class Mind:
             except:
                 print("\nTerminating...")
             
-            # for node in self.nodes.values():
-            #     node.terminate()
-        
         log.debug("Bye!")
