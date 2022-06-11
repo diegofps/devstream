@@ -16,9 +16,10 @@ class DeviceReader(Reflex):
 
         self.dev.grab()
         self.start()
-    
+        
     def run(self):
         self.done = False
+
         while not self.done:
             try:
                 if self.dev is None:
@@ -33,8 +34,9 @@ class DeviceReader(Reflex):
                 
             except OSError as e:
                 log.error("OSError, resuming in 3s -", e)
+                # print("Device error", self.dev.name)
 
-                traceback.print_exc(file=sys.stdout)
+                # traceback.print_exc(file=sys.stdout)
                 time.sleep(3)
             
             except KeyboardInterrupt:
@@ -42,6 +44,9 @@ class DeviceReader(Reflex):
         
         if self.dev is not None:
             self.dev.close()
+        
+        log.debug(self.name, "thread ended. Done =", self.done)
 
 def on_load(shadow, device):
     DeviceReader(shadow, device)
+    shadow.name = shadow.name + ":" + device.path

@@ -18,7 +18,7 @@ class Reflex:
 
         shadow.add_reflex(self)
 
-        log.info("Starting", self.name, "...")
+        log.info("Starting reflex", self.name, "...")
 
     def start(self):
         self.thread = Thread(target=self._call_run, name=self.name, daemon=True)
@@ -38,11 +38,13 @@ class Reflex:
         self.done = True
     
     def on_remove(self):
-        log.info("Ending", self.name, "...")
+        log.info("Stopping reflex", self.name, "...")
         
         self.terminate()
+
         for topic_name, callback in self.listeners:
             self.mind.remove_listener(topic_name, callback)
+        
         self.listeners = []
     
     def add_listener(self, topic_name, callback):

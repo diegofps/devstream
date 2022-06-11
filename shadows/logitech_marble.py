@@ -253,10 +253,11 @@ class Marble_D(BaseMarbleNode):
                 eb.function("close_window")
     
     def on_up_click(self, event): # C
-        self.clean = False
+        pass
+        # self.clean = False
 
-        if event.value == 0:
-            os.system("su diego -c 'gnome-session-quit --power-off'")
+        # if event.value == 0:
+        #     os.system("su diego -c 'gnome-session-quit --power-off'")
     
     def on_right_click(self, event): # D
         if event.value == 0:

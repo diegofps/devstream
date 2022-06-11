@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor
-from evdev import list_devices, InputDevice
 from shadow import Shadow
 
 import importlib
@@ -50,12 +49,25 @@ class Mind:
         mod = importlib.import_module("shadows." + shadow_name)
         mod.on_load(shadow, *args)
         self.shadows[shadow.name] = shadow
+
+        return shadow
     
     def remove_shadow(self, shadow_name):
+        # log.debug("Removing shadow", shadow_name)
+        
+        if not shadow_name in self.shadows:
+            log.warn("Attempting to remove a shadow that is not loaded", shadow_name)
+            return
+        
         shadow = self.shadows.get(shadow_name)
+
         if shadow is not None:
+            # log.debug("doing remove", shadow_name)
+            # log.debug("keys:", *self.shadows.keys())
             del self.shadows[shadow_name]
+            # log.debug("calling on_remove")
             shadow.on_remove()
+            # log.debug("shadow removed")
 
     def _add_listener(self, topic_name, callback):
         
@@ -126,21 +138,22 @@ class Mind:
 
             # Virtual nodes
             self.add_shadow("device_writer")
-            self.add_shadow("watch_login")
-            self.add_shadow("dispatcher")
-            # self.add_shadow("watch_disks")
-            # self.add_shadow("watch_devices")
 
             self.add_shadow("logitech_marble")
             self.add_shadow("vostro_keyboard")
             self.add_shadow("basic_keyboards")
             self.add_shadow("macro_keyboard")
             self.add_shadow("logitech_mx2s")
+
+            self.add_shadow("dispatcher")
+            self.add_shadow("watch_login")
+            self.add_shadow("watch_devices")
+            # self.add_shadow("watch_disks")
             
             # Physical nodes
-            for dev in [InputDevice(path) for path in list_devices()]:
-                if dev.name in self.required_devices:
-                    self.add_shadow("device_reader", dev)
+            # for dev in [InputDevice(path) for path in list_devices()]:
+            #     if dev.name in self.required_devices:
+            #         self.add_shadow("device_reader", dev)
             
             # Infinity loop until KeyboardInterrupt is received or the system terminates
             try:
