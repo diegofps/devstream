@@ -34,7 +34,7 @@ class Dispatcher(Reflex):
                 else:
                     log.debug("Device is not in required list, skipping", dev.name, dev.path)
             except Exception as e:
-                log.error("Error during device read", e)
+                log.warn("Device reading failure:", e)
     
     def on_device_disconnected(self, topic_name, event):
         for device_path in event:
