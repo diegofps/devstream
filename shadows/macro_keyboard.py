@@ -65,7 +65,7 @@ class MacroKeyboard(Reflex):
                 for event2 in sequence:
                     self.mind.emit(TOPIC_DEVICEWRITER_EVENT, event2)
                     
-                # TODO: Required? :/
+                # TODO: Required? 
                 time.sleep(0.01)
             
             else:
@@ -76,7 +76,14 @@ class MacroKeyboard(Reflex):
             macro_name = MACRO_RECORD[event.code]
             log.debug("Recording macro - ", macro_name)
 
-            self.recording[macro_name] = []
+            if macro_name in self.recording:
+                print("Recording already in progress, inserting delay")
+                eb = OutputEvent(self.mind)
+                eb.sleep(0.1)
+                self.recording[macro_name].append(eb.sequence[0])
+
+            else:
+                self.recording[macro_name] = []
 
         # This is a key to finish recording a macro
         elif event.code in MACRO_FINISH:

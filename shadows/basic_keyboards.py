@@ -7,11 +7,12 @@ import log
 
 # If you want to intercept more keybords, add them here
 # Get their names using "sudo lsusb" ou "sudo evtest"
-# TODO?: Find a way to automatically do this
+# TODO: Find a way to automatically do this
 TARGET_DEVICES = [
     "CORSAIR CORSAIR K63 Wireless Mechanical Gaming Keyboard", 
     "CORSAIR CORSAIR K63 Wireless USB Receiver Keyboard", 
     "CORSAIR CORSAIR K63 Wireless USB Receiver", 
+    "HyperX HyperX Mars Gaming KeyBoard",
 ]
 
 
