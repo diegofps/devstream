@@ -187,6 +187,16 @@ class DeviceWriter(Reflex):
             "Gnome-terminal": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "F"),
             "Org.gnome.Nautilus": self.advanced_search_1,
         }
+        self.preferred_scroll_h = {
+            "Dia": self.scroll_h_2,
+            "Inkscape": self.scroll_h_2,
+            "Google-chrome": self.scroll_h_3,
+        }
+        self.preferred_scroll_v = {
+            "Dia": self.scroll_v_2,
+            "Inkscape": self.scroll_v_2,
+            "Google-chrome": self.scroll_v_3,
+        }
 
     def on_login_changed(self, topic_name, event):
         if len(event) == 0:
@@ -213,6 +223,8 @@ class DeviceWriter(Reflex):
         self.configure_intent(app_name, "go_to_declaration")
         self.configure_intent(app_name, "search_selection")
         self.configure_intent(app_name, "advanced_search")
+        self.configure_intent(app_name, "scroll_h")
+        self.configure_intent(app_name, "scroll_v")
     
     def configure_intent(self, app_name, intent_name):
         # Example:
@@ -610,6 +622,24 @@ class DeviceWriter(Reflex):
 
         self.KEY_F.release()
         self.KEY_LEFTCTRL.release()
+    
+    def scroll_h_1(self, value):
+        self.WHEEL_H.update(value * 20)
+    
+    def scroll_v_1(self, value):
+        self.WHEEL_V.update(value * -10)
+    
+    def scroll_h_2(self, value):
+        self.WHEEL_H.update(value * 5)
+    
+    def scroll_v_2(self, value):
+        self.WHEEL_V.update(value * -5)
+    
+    def scroll_h_3(self, value):
+        self.WHEEL_H.update(value * 10)
+    
+    def scroll_v_3(self, value):
+        self.WHEEL_V.update(value * -10)
     
     def terminate(self):
         if self.vdev is not None:

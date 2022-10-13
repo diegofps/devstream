@@ -160,12 +160,14 @@ class Marble_B(BaseMarbleNode):
     def on_move_rel_x(self, event):
         self.clean = False
         with OutputEvent(self.mind) as eb:
-            eb.update("WHEEL_H", event.value * 20)
+            # eb.update("WHEEL_H", event.value * 20)
+            eb.function("scroll_h", event.value)
 
     def on_move_rel_y(self, event):
         self.clean = False
         with OutputEvent(self.mind) as eb:
-            eb.update("WHEEL_V", -event.value * 10)
+            # eb.update("WHEEL_V", -event.value * 10)
+            eb.function("scroll_v", event.value)
 
 
 
