@@ -122,21 +122,6 @@ class DeviceWriter(Reflex):
         self.add_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
         self.add_listener(TOPIC_DEVICEWRITER_EVENT, self.on_event)
 
-        self.function_change_windows = self.change_windows_1
-        self.function_change_history = self.change_history_1
-        self.function_change_volume = self.change_volume_1
-        self.function_change_zoom = self.change_zoom_1
-        self.function_change_tabs = self.change_tabs_1
-        self.function_close_tab = self.close_tab_1
-        self.function_close_window = self.close_window_1
-        self.function_navigate_back = self.navigate_back_1
-        self.function_navigate_forward = self.navigate_forward_1
-        self.function_reopen_tab = self.reopen_tab_1
-        self.function_new_tab = self.new_tab_1
-        self.function_go_to_declaration = self.go_to_declaration_1
-        self.function_search_selection = self.search_selection_1
-        self.function_advanced_search = self.advanced_search_1
-        
         self.preferred_change_windows = {}
         self.preferred_change_history = {}
         self.preferred_change_volume = {}
@@ -172,6 +157,7 @@ class DeviceWriter(Reflex):
         self.preferred_go_to_declaration = {}
         self.preferred_search_selection = {
             "firefox": self.search_selection_2,
+            "firefox-beta": self.search_selection_2,
             "Google-chrome": self.search_selection_2,
         }
         self.preferred_advanced_search = {
@@ -182,6 +168,7 @@ class DeviceWriter(Reflex):
             "Joplin": Shortcut(self, "LEFTCTRL", "P"),
             "Google-chrome": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "A"),
             "firefox": Shortcut(self, "LEFTCTRL", "K"),
+            "firefox-beta": Shortcut(self, "LEFTCTRL", "K"),
             "Gedit": Shortcut(self, "LEFTCTRL", "H"),
             "Terminator": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "F"),
             "Gnome-terminal": Shortcut(self, "LEFTCTRL", "LEFTSHIFT", "F"),
@@ -198,6 +185,17 @@ class DeviceWriter(Reflex):
             "Google-chrome": self.scroll_v_3,
         }
 
+        # Now we declare function_names and the default functions
+        self.function_names = [attr[10:] for attr in dir(self) if attr.startswith('preferred_')]
+
+        for name in self.function_names:
+            callback = getattr(self, name + '_1')
+
+            if callback is None:
+                log.error(f"Missing default function for {name}")
+            else:
+                setattr(self, 'function_' + name, callback)
+
     def on_login_changed(self, topic_name, event):
         if len(event) == 0:
             self.username, self.userdisplay = None, None
@@ -207,42 +205,17 @@ class DeviceWriter(Reflex):
 
     def on_window_changed(self, topic_name, event):
         window_class, app_name, window_name = event
-        # log.debug("Receiving window changed event in DeviceWriter", topic_name, event)
 
-        self.configure_intent(app_name, "change_windows")
-        self.configure_intent(app_name, "change_history")
-        self.configure_intent(app_name, "change_volume")
-        self.configure_intent(app_name, "change_zoom")
-        self.configure_intent(app_name, "change_tabs")
-        self.configure_intent(app_name, "close_tab")
-        self.configure_intent(app_name, "close_window")
-        self.configure_intent(app_name, "navigate_back")
-        self.configure_intent(app_name, "navigate_forward")
-        self.configure_intent(app_name, "reopen_tab")
-        self.configure_intent(app_name, "new_tab")
-        self.configure_intent(app_name, "go_to_declaration")
-        self.configure_intent(app_name, "search_selection")
-        self.configure_intent(app_name, "advanced_search")
-        self.configure_intent(app_name, "scroll_h")
-        self.configure_intent(app_name, "scroll_v")
-    
-    def configure_intent(self, app_name, intent_name):
-        # Example:
-        # if app_name in self.preferred_change_windows:
-        #     self.function_change_windows = self.preferred_change_windows[app_name]
-        # else:
-        #     self.function_change_windows = self.change_windows_1
+        for intent_name in self.function_names:
+            preferred_intents = getattr(self, "preferred_" + intent_name)
 
-        preferred_intents = getattr(self, "preferred_" + intent_name)
-
-        if app_name in preferred_intents:
-            intent = preferred_intents[app_name]
-            setattr(self, "function_" + intent_name, intent) 
-        else:
-            intent = getattr(self, intent_name + "_1")
-            setattr(self, "function_" + intent_name, intent)
-
-
+            if app_name in preferred_intents:
+                callback = preferred_intents[app_name]
+                setattr(self, "function_" + intent_name, callback) 
+            else:
+                callback = getattr(self, intent_name + "_1")
+                setattr(self, "function_" + intent_name, callback)
+        
     def init_virtual_device(self):
 
         cap = {
@@ -593,6 +566,7 @@ class DeviceWriter(Reflex):
         self.KEY_LEFTCTRL.release()
     
     def search_selection_1(self):
+        log.info("Running search selection 1")
         if self.username is None:
             log.error("Could not find a user session to open this search")
         
@@ -606,6 +580,7 @@ class DeviceWriter(Reflex):
         os.system(cmd)
     
     def search_selection_2(self):
+        log.info("Running search selection 2")
         self.KEY_LEFTALT.press()
         self.BTN_RIGHT.press()
         self.BTN_RIGHT.release()
