@@ -153,6 +153,7 @@ class DeviceWriter(Reflex):
             "Inkscape": self.new_tab_2,
             "QtCreator": self.new_tab_2,
             "Joplin": self.new_tab_2,
+            "Treesheets": self.new_tab_2, 
         }
         self.preferred_go_to_declaration = {}
         self.preferred_search_selection = {
