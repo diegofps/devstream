@@ -131,7 +131,8 @@ class DeviceWriter(Reflex):
             "Terminator": self.change_tabs_2,
             "Gedit": self.change_tabs_3,
             "Org.gnome.Nautilus": self.change_tabs_2,
-            "Apache NetBeans IDE 12.5": self.change_tabs_2
+            "Apache NetBeans IDE 12.5": self.change_tabs_2,
+            "Treesheets": self.change_tabs_4, 
         }
         self.preferred_close_tab = {
             "Terminator": self.close_tab_2,
@@ -444,6 +445,21 @@ class DeviceWriter(Reflex):
             self.KEY_PAGEDOWN.release()
             self.KEY_LEFTALT.release()
             self.KEY_LEFTCTRL.release()
+    
+    def change_tabs_4(self, value):
+        self.KEY_LEFTALT.press()
+        self.KEY_V.press()
+        self.KEY_V.release()
+        self.KEY_LEFTALT.release()
+        # time.sleep(0.1)
+
+        if value:
+            self.KEY_N.press()
+            self.KEY_N.release()
+
+        else:
+            self.KEY_P.press()
+            self.KEY_P.release()
     
     def change_windows_1(self, value):
         self.KEY_LEFTALT.press()
