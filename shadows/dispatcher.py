@@ -23,22 +23,22 @@ class Dispatcher(Reflex):
         # print("Device connected", topic_name, event)
         for device_path in event:
             try:
-                log.info("Device connected:", device_path)
+                # log.info("Device connected:", device_path)
                 dev = InputDevice(device_path)
 
                 if dev.name in self.mind.required_devices:
-                    # log.debug("Device of interest found, starting shadow ...")
+                    log.debug(f"{dev.name} is a device with interest, starting shadow ...")
                     shadow = self.mind.add_shadow("device_reader", dev)
                     self.devices[device_path] = shadow
                     # log.debug("shadow started!")
-                else:
-                    log.debug("Device is not in required list, skipping", dev.name, dev.path)
+                # else:
+                #     log.debug("Device is not in required list, skipping", dev.name, dev.path)
             except Exception as e:
                 log.warn("Device reading failure:", e)
     
     def on_device_disconnected(self, topic_name, event):
         for device_path in event:
-            log.info("Device disconnected:", device_path)
+            # log.info("Device disconnected:", device_path)
             # log.debug(",".join(self.devices.keys()))
 
             if device_path in self.devices:

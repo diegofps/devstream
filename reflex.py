@@ -1,3 +1,4 @@
+from evdev import ecodes as e
 from threading import Thread
 import log
 
@@ -15,6 +16,9 @@ class Reflex:
         self.listeners = []
         self.thread = None
         self.done = False
+
+        self.devices_events = None
+        self.state_topic = None
 
         shadow.add_reflex(self)
 
@@ -60,3 +64,50 @@ class Reflex:
         except ValueError:
             # log.warn("Attempting to remove a topic callback that is not present")
             pass
+
+    def configure_states(self, state_topic, devices_events):
+        self.devices_events = devices_events
+        self.state_topic = state_topic
+        self.add_listener(state_topic, self.on_state_changed)
+    
+    def on_state_changed(self, topic_name, event):
+        clean = True
+        
+        if event[-1] == '*':
+            event = event[:-1]
+            clean = False
+        
+        if self.name == event:
+            if self.devices_events is not None:
+                self.add_listener(self.devices_events, self.on_event)
+            self.clean = clean
+
+            if not self.active:
+                self.active = True
+                self.on_activate()
+
+        else:
+            if self.active:
+                self.active = False
+                self.on_deactivate()
+            
+            if self.devices_events is not None:
+                self.remove_listener(self.devices_events, self.on_event)
+
+    def on_event(self, topic_name, evt):
+        # if evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
+        #     return 
+        
+        code  = e.bytype[evt.type][evt.code]
+        type  = e.EV[evt.type]
+        value = evt.value
+
+        log.debug(f"Processing event: type={type}, code={code:20}, value={value}")
+        
+        
+    def on_activate(self):
+        pass
+
+    def on_deactivate(self):
+        pass
+    

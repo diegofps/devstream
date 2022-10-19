@@ -454,12 +454,12 @@ class DeviceWriter(Reflex):
         # time.sleep(0.1)
 
         if value:
-            self.KEY_N.press()
-            self.KEY_N.release()
-
-        else:
             self.KEY_P.press()
             self.KEY_P.release()
+
+        else:
+            self.KEY_N.press()
+            self.KEY_N.release()
     
     def change_windows_1(self, value):
         self.KEY_LEFTALT.press()
