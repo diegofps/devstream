@@ -135,6 +135,7 @@ class Mind:
 
             # Shadows
             self.add_shadow("device_writer")
+            self.add_shadow("virtual_pen")
 
             self.add_shadow("logitech_marble")
             self.add_shadow("vostro_keyboard")

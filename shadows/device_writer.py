@@ -28,8 +28,9 @@ class OutputEvent:
     SLEEP    = 8
     SEQUENCE = 9
 
-    def __init__(self, mind):
+    def __init__(self, mind, topic=TOPIC_DEVICEWRITER_EVENT):
         self.sequence = []
+        self.topic = topic
         self.mind = mind
     
     def __enter__(self):
@@ -81,11 +82,11 @@ class OutputEvent:
             return
         
         elif sequenceLen == 1:
-            self.mind.emit(TOPIC_DEVICEWRITER_EVENT, self.sequence[0])
+            self.mind.emit(self.topic, self.sequence[0])
 
         else:
             event = (OutputEvent.SEQUENCE, self.sequence)
-            self.mind.emit(TOPIC_DEVICEWRITER_EVENT, event)
+            self.mind.emit(self.topic, event)
 
 
 class Shortcut:
@@ -248,11 +249,16 @@ class DeviceWriter(Reflex):
                 e.KEY_KP0, e.KEY_KP1, e.KEY_KP2, e.KEY_KP3, e.KEY_KP4, e.KEY_KP5, e.KEY_KP6, e.KEY_KP7, e.KEY_KP8, e.KEY_KP9,
                 e.KEY_KPMINUS, e.KEY_KPPLUS, e.KEY_KPENTER, e.KEY_KPDOT, e.KEY_KPSLASH, e.KEY_KPASTERISK, e.KEY_NUMLOCK,
 
+                # e.BTN_TOOL_PEN, e.BTN_STYLUS, e.BTN_TOUCH,
+
             ],
 
             e.EV_ABS: [
-                (e.ABS_X, AbsInfo(value=0, min=0, max=+16384, fuzz=0, flat=0, resolution=0)), 
-                (e.ABS_Y, AbsInfo(value=0, min=0, max=+16384, fuzz=0, flat=0, resolution=0)), 
+                # (e.ABS_X, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=0)), 
+                # (e.ABS_Y, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=0)), 
+                # (e.ABS_PRESSURE, AbsInfo(value=0, min=0, max=+8191, fuzz=0, flat=0, resolution=0)), 
+                # (e.ABS_TILT_X, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=0)), 
+                # (e.ABS_TILT_Y, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=0)), 
             ],
 
             e.EV_REL : [

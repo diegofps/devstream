@@ -1,3 +1,5 @@
+
+from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
 from shadows.device_writer import OutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
@@ -32,6 +34,10 @@ class XPPEN_DecoPro_Base(Reflex):
                 self.saw_ABS_X = evt.value
             elif evt.code == e.ABS_Y:
                 self.saw_ABS_Y = evt.value
+            elif evt.code == e.ABS_TILT_X:
+                self.saw_ABS_TILT_X = evt.value
+            elif evt.code == e.ABS_TILT_Y:
+                self.saw_ABS_TILT_Y = evt.value
             elif evt.code == e.ABS_PRESSURE:
                 self.saw_ABS_PRESSURE = evt.value
 
@@ -43,7 +49,11 @@ class XPPEN_DecoPro_Base(Reflex):
             elif evt.code == e.BTN_STYLUS:
                 self.saw_BTN_STYLUS = evt.value
 
-            elif evt.code == e.KEY_B:
+            elif evt.code == e.BTN_TOOL_PEN:
+                self.saw_BTN_TOOL_PEN = evt.value
+
+
+            if evt.code == e.KEY_B:
                 self.saw_B = evt.value
             elif evt.code == e.KEY_E:
                 self.saw_E = evt.value
@@ -88,15 +98,26 @@ class XPPEN_DecoPro_Base(Reflex):
                     self.on_pen_btn_high(self.saw_BTN_TOUCH)
                 if self.saw_BTN_STYLUS is not None:
                     self.on_pen_btn_low(self.saw_BTN_STYLUS)
+                if self.saw_BTN_TOOL_PEN is not None:
+                    self.on_pen_btn_close(self.saw_BTN_TOOL_PEN)
+
+                    with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+                        eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
+
                 if self.saw_ABS_X is not None or self.saw_ABS_Y is not None or self.saw_ABS_PRESSURE is not None:
                     x = 0 if self.saw_ABS_X is None else self.saw_ABS_X
                     y = 0 if self.saw_ABS_Y is None else self.saw_ABS_Y
                     z = 0 if self.saw_ABS_PRESSURE is None else self.saw_ABS_PRESSURE
                     self.on_pen_abs(x, y, z)
+
+                    with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+                        x = 0 if self.saw_ABS_X is None else self.saw_ABS_X
+                        y = 0 if self.saw_ABS_Y is None else self.saw_ABS_Y
+                        eb.function("ABS", x, y, 0, 1, 1)
                 
 
                 # Keys
-                elif self.saw_B is not None:
+                if self.saw_B is not None:
                     self.on_key00(self.saw_B)
                 elif self.saw_E is not None:
                     self.on_key01(self.saw_E)
@@ -117,7 +138,7 @@ class XPPEN_DecoPro_Base(Reflex):
                     self.on_key31(self.saw_N)
                 
                 # Orb
-                elif self.saw_REL_WHEEL is not None:
+                if self.saw_REL_WHEEL is not None:
                     self.on_orb_wheel(self.saw_REL_WHEEL)
                 elif self.saw_REL_X is not None or self.saw_REL_Y is not None:
                     x = 0 if self.saw_REL_X is None else self.saw_REL_X
@@ -146,6 +167,7 @@ class XPPEN_DecoPro_Base(Reflex):
         self.saw_ABS_PRESSURE = None
         self.saw_BTN_TOUCH = None
         self.saw_BTN_STYLUS = None
+        self.saw_BTN_TOOL_PEN = None
         self.saw_MSC_SCAN = None
 
 
@@ -187,6 +209,9 @@ class XPPEN_DecoPro_N(XPPEN_DecoPro_Base): # N
     def on_pen_abs(self, abs_x, abs_y, pressure):
         log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure)
     
+    def on_pen_btn_close(self, value):
+        log.debug("Deco pro key pen_btn_close", value)
+
     def on_pen_btn_touch(self, value):
         log.debug("Deco pro key pen_btn_touch", value)
 
@@ -198,8 +223,13 @@ class XPPEN_DecoPro_N(XPPEN_DecoPro_Base): # N
 
 
 def on_load(shadow):
-    os.mkfifo("/tmp/shadow_xppen_deco_pro")
+    filepath = "/tmp/shadow_xppen_deco_pro"
     
+    if os.path.exists(filepath):
+        os.remove(filepath)
+    
+    os.mkfifo(filepath, mode=666)
+
     XPPEN_DecoPro_N(shadow)
     shadow.require_device(REQUIRED_DEVICES)
     shadow.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_N")
