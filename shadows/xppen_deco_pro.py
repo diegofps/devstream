@@ -178,48 +178,62 @@ class XPPEN_DecoPro_N(XPPEN_DecoPro_Base): # N
     
     def on_key00(self, value):
         log.debug("Deco pro key 00", value)
+        # TODO: Transparent mode
         
     def on_key01(self, value):
         log.debug("Deco pro key 01", value)
-        
+        # TODO: Opaque mode
+
     def on_key10(self, value):
         log.debug("Deco pro key 10", value)
+        # UNDO
         
     def on_key11(self, value):
         log.debug("Deco pro key 11", value)
+        # REDO
         
     def on_key20(self, value):
         log.debug("Deco pro key 20", value)
+        # Previous page
         
     def on_key21(self, value):
         log.debug("Deco pro key 21", value)
+        # Next page
         
     def on_key30(self, value):
         log.debug("Deco pro key 30", value)
+        # First page
         
     def on_key31(self, value):
         log.debug("Deco pro key 31", value)
+        # Last page
     
     def on_orb_rel(self, rel_x, rel_y):
         log.debug("Deco pro key orb_rel", rel_x, rel_y)
+        # TODO: Move the viewport
 
     def on_orb_wheel(self, value):
         log.debug("Deco pro key orb_wheel", value)
+        # TODO: Change brush size
 
     def on_pen_abs(self, abs_x, abs_y, pressure):
         log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure)
+        # TODO: Draw, erase or do nothing
     
     def on_pen_btn_close(self, value):
         log.debug("Deco pro key pen_btn_close", value)
 
     def on_pen_btn_touch(self, value):
         log.debug("Deco pro key pen_btn_touch", value)
+        # TODO: Activate drawing
 
     def on_pen_btn_low(self, value):
         log.debug("Deco pro key pen_btn_low", value)
+        # TODO: Activate eraser
 
     def on_pen_btn_high(self, value):
         log.debug("Deco pro key pen_btn_high", value)
+        # TODO: Open menu
 
 
 def on_load(shadow):

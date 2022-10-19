@@ -29,11 +29,11 @@ class VirtualPen(Reflex):
             ],
 
             e.EV_ABS: [
-                (e.ABS_X, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=1024)), 
-                (e.ABS_Y, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=1024)), 
-                (e.ABS_PRESSURE, AbsInfo(value=0, min=0, max=+8191, fuzz=0, flat=0, resolution=0)), 
-                (e.ABS_TILT_X, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=0)), 
-                (e.ABS_TILT_Y, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=0)), 
+                (e.ABS_X, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=280)), 
+                (e.ABS_Y, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=158)), 
+                (e.ABS_PRESSURE, AbsInfo(value=0, min=0, max=+8191, fuzz=0, flat=0, resolution=1024)), 
+                (e.ABS_TILT_X, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=256)), 
+                (e.ABS_TILT_Y, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=256)), 
             ],
 
             e.EV_MSC : [
