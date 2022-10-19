@@ -1,5 +1,5 @@
 from evdev import AbsInfo, UInput, ecodes as e
-from shadows.device_writer import OutputEvent
+from shadows.virtual_keyboard import OutputEvent
 from keys import Key, WheelKey, DirectKey
 from reflex import Reflex
 
@@ -24,8 +24,8 @@ class VirtualPen(Reflex):
         cap = {
             e.EV_KEY : [
                 e.BTN_TOOL_PEN, e.BTN_TOUCH, e.BTN_STYLUS, 
-                
                 e.BTN_TOOL_RUBBER, e.BTN_TOOL_MOUSE, e.BTN_STYLUS2,
+                e.BTN_LEFT, e.BTN_RIGHT, e.BTN_MIDDLE, e.BTN_SIDE, e.BTN_EXTRA, 
             ],
 
             e.EV_ABS: [
@@ -58,10 +58,11 @@ class VirtualPen(Reflex):
         
         self.add_keys([
             "BTN_TOOL_PEN", "BTN_STYLUS", "BTN_TOUCH",
+            ("BTN_RIGHT", 90001), ("BTN_LEFT", 90004), ("BTN_MIDDLE", 90005), ("BTN_SIDE", 90004), ("BTN_EXTRA", 90005), 
         ])
 
     def on_event(self, topic_name, event):
-        log.debug("Processing VirtualPen event", event)
+        # log.debug("Processing VirtualPen event", event)
         event_type = event[0]
 
         if event_type == OutputEvent.SEQUENCE:

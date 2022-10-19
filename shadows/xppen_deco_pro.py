@@ -1,12 +1,74 @@
 
 from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
-from shadows.device_writer import OutputEvent
+from shadows.virtual_keyboard import OutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
 
+from threading import Thread
+from queue import Queue
+
+import errno
+import time
 import log
 import os
 
+# Configure PIPE
+class CanvasPipe(Thread):
+
+    def __init__(self):
+        super().__init__(target=self.run)
+        self.filepath = "/tmp/shadow_xppen_deco_pro"
+        self.queue = Queue()
+        self.tries = 3
+        self.open()
+        self.start()
+
+    def open(self):
+        # try:
+        #     os.mkfifo(self.filepath)
+        # except OSError as oe: 
+        #     if oe.errno != errno.EEXIST:
+        #         raise
+
+        # if os.path.exists(self.filepath):
+        #     os.remove(self.filepath)
+        
+        # os.mkfifo(self.filepath)
+
+        # log.debug("Opening named pipe")
+        # log.debug("Named pipe open")
+        pass
+    
+    def run(self):
+        while True:
+            msg = self.queue.get()
+
+            if msg is None:
+                break
+            
+            for i in range(self.tries):
+                try:
+                    with open(self.filepath, 'w') as fout:
+                        fout.write(msg)
+                        fout.write('\n')
+                    break
+                except Exception as e:
+                    log.error("Failed to send message to canvas.", msg=msg, attempt=f"{i+1}/{self.tries}", error=e)
+                    time.sleep(1)
+
+    def send(self, msg):
+        self.queue.put(msg)
+
+canvas = CanvasPipe()
+
+TOOL_BRUSH = 1
+TOOL_ERASER = 2
+
+MAX_BRUSH = 15
+MIN_BRUSH = 1
+
+MAX_ERASER = 15
+MIN_ERASER = 1
 
 REQUIRED_DEVICES = [
     "11 inch PenTablet Mouse",
@@ -23,10 +85,20 @@ class XPPEN_DecoPro_Base(Reflex):
     def __init__(self, shadow):
         super().__init__(shadow)
         self.active = False
+        self.passthrough = False
         self.configure_states(TOPIC_DECOPRO_STATE, TOPIC_DECOPRO_EVENT)
         self.clear()
 
+        self.saw_ABS_X = 0
+        self.saw_ABS_Y = 0
+        self.saw_ABS_PRESSURE = 0
+        self.saw_ABS_TILT_X = 0
+        self.saw_ABS_TILT_Y = 0
+
     def on_event(self, topic_name, evt):
+
+        if not evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
+            super().on_event(topic_name, evt) 
 
         if evt.type == e.EV_ABS:
 
@@ -94,26 +166,23 @@ class XPPEN_DecoPro_Base(Reflex):
                 # Pen
                 if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN == 852034:
                     self.on_pen_btn_touch(self.saw_BTN_TOUCH)
+                
                 if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN == 852037:
                     self.on_pen_btn_high(self.saw_BTN_TOUCH)
+                    
                 if self.saw_BTN_STYLUS is not None:
                     self.on_pen_btn_low(self.saw_BTN_STYLUS)
+                
                 if self.saw_BTN_TOOL_PEN is not None:
                     self.on_pen_btn_close(self.saw_BTN_TOOL_PEN)
 
-                    with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
-                        eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
-
                 if self.saw_ABS_X is not None or self.saw_ABS_Y is not None or self.saw_ABS_PRESSURE is not None:
-                    x = 0 if self.saw_ABS_X is None else self.saw_ABS_X
-                    y = 0 if self.saw_ABS_Y is None else self.saw_ABS_Y
-                    z = 0 if self.saw_ABS_PRESSURE is None else self.saw_ABS_PRESSURE
-                    self.on_pen_abs(x, y, z)
-
-                    with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
-                        x = 0 if self.saw_ABS_X is None else self.saw_ABS_X
-                        y = 0 if self.saw_ABS_Y is None else self.saw_ABS_Y
-                        eb.function("ABS", x, y, 0, 1, 1)
+                    x  = 0 if self.saw_ABS_X is None else self.saw_ABS_X
+                    y  = 0 if self.saw_ABS_Y is None else self.saw_ABS_Y
+                    z  = 0 if self.saw_ABS_PRESSURE is None else self.saw_ABS_PRESSURE
+                    tx = 0 if self.saw_ABS_TILT_X is None else self.saw_ABS_TILT_X
+                    ty = 0 if self.saw_ABS_TILT_Y is None else self.saw_ABS_TILT_Y
+                    self.on_pen_abs(x, y, z, tx, ty)
                 
 
                 # Keys
@@ -164,33 +233,154 @@ class XPPEN_DecoPro_Base(Reflex):
         self.saw_REL_WHEEL = None
         # self.saw_ABS_X = None
         # self.saw_ABS_Y = None
-        self.saw_ABS_PRESSURE = None
+        # self.saw_ABS_PRESSURE = None
+        # self.saw_ABS_TILT_X = None
+        # self.saw_ABS_TILT_Y = None
         self.saw_BTN_TOUCH = None
         self.saw_BTN_STYLUS = None
         self.saw_BTN_TOOL_PEN = None
         self.saw_MSC_SCAN = None
 
 
-class XPPEN_DecoPro_N(XPPEN_DecoPro_Base): # N
+class XPPEN_DecoPro_Transparent(XPPEN_DecoPro_Base): # N
 
     def __init__(self, shadow):
         super().__init__(shadow)
+        self.tool = TOOL_BRUSH
+        self.size_eraser = 4
+        self.size_brush = 4
     
     def on_key00(self, value):
-        log.debug("Deco pro key 00", value)
-        # TODO: Transparent mode
+        # log.debug("Deco pro key 00", value)
+        # if value == 0:
+        #     self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
+        pass
         
     def on_key01(self, value):
-        log.debug("Deco pro key 01", value)
-        # TODO: Opaque mode
+        # log.debug("Deco pro key 01", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Opaque")
 
     def on_key10(self, value):
-        log.debug("Deco pro key 10", value)
-        # UNDO
+        # log.debug("Deco pro key 10", value)
+        # Pass-through mode on hold
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Passthrough")
         
     def on_key11(self, value):
         log.debug("Deco pro key 11", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Disable")
+        
+    def on_key20(self, value):
+        log.debug("Deco pro key 20", value)
+        canvas.send("previous_page")
+        # Previous page
+        
+    def on_key21(self, value):
+        log.debug("Deco pro key 21", value)
+        canvas.send("next_page")
+        # Next page
+        
+    def on_key30(self, value):
+        log.debug("Deco pro key 30", value)
+        canvas.send("undo")
+        # UNDO
+        
+    def on_key31(self, value):
+        log.debug("Deco pro key 31", value)
+        canvas.send("redo")
         # REDO
+    
+    def on_orb_rel(self, rel_x, rel_y):
+        log.debug("Deco pro key orb_rel", rel_x, rel_y)
+        canvas.send(f"move {rel_x} {rel_y}")
+
+    def on_orb_wheel(self, value):
+        log.debug("Deco pro key orb_wheel", value)
+        if self.tool == TOOL_BRUSH:
+            self.size_brush += value
+            self.size_brush = min(self.size_brush, MAX_BRUSH)
+            self.size_brush = max(self.size_brush, MIN_BRUSH)
+            size_brush = 1.5 ** self.size_brush
+            canvas.send(f"set_brush_size {size_brush}")
+        
+        elif self.tool == TOOL_ERASER:
+            self.size_eraser += value
+            self.size_eraser = min(self.size_eraser, MAX_ERASER)
+            self.size_eraser = max(self.size_eraser, MIN_ERASER)
+            size_eraser = 1.5 ** self.size_eraser
+            canvas.send(f"set_eraser_size {size_eraser}")
+
+        else:
+            log.error(f"Invalid VirtualPen tool: {self.tool}")
+
+    def on_pen_abs(self, x, y, z, tx, ty):
+        # log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure, tx, ty)
+        canvas.send(f"set_cursor_position {x} {y} {z} {tx} {ty}")
+        self.last_x = x
+        self.last_y = y
+
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.function("ABS", x, y, 0, 0, 0)
+    
+    def on_pen_btn_close(self, value):
+        # log.debug("Deco pro key pen_btn_close", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
+
+    def on_pen_btn_touch(self, value):
+        log.debug("Deco pro key pen_btn_touch", value)
+        canvas.send(f"set_touching {value}")
+
+    def on_pen_btn_low(self, value):
+        log.debug("Deco pro key pen_btn_low", value)
+        if value == 0:
+            self.tool = TOOL_BRUSH
+        else:
+            self.tool = TOOL_ERASER
+
+    def on_pen_btn_high(self, value):
+        log.debug("Deco pro key pen_btn_high", value)
+        canvas.send(f"toggle_menu")
+        
+    def on_activate(self):
+        super().on_activate()
+        log.info("mode transparent")
+        canvas.send(f"canvas_mode_transparent")
+
+
+class XPPEN_DecoPro_Opaque(XPPEN_DecoPro_Base): # N
+
+    def __init__(self, shadow):
+        super().__init__(shadow)
+        self.tool = TOOL_BRUSH
+        self.size_brush = 20
+        self.size_eraser = 20
+
+        #self.pipe = open(PIPE_FILEPATH, 'w')
+    
+    def on_key00(self, value):
+        # log.debug("Deco pro key 00", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
+        
+    def on_key01(self, value):
+        # log.debug("Deco pro key 01", value)
+        # if value == 0:
+        #     self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Opaque")
+        pass
+
+    def on_key10(self, value):
+        # log.debug("Deco pro key 10", value)
+        # Pass-through mode on hold
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Passthrough")
+        
+    def on_key11(self, value):
+        log.debug("Deco pro key 11", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Disable")
         
     def on_key20(self, value):
         log.debug("Deco pro key 20", value)
@@ -202,11 +392,11 @@ class XPPEN_DecoPro_N(XPPEN_DecoPro_Base): # N
         
     def on_key30(self, value):
         log.debug("Deco pro key 30", value)
-        # First page
+        # UNDO
         
     def on_key31(self, value):
         log.debug("Deco pro key 31", value)
-        # Last page
+        # REDO
     
     def on_orb_rel(self, rel_x, rel_y):
         log.debug("Deco pro key orb_rel", rel_x, rel_y)
@@ -216,12 +406,15 @@ class XPPEN_DecoPro_N(XPPEN_DecoPro_Base): # N
         log.debug("Deco pro key orb_wheel", value)
         # TODO: Change brush size
 
-    def on_pen_abs(self, abs_x, abs_y, pressure):
-        log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure)
-        # TODO: Draw, erase or do nothing
+    def on_pen_abs(self, x, y, z, tx, ty):
+        # log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure, tx, ty)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.function("ABS", x, y, 0, 0, 0)
     
     def on_pen_btn_close(self, value):
-        log.debug("Deco pro key pen_btn_close", value)
+        # log.debug("Deco pro key pen_btn_close", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
 
     def on_pen_btn_touch(self, value):
         log.debug("Deco pro key pen_btn_touch", value)
@@ -235,16 +428,192 @@ class XPPEN_DecoPro_N(XPPEN_DecoPro_Base): # N
         log.debug("Deco pro key pen_btn_high", value)
         # TODO: Open menu
 
+    def on_activate(self):
+        super().on_activate()
+        log.info("mode opaque")
+        canvas.send(f"canvas_mode_opaque")
+
+
+class XPPEN_DecoPro_Passthrough(XPPEN_DecoPro_Base):
+
+    def __init__(self, shadow):
+        super().__init__(shadow)
+        self.tool = TOOL_BRUSH
+        self.size_brush = 20
+        self.size_eraser = 20
+
+        #self.pipe = open(PIPE_FILEPATH, 'w')
+    
+    def on_key00(self, value):
+        # log.debug("Deco pro key 00", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
+        
+    def on_key01(self, value):
+        # log.debug("Deco pro key 01", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Opaque")
+
+    def on_key10(self, value):
+        # log.debug("Deco pro key 10", value)
+        # Pass-through mode on hold
+        # if value == 0:
+        #     self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Passthrough")
+        pass
+        
+    def on_key11(self, value):
+        log.debug("Deco pro key 11", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Disable")
+        
+    def on_key20(self, value):
+        log.debug("Deco pro key 20", value)
+        # Previous page
+        
+    def on_key21(self, value):
+        log.debug("Deco pro key 21", value)
+        # Next page
+        
+    def on_key30(self, value):
+        log.debug("Deco pro key 30", value)
+        # UNDO
+        
+    def on_key31(self, value):
+        log.debug("Deco pro key 31", value)
+        # REDO
+    
+    def on_orb_rel(self, rel_x, rel_y):
+        log.debug("Deco pro key orb_rel", rel_x, rel_y)
+        # TODO: Move the viewport
+
+    def on_orb_wheel(self, value):
+        log.debug("Deco pro key orb_wheel", value)
+        # TODO: Change brush size
+
+    def on_pen_abs(self, x, y, z, tx, ty):
+        # log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure, tx, ty)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.function("ABS", x, y, z, tx, ty)
+    
+    def on_pen_btn_close(self, value):
+        # log.debug("Deco pro key pen_btn_close", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
+
+    def on_pen_btn_touch(self, value):
+        # log.debug("Deco pro key pen_btn_touch", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_TOUCH", self.saw_BTN_TOUCH)
+
+    def on_pen_btn_low(self, value):
+        # log.debug("Deco pro key pen_btn_low", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_MIDDLE", self.saw_BTN_STYLUS)
+
+    def on_pen_btn_high(self, value):
+        # log.debug("Deco pro key pen_btn_high", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_RIGHT", self.saw_BTN_TOUCH)
+
+    def on_activate(self):
+        super().on_activate()
+        log.info("mode passthrough")
+        canvas.send(f"canvas_mode_passthrough")
+
+
+class XPPEN_DecoPro_Disable(XPPEN_DecoPro_Base):
+
+    def __init__(self, shadow):
+        super().__init__(shadow)
+        self.tool = TOOL_BRUSH
+        self.size_brush = 20
+        self.size_eraser = 20
+
+        #self.pipe = open(PIPE_FILEPATH, 'w')
+    
+    def on_key00(self, value):
+        # log.debug("Deco pro key 00", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
+        
+    def on_key01(self, value):
+        # log.debug("Deco pro key 01", value)
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Opaque")
+
+    def on_key10(self, value):
+        # log.debug("Deco pro key 10", value)
+        # Pass-through mode on hold
+        if value == 0:
+            self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Passthrough")
+        
+    def on_key11(self, value):
+        # log.debug("Deco pro key 11", value)
+        # if value == 0:
+        #     self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Disable")
+        pass
+        
+    def on_key20(self, value):
+        log.debug("Deco pro key 20", value)
+        # Previous page
+        
+    def on_key21(self, value):
+        log.debug("Deco pro key 21", value)
+        # Next page
+        
+    def on_key30(self, value):
+        log.debug("Deco pro key 30", value)
+        # UNDO
+        
+    def on_key31(self, value):
+        log.debug("Deco pro key 31", value)
+        # REDO
+    
+    def on_orb_rel(self, rel_x, rel_y):
+        log.debug("Deco pro key orb_rel", rel_x, rel_y)
+        # TODO: Move the viewport
+
+    def on_orb_wheel(self, value):
+        log.debug("Deco pro key orb_wheel", value)
+        # TODO: Change brush size
+
+    def on_pen_abs(self, x, y, z, tx, ty):
+        # log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure, tx, ty)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.function("ABS", x, y, z, tx, ty)
+    
+    def on_pen_btn_close(self, value):
+        # log.debug("Deco pro key pen_btn_close", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
+
+    def on_pen_btn_touch(self, value):
+        # log.debug("Deco pro key pen_btn_touch", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_TOUCH", self.saw_BTN_TOUCH)
+
+    def on_pen_btn_low(self, value):
+        # log.debug("Deco pro key pen_btn_low", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_MIDDLE", self.saw_BTN_STYLUS)
+
+    def on_pen_btn_high(self, value):
+        # log.debug("Deco pro key pen_btn_high", value)
+        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+            eb.update("BTN_RIGHT", self.saw_BTN_TOUCH)
+
+    def on_activate(self):
+        super().on_activate()
+        log.info("mode disabled")
+        canvas.send(f"canvas_mode_disabled")
+
 
 def on_load(shadow):
-    filepath = "/tmp/shadow_xppen_deco_pro"
-    
-    if os.path.exists(filepath):
-        os.remove(filepath)
-    
-    os.mkfifo(filepath, mode=666)
+    XPPEN_DecoPro_Transparent(shadow)
+    XPPEN_DecoPro_Opaque(shadow)
+    XPPEN_DecoPro_Passthrough(shadow)
+    XPPEN_DecoPro_Disable(shadow)
 
-    XPPEN_DecoPro_N(shadow)
     shadow.require_device(REQUIRED_DEVICES)
-    shadow.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_N")
+    shadow.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
 

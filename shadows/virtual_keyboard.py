@@ -108,7 +108,7 @@ class Shortcut:
                 key.release()
 
 
-class DeviceWriter(Reflex):
+class VirtualKeyboard(Reflex):
 
     def __init__(self, shadow):
         super().__init__(shadow)
@@ -657,5 +657,5 @@ class DeviceWriter(Reflex):
 
 
 def on_load(shadow):
-    DeviceWriter(shadow)
+    VirtualKeyboard(shadow)
 

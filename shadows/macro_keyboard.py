@@ -1,4 +1,4 @@
-from shadows.device_writer import TOPIC_DEVICEWRITER_EVENT, OutputEvent
+from shadows.virtual_keyboard import TOPIC_DEVICEWRITER_EVENT, OutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
 

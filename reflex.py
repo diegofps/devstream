@@ -1,7 +1,7 @@
 from evdev import ecodes as e
 from threading import Thread
+import traceback
 import log
-
 
 class Reflex:
 
@@ -51,19 +51,28 @@ class Reflex:
         
         self.listeners = []
     
-    def add_listener(self, topic_name, callback):
-        self.listeners.append((topic_name, callback))
-        self.mind._add_listener(topic_name, callback)
-        # log.debug(self.name, "add_listener", topic_name)
+    def add_listener(self, topic_names, callback):
+        if not isinstance(topic_names, list):
+            topic_names = [topic_names]
+        
+        for topic_name in topic_names:
+            self.listeners.append((topic_name, callback))
+            self.mind._add_listener(topic_name, callback)
+            # log.debug(f"Added listener for", topic_name=topic_name, listener=self.name)
     
-    def remove_listener(self, topic_name, callback):
-        try:
-            # log.debug(self.name, "remove_listener", topic_name)
-            self.mind._remove_listener(topic_name, callback)
-            self.listeners.remove((topic_name, callback))
-        except ValueError:
-            # log.warn("Attempting to remove a topic callback that is not present")
-            pass
+    def remove_listener(self, topic_names, callback):
+        if not isinstance(topic_names, list):
+            topic_names = [topic_names]
+        
+        for topic_name in topic_names:
+            try:
+                self.mind._remove_listener(topic_name, callback)
+                self.listeners.remove((topic_name, callback))
+                # log.debug("Removed listener", topic_name=topic_name, listener=self.name)
+            except ValueError:
+                traceback.print_stack()
+                log.debug("Attempting to remove a topic callback that is not present", topic_name=topic_name, listener=self.name)
+                pass
 
     def configure_states(self, state_topic, devices_events):
         self.devices_events = devices_events
@@ -77,22 +86,22 @@ class Reflex:
             event = event[:-1]
             clean = False
         
-        if self.name == event:
-            if self.devices_events is not None:
-                self.add_listener(self.devices_events, self.on_event)
-            self.clean = clean
-
-            if not self.active:
-                self.active = True
-                self.on_activate()
-
-        else:
-            if self.active:
+        if self.active:
+            if self.name != event:
                 self.active = False
                 self.on_deactivate()
-            
-            if self.devices_events is not None:
-                self.remove_listener(self.devices_events, self.on_event)
+                
+                if self.devices_events is not None:
+                    self.remove_listener(self.devices_events, self.on_event)
+        
+        else:
+            if self.name == event:
+                if self.devices_events is not None:
+                    self.add_listener(self.devices_events, self.on_event)
+                self.clean = clean
+
+                self.active = True
+                self.on_activate()
 
     def on_event(self, topic_name, evt):
         # if evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:

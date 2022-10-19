@@ -1,4 +1,4 @@
-from shadows.device_writer import OutputEvent
+from shadows.virtual_keyboard import OutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
 
@@ -19,33 +19,7 @@ class BaseMX2SNode(Reflex):
     def __init__(self, shadow):
         super().__init__(shadow)
         self.active = False
-        self.add_listener(TOPIC_MX2S_STATE, self.on_state_changed)
-
-    def on_state_changed(self, topic_name, event):
-        clean = True
-        
-        if event[-1] == '*':
-            event = event[:-1]
-            clean = False
-        
-        if self.name == event:
-            self.add_listener(TOPIC_DEVICE_MX2S, self.on_event)
-            self.clean = clean
-            
-            if not self.active:
-                self.active = True
-                self.on_activate()
-
-            # log.debug("Registering listener", type(self).__name__)
-            
-        else:
-            if self.active:
-                self.active = False
-                self.on_deactivate()
-            
-            self.remove_listener(TOPIC_DEVICE_MX2S, self.on_event)
-
-            # log.debug("Removing listener", type(self).__name__)
+        self.configure_states(TOPIC_MX2S_STATE, TOPIC_DEVICE_MX2S)
 
     def on_event(self, device_name, event):
 

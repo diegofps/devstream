@@ -1,20 +1,28 @@
 import logging
 
+def _commit(target, *args, **kwargs):
+    title = " ".join([str(x) for x in args])
+    if kwargs:
+        params = [f"  {k}={v}" for k,v in kwargs.items()]
+        params = "\n".join([x for x in params])
+        target(title + ':\n' + params)
+    else:
+        target(title)
 
-def debug(*args):
-    logging.debug(" ".join([str(x) for x in args]))
+def debug(*args, **kwargs):
+    _commit(logging.debug, *args, **kwargs)
 
 
-def info(*args):
-    logging.info(" ".join([str(x) for x in args]))
+def info(*args, **kwargs):
+    _commit(logging.info, *args, **kwargs)
 
 
-def warn(*args):
-    logging.warn(" ".join([str(x) for x in args]))
+def warn(*args, **kwargs):
+    _commit(logging.warn, *args, **kwargs)
 
 
-def error(*args):
-    logging.error(" ".join([str(x) for x in args]))
+def error(*args, **kwargs):
+    _commit(logging.error, *args, **kwargs)
 
 
 def init_logger(env):

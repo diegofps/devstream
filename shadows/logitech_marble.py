@@ -1,4 +1,4 @@
-from shadows.device_writer import OutputEvent
+from shadows.virtual_keyboard import OutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
 
@@ -18,29 +18,7 @@ class BaseMarbleNode(Reflex):
     def __init__(self, shadow):
         super().__init__(shadow)
         self.active = False
-        self.add_listener(TOPIC_MARBLE_STATE, self.on_state_changed)
-
-    def on_state_changed(self, topic_name, event):
-        clean = True
-        
-        if event[-1] == '*':
-            event = event[:-1]
-            clean = False
-        
-        if self.name == event:
-            self.add_listener(TOPIC_DEVICE_MARBLE, self.on_event)
-            self.clean = clean
-
-            if not self.active:
-                self.active = True
-                self.on_activate()
-
-        else:
-            if self.active:
-                self.active = False
-                self.on_deactivate()
-            
-            self.remove_listener(TOPIC_DEVICE_MARBLE, self.on_event)
+        self.configure_states(TOPIC_MARBLE_STATE, TOPIC_DEVICE_MARBLE)
 
     def on_event(self, topic_name, event):
         # log.debug("Processing marble event", self.name, event)

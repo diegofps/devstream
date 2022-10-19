@@ -134,7 +134,7 @@ class Mind:
             self.executor = executor
 
             # Shadows
-            self.add_shadow("device_writer")
+            self.add_shadow("virtual_keyboard")
             self.add_shadow("virtual_pen")
 
             self.add_shadow("logitech_marble")
