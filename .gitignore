@@ -1,3 +1,5 @@
 *.pyc
 *.log
 *.bin
+build-canvas2-*
+*.pro.user
