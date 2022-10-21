@@ -71,19 +71,11 @@ void Page::onPaint(QPainter & painter, QRect & rect) {
     int x = rect.left() - viewX;
     int y = rect.top() - viewY;
 
-//    wup::print(rect.left(), rect.top(), rect.right(), rect.bottom());
-//    wup::print(viewX, viewY);
-//    wup::print(x, y);
-
     int i1 = (y - CELL_SIZE) / CELL_SIZE;
     int i2 = ceil((y + rect.height()) / double(CELL_SIZE));
 
     int j1 = (x - CELL_SIZE) / CELL_SIZE;
     int j2 = ceil((x + rect.width()) / double(CELL_SIZE));
-
-//    print("i:", i1, i2);
-//    print("j:", j1, j2);
-//    print();
 
     for (int i=i1;i<i2;++i) {
         for (int j=j1;j<j2;++j) {
@@ -91,34 +83,55 @@ void Page::onPaint(QPainter & painter, QRect & rect) {
             int yy = i * CELL_SIZE - y;
 
             QImage * cell = getCell(i,j);
-            painter.drawImage(xx, yy, *cell);
+
+            if (cell != nullptr)
+                painter.drawImage(xx, yy, *cell);
         }
     }
 }
 
-QImage * Page::getCell(int i, int j) {
-//    print("Looking for cell", i, j);
-    QPair<int, int> key(i,j);
+QImage * Page::getCell(int i, int j, bool create) {
+    //    print("Looking for cell", i, j);
 
-    auto it = cells.find(key);
+    // Debug mdoe
+    if (true) {
+        QPair<int, int> key(i,j);
 
-    if (it != cells.end())
-        return *it;
+        auto it = cells.find(key);
 
-    QImage *cell = new QImage(QSize(CELL_SIZE, CELL_SIZE), QImage::Format_ARGB32);
-//    cell.fill(Qt::transparent);
-    cells[key] = cell;
+        if (it != cells.end())
+            return *it;
 
-    if ((i+j) % 2)
-        cell->fill(QColor("#22ff0000"));
-    else
-        cell->fill(QColor("#220000ff"));
+        QImage *cell = new QImage(QSize(CELL_SIZE, CELL_SIZE), QImage::Format_ARGB32);
+        cells[key] = cell;
+
+        if ((i+j) % 2)
+            cell->fill(QColor("#22ff0000"));
+        else
+            cell->fill(QColor("#220000ff"));
 
 
-    QString msg = QString::asprintf("(%d, %d)", i, j);
+        QString msg = QString::asprintf("(%d, %d)", i, j);
 
-    QPainter painter(cell);
-    painter.drawText(0, 11, msg);
+        QPainter painter(cell);
+        painter.drawText(0, 11, msg);
 
-    return cell;
+        return cell;
+    }
+
+    else {
+        QPair<int, int> key(i,j);
+        auto it = cells.find(key);
+
+        if (it != cells.end())
+            return *it;
+
+        if (!create)
+            return nullptr;
+
+        QImage *cell = new QImage(QSize(CELL_SIZE, CELL_SIZE), QImage::Format_ARGB32);
+        cell->fill(Qt::transparent);
+        cells[key] = cell;
+        return cell;
+    }
 }

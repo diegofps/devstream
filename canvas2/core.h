@@ -39,7 +39,6 @@ public:
 signals:
 
 public slots:
-    void processCallbacks();
     void changeBrushSize(int size);
     void changeEraserSize(int size);
     void showPreviousPage();
@@ -57,9 +56,7 @@ private:
     Book transparentBook;
     Book opaqueBook;
     Book * activeBook;
-    std::thread *dispatcher;
-    std::thread *reader;
-    std::thread *mover;
+    std::thread reader;
 
     int size_brush_index;
     int size_eraser_index;

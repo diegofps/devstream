@@ -15,50 +15,6 @@ const char * named_pipe = "/tmp/shadow_xppen_deco_pro";
 
 using wup::print;
 
-//class CanvasEvent {
-//public:
-//    std::function<void(void)> callback;
-//    template <typename T> CanvasEvent(T callback) : callback(callback) { }
-//};
-
-//class CanvasEventQueue {
-//public:
-
-//    CanvasEventQueue() { }
-
-//    template <typename T> void push(T callback) {
-//        std::lock_guard<std::mutex> lock(mutex);
-//        events.append(callback);
-//    }
-
-//    void popAllInto(QList<std::function<void(void)>> &events) {
-//        semaphore.acquire();
-//        events.clear();
-
-//        std::lock_guard<std::mutex> lock(mutex);
-//        events = this->events;
-//        this->events.clear();
-//    }
-
-//private:
-//    std::mutex mutex;
-//    wup::Semaphore semaphore;
-//    QList<std::function<void(void)>> events;
-
-//};
-
-
-std::mutex callbacksAvailable;
-std::mutex callbacksAccess;
-QList<std::function<void(void)>> callbacks;
-
-template <typename T>
-void pushCallback(T callback) {
-    std::lock_guard<std::mutex> lock(callbacksAccess);
-    callbacks.append(callback);
-    callbacksAvailable.unlock();
-}
-
 void
 readCommands(Core * c)
 {
@@ -77,101 +33,46 @@ readCommands(Core * c)
 
         if (cmd == "draw") {
             int x1, y1, x2, y2;
-            if (!(ifs >> x1 >> y1 >> x2 >> y2)) {
-                print("Error during parameter read");
-                sleep(1);
-                continue;
-            }
-
-            pushCallback([c,x1,y1,x2,y2]() {
+            if (ifs >> x1 >> y1 >> x2 >> y2)
                 c->draw(x1,y1,x2,y2);
-            });
-//            QMetaObject::invokeMethod(c, "draw", Qt::AutoConnection, Q_ARG(int, x1), Q_ARG(int, y1), Q_ARG(int, x2), Q_ARG(int, y2));
         }
 
         else if (cmd == "erase") {
             int x1, y1, x2, y2;
-            if (!(ifs >> x1 >> y1 >> x2 >> y2)) {
-                print("Error during parameter read");
-                sleep(1);
-                continue;
-            }
-
-            pushCallback([c,x1,y1,x2,y2]() {
-                c->erase(x1,y1,x2,y2);
-            });
-//            QMetaObject::invokeMethod(c, "erase", Qt::AutoConnection, Q_ARG(int, x1), Q_ARG(int, y1), Q_ARG(int, x2), Q_ARG(int, y2));
+            if (ifs >> x1 >> y1 >> x2 >> y2)
+                 c->erase(x1,y1,x2,y2);
         }
 
         else if (cmd == "move_page") {
             int rx, ry;
-            if(!(ifs >> rx >> ry)) {
-                print("Error during parameter read");
-                sleep(1);
-                continue;
-            }
-
-            pushCallback([c,rx,ry]() {
+            if (ifs >> rx >> ry)
                 c->movePage(rx,ry);
-            });
-//            QMetaObject::invokeMethod(c, "movePage", Qt::AutoConnection, Q_ARG(int, rx), Q_ARG(int, ry));
         }
 
         else if (cmd == "change_brush_size") {
             int size;
-            if(!(ifs >> size)) {
-                print("Error during parameter read");
-                sleep(1);
-                continue;
-            }
-
-            pushCallback([c,size]() {
+            if (ifs >> size)
                 c->changeBrushSize(size);
-            });
-//            QMetaObject::invokeMethod(c, "changeBrushSize", Qt::AutoConnection, Q_ARG(int, size));
         }
 
         else if (cmd == "change_eraser_size") {
             int size;
-            if (!(ifs >> size)) {
-                print("Error during parameter read");
-                sleep(1);
-                continue;
-            }
-
-            pushCallback([c,size]() {
+            if (ifs >> size)
                 c->changeEraserSize(size);
-            });
-//            QMetaObject::invokeMethod(c, "changeEraserSize", Qt::AutoConnection, Q_ARG(int, size));
         }
 
         else if (cmd == "set_page_mode") {
             int pageMode;
-            if (!(ifs >> pageMode)) {
-                print("Error during parameter read");
-                sleep(1);
-                continue;
-            }
-
-            pushCallback([c,pageMode]() {
+            if (ifs >> pageMode)
                 c->setPageMode(pageMode);
-            });
-//            QMetaObject::invokeMethod(c, "setPageMode", Qt::AutoConnection, Q_ARG(int, pageMode));
         }
 
         else if (cmd == "show_previous_page") {
-
-            pushCallback([c]() {
-                c->showPreviousPage();
-            });
-//            QMetaObject::invokeMethod(c, "showPreviousPage", Qt::AutoConnection);
+            c->showPreviousPage();
         }
 
         else if (cmd == "show_next_page") {
-            pushCallback([c]() {
-                c->showNextPage();
-            });
-//          QMetaObject::invokeMethod(c, "showNextPage", Qt::AutoConnection);
+            c->showNextPage();
         }
 
         else if (cmd == "") {
@@ -183,25 +84,8 @@ readCommands(Core * c)
         }
     }
 
-//    unlink(named_pipe);
 }
 
-void dispatch(Core * c) {
-
-    while (true)
-    {
-        callbacksAvailable.lock();
-        c->processCallbacks();
-//        QMetaObject::invokeMethod(c, "processCallbacks", Qt::AutoConnection);
-    }
-}
-
-void move(Core * c) {
-    while (true) {
-        QMetaObject::invokeMethod(c, "movePage", Qt::AutoConnection, Q_ARG(int, -2), Q_ARG(int, -1));
-        usleep(10000);
-    }
-}
 
 Core::Core(QObject *parent)
     : QObject{parent},
@@ -209,9 +93,7 @@ Core::Core(QObject *parent)
       transparentBook(this, false),
       opaqueBook(this, true),
       activeBook(&transparentBook),
-      dispatcher(nullptr),
-      reader(nullptr),
-      mover(nullptr),
+      reader(readCommands, this),
       size_brush_index(5),
       size_eraser_index(5),
       size_brush(pow(BRUSH_BASE, size_brush_index)),
@@ -220,11 +102,6 @@ Core::Core(QObject *parent)
       width_space(0),
       height_space(0)
 {
-    callbacksAvailable.lock();
-    reader = new std::thread(readCommands, this);
-    dispatcher = new std::thread(dispatch, this);
-//    mover = new std::thread(move, this);
-
     QList<QScreen*> screens = QGuiApplication::screens();
 
     for (int i=0;i!=screens.size();++i) {
@@ -244,19 +121,6 @@ Core::Core(QObject *parent)
     wup::print("sizes", size_brush, size_eraser);
 }
 
-void Core::processCallbacks() {
-    {
-        std::lock_guard<std::mutex> lock1(callbacksAccess);
-        callbacksCopy = callbacks;
-        callbacks.clear();
-    }
-
-    for (auto & callback : callbacksCopy)
-        callback();
-
-    callbacksCopy.clear();
-}
-
 void Core::onPageChanged(Book *, Page *page)
 {
     for (Viewport * viewport : viewports)
@@ -274,7 +138,7 @@ void Core::changeBrushSize(int size)
     size_brush_index += size;
     size_brush_index = std::min(size_brush_index, MAX_BRUSH_INDEX);
     size_brush_index = std::max(size_brush_index, MIN_BRUSH_INDEX);
-    size_brush = int(pow(BRUSH_BASE, size_brush_index));
+    size_brush       = int(pow(BRUSH_BASE, size_brush_index));
 }
 
 void Core::changeEraserSize(int size)
@@ -282,7 +146,7 @@ void Core::changeEraserSize(int size)
     size_eraser_index += size;
     size_eraser_index = std::min(size_eraser_index, MAX_BRUSH_INDEX);
     size_eraser_index = std::max(size_eraser_index, MIN_BRUSH_INDEX);
-    size_eraser = int(pow(ERASER_BASE, size_eraser_index));
+    size_eraser       = int(pow(ERASER_BASE, size_eraser_index));
 }
 
 void Core::showPreviousPage()

@@ -25,7 +25,7 @@ public:
     void draw(int x1, int y1, int x2, int y2, int size, QColor &color);
     void erase(int x1, int y1, int x2, int y2, int size);
     void onPaint(QPainter & painter, QRect & rect);
-    QImage * getCell(int i, int j);
+    QImage * getCell(int i, int j, bool create=false);
 
 private:
     PageListener *listener;

@@ -20,7 +20,6 @@ Viewport::MainWindow(QScreen *screen)
 
     configureWindowProperties();
     positionWindow(screen);
-//    configureStylesheet(false);
 
     show();
 }
@@ -65,23 +64,6 @@ void Viewport::configureWindowProperties()
                    | Qt::WindowTransparentForInput
                    | Qt::X11BypassWindowManagerHint
     );
-
-}
-
-void Viewport::configureStylesheet(bool opaque)
-{
-//    if (opaque) {
-//        setStyleSheet(
-//            "border: 0px;"
-//            "background-color: #ffcccccc;"
-//        );
-//    }
-//    else {
-//        setStyleSheet(
-//            "border: 0px;"
-//            "background-color: #11ffffff;"
-//        );
-//    }
 
 }
 

@@ -26,7 +26,6 @@ public:
 
 private:
     void positionWindow(QScreen *screen);
-    void configureStylesheet(bool opaque);
     void configureWindowProperties();
 
 private:
