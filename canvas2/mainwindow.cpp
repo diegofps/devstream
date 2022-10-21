@@ -84,6 +84,8 @@ void Viewport::onPaint(QPainter & painter) {
 }
 
 void Viewport::update(QRect * rect) {
-//    QMainWindow::update(rect);
-    ui->canvas->repaint(*rect);
+    wup::print("repainting");
+    QMainWindow::update();
+    ui->canvas->update();
+//    ui->canvas->repaint(*rect);
 }

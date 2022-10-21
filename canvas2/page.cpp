@@ -32,10 +32,8 @@ public:
             else
                 cell->fill(QColor("#220000ff"));
 
-
-            QString msg = QString::asprintf("(%d, %d)", i, j);
-
             QPainter painter(cell);
+            QString msg = QString::asprintf("(%d, %d)", i, j);
             painter.drawText(0, 11, msg);
         }
 
@@ -163,9 +161,9 @@ void Page::onPaint(QPainter & painter, QRect & rect) {
 
     for (int i=i1;i<i2;++i) {
         for (int j=j1;j<j2;++j) {
-            Cell * cell = getCell(i, j);
+            Cell * cell = getCell(i, j, true);
             if (cell != nullptr)
-                painter.drawImage(cell->x, cell->y, *cell->img);
+                painter.drawImage(cell->x - x, cell->y - y, *cell->img);
         }
     }
 }
@@ -173,7 +171,7 @@ void Page::onPaint(QPainter & painter, QRect & rect) {
 Cell * Page::getCell(int i, int j, bool create) {
     //    print("Looking for cell", i, j);
 
-    // Debug mdoe
+    // Debug mode
     if (true) {
         QPair<int, int> key(i,j);
 

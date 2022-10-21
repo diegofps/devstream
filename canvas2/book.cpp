@@ -24,11 +24,6 @@ void Book::onPageEdited(Page *page)
     }
 }
 
-void Book::onRepaintPage(Page *page, QRect *rect)
-{
-    listener->onRepaintPage(this, page, rect);
-}
-
 void Book::showPreviousPage()
 {
     if (pageIndex != 0) {
@@ -52,4 +47,9 @@ void Book::setVisible(bool visible) {
 
 void Book::movePage(int rx, int ry) {
     currentPage()->move(rx, ry);
+}
+
+void Book::onRepaintPage(Page *page, QRect *rect)
+{
+    listener->onRepaintPage(this, page, rect);
 }
