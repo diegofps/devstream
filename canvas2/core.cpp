@@ -15,70 +15,193 @@ const char * named_pipe = "/tmp/shadow_xppen_deco_pro";
 
 using wup::print;
 
+//class CanvasEvent {
+//public:
+//    std::function<void(void)> callback;
+//    template <typename T> CanvasEvent(T callback) : callback(callback) { }
+//};
+
+//class CanvasEventQueue {
+//public:
+
+//    CanvasEventQueue() { }
+
+//    template <typename T> void push(T callback) {
+//        std::lock_guard<std::mutex> lock(mutex);
+//        events.append(callback);
+//    }
+
+//    void popAllInto(QList<std::function<void(void)>> &events) {
+//        semaphore.acquire();
+//        events.clear();
+
+//        std::lock_guard<std::mutex> lock(mutex);
+//        events = this->events;
+//        this->events.clear();
+//    }
+
+//private:
+//    std::mutex mutex;
+//    wup::Semaphore semaphore;
+//    QList<std::function<void(void)>> events;
+
+//};
+
+
+std::mutex callbacksAvailable;
+std::mutex callbacksAccess;
+QList<std::function<void(void)>> callbacks;
+
+template <typename T>
+void pushCallback(T callback) {
+    std::lock_guard<std::mutex> lock(callbacksAccess);
+    callbacks.append(callback);
+    callbacksAvailable.unlock();
+}
+
 void
 readCommands(Core * c)
 {
-    mkfifo(named_pipe, 0666);
-
     std::string cmd;
+    std::ifstream ifs(named_pipe);
 
     while (true)
     {
-        print("Opening pipe at", named_pipe);
-        std::ifstream ifs(named_pipe);
-        print("Pipe opened", named_pipe);
-        ifs >> cmd;
+        if (!(ifs >> cmd)) {
+            print("Error during cmd read");
+            sleep(1);
+            continue;
+        }
+
         print("Got cmd: ", cmd);
 
         if (cmd == "draw") {
             int x1, y1, x2, y2;
-            ifs >> x1 >> y1 >> x2 >> y2;
-            QMetaObject::invokeMethod(c, "draw", Qt::AutoConnection, Q_ARG(int, x1), Q_ARG(int, y1), Q_ARG(int, x2), Q_ARG(int, y2));
+            if (!(ifs >> x1 >> y1 >> x2 >> y2)) {
+                print("Error during parameter read");
+                sleep(1);
+                continue;
+            }
+
+            pushCallback([c,x1,y1,x2,y2]() {
+                c->draw(x1,y1,x2,y2);
+            });
+//            QMetaObject::invokeMethod(c, "draw", Qt::AutoConnection, Q_ARG(int, x1), Q_ARG(int, y1), Q_ARG(int, x2), Q_ARG(int, y2));
         }
 
         else if (cmd == "erase") {
             int x1, y1, x2, y2;
-            ifs >> x1 >> y1 >> x2 >> y2;
-            QMetaObject::invokeMethod(c, "erase", Qt::AutoConnection, Q_ARG(int, x1), Q_ARG(int, y1), Q_ARG(int, x2), Q_ARG(int, y2));
+            if (!(ifs >> x1 >> y1 >> x2 >> y2)) {
+                print("Error during parameter read");
+                sleep(1);
+                continue;
+            }
+
+            pushCallback([c,x1,y1,x2,y2]() {
+                c->erase(x1,y1,x2,y2);
+            });
+//            QMetaObject::invokeMethod(c, "erase", Qt::AutoConnection, Q_ARG(int, x1), Q_ARG(int, y1), Q_ARG(int, x2), Q_ARG(int, y2));
         }
 
         else if (cmd == "move_page") {
             int rx, ry;
-            ifs >> rx >> ry;
-            QMetaObject::invokeMethod(c, "movePage", Qt::AutoConnection, Q_ARG(int, rx), Q_ARG(int, ry));
+            if(!(ifs >> rx >> ry)) {
+                print("Error during parameter read");
+                sleep(1);
+                continue;
+            }
+
+            pushCallback([c,rx,ry]() {
+                c->movePage(rx,ry);
+            });
+//            QMetaObject::invokeMethod(c, "movePage", Qt::AutoConnection, Q_ARG(int, rx), Q_ARG(int, ry));
         }
 
         else if (cmd == "change_brush_size") {
             int size;
-            ifs >> size;
-            QMetaObject::invokeMethod(c, "changeBrushSize", Qt::AutoConnection, Q_ARG(int, size));
+            if(!(ifs >> size)) {
+                print("Error during parameter read");
+                sleep(1);
+                continue;
+            }
+
+            pushCallback([c,size]() {
+                c->changeBrushSize(size);
+            });
+//            QMetaObject::invokeMethod(c, "changeBrushSize", Qt::AutoConnection, Q_ARG(int, size));
         }
 
         else if (cmd == "change_eraser_size") {
             int size;
-            ifs >> size;
-            QMetaObject::invokeMethod(c, "changeEraserSize", Qt::AutoConnection, Q_ARG(int, size));
+            if (!(ifs >> size)) {
+                print("Error during parameter read");
+                sleep(1);
+                continue;
+            }
+
+            pushCallback([c,size]() {
+                c->changeEraserSize(size);
+            });
+//            QMetaObject::invokeMethod(c, "changeEraserSize", Qt::AutoConnection, Q_ARG(int, size));
         }
 
         else if (cmd == "set_page_mode") {
             int pageMode;
-            ifs >> pageMode;
-            QMetaObject::invokeMethod(c, "setPageMode", Qt::AutoConnection, Q_ARG(int, pageMode));
+            if (!(ifs >> pageMode)) {
+                print("Error during parameter read");
+                sleep(1);
+                continue;
+            }
+
+            pushCallback([c,pageMode]() {
+                c->setPageMode(pageMode);
+            });
+//            QMetaObject::invokeMethod(c, "setPageMode", Qt::AutoConnection, Q_ARG(int, pageMode));
         }
 
-        else if (cmd == "show_previous_page")
-            QMetaObject::invokeMethod(c, "showPreviousPage", Qt::AutoConnection);
+        else if (cmd == "show_previous_page") {
 
-        else if (cmd == "show_next_page")
-            QMetaObject::invokeMethod(c, "showNextPage", Qt::AutoConnection);
+            pushCallback([c]() {
+                c->showPreviousPage();
+            });
+//            QMetaObject::invokeMethod(c, "showPreviousPage", Qt::AutoConnection);
+        }
 
-        else
+        else if (cmd == "show_next_page") {
+            pushCallback([c]() {
+                c->showNextPage();
+            });
+//          QMetaObject::invokeMethod(c, "showNextPage", Qt::AutoConnection);
+        }
+
+        else if (cmd == "") {
+            sleep(1);
+        }
+
+        else {
             std::cout << "Unknown command:" << cmd << std::endl;
+        }
     }
 
-    unlink(named_pipe);
+//    unlink(named_pipe);
 }
 
+void dispatch(Core * c) {
+
+    while (true)
+    {
+        callbacksAvailable.lock();
+        c->processCallbacks();
+//        QMetaObject::invokeMethod(c, "processCallbacks", Qt::AutoConnection);
+    }
+}
+
+void move(Core * c) {
+    while (true) {
+        QMetaObject::invokeMethod(c, "movePage", Qt::AutoConnection, Q_ARG(int, -2), Q_ARG(int, -1));
+        usleep(10000);
+    }
+}
 
 Core::Core(QObject *parent)
     : QObject{parent},
@@ -86,7 +209,9 @@ Core::Core(QObject *parent)
       transparentBook(this, false),
       opaqueBook(this, true),
       activeBook(&transparentBook),
-      reader(readCommands, this),
+      dispatcher(nullptr),
+      reader(nullptr),
+      mover(nullptr),
       size_brush_index(5),
       size_eraser_index(5),
       size_brush(pow(BRUSH_BASE, size_brush_index)),
@@ -95,6 +220,10 @@ Core::Core(QObject *parent)
       width_space(0),
       height_space(0)
 {
+    callbacksAvailable.lock();
+    reader = new std::thread(readCommands, this);
+    dispatcher = new std::thread(dispatch, this);
+//    mover = new std::thread(move, this);
 
     QList<QScreen*> screens = QGuiApplication::screens();
 
@@ -113,6 +242,19 @@ Core::Core(QObject *parent)
 
     wup::print("space", width_space, height_space);
     wup::print("sizes", size_brush, size_eraser);
+}
+
+void Core::processCallbacks() {
+    {
+        std::lock_guard<std::mutex> lock1(callbacksAccess);
+        callbacksCopy = callbacks;
+        callbacks.clear();
+    }
+
+    for (auto & callback : callbacksCopy)
+        callback();
+
+    callbacksCopy.clear();
 }
 
 void Core::onPageChanged(Book *, Page *page)

@@ -39,6 +39,7 @@ public:
 signals:
 
 public slots:
+    void processCallbacks();
     void changeBrushSize(int size);
     void changeEraserSize(int size);
     void showPreviousPage();
@@ -56,7 +57,9 @@ private:
     Book transparentBook;
     Book opaqueBook;
     Book * activeBook;
-    std::thread reader;
+    std::thread *dispatcher;
+    std::thread *reader;
+    std::thread *mover;
 
     int size_brush_index;
     int size_eraser_index;
@@ -68,6 +71,8 @@ private:
 
     int width_space;
     int height_space;
+
+    QList<std::function<void(void)>> callbacksCopy;
 
 };
 

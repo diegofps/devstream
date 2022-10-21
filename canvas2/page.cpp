@@ -7,11 +7,21 @@
 using namespace wup;
 
 const int CELL_SIZE = 256;
+std::mutex drawing;
+
+
+int sdistance(int x1, int y1, int x2, int y2) {
+    int dx = abs(x1-x2);
+    int dy = abs(y1-y2);
+    return dx*dx + dy*dy;
+}
 
 Page::Page(PageListener *listener, bool opaque) :
     listener(listener),
     viewX(0),
     viewY(0),
+    lastX(0),
+    lastY(0),
     opaque(opaque),
     backgroundBrush()
 {
@@ -19,10 +29,23 @@ Page::Page(PageListener *listener, bool opaque) :
 }
 
 void Page::move(int rx, int ry) {
-    print("Moving viewport", rx, ry, viewX, viewY);
+//    print("Moving viewport", rx, ry, viewX, viewY);
+
+    std::lock_guard<std::mutex> lock(drawing);
     viewX += rx;
     viewY += ry;
+
     listener->onRepaintPage(this);
+
+//    int d = sdistance(lastX, lastY, viewX, viewY);
+//    print(d);
+
+//    if (d > 600) {
+//        lastX = viewX;
+//        lastY = viewY;
+//        listener->onRepaintPage(this);
+//    }
+
 }
 
 void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
@@ -33,12 +56,17 @@ void Page::erase(int x1, int y1, int x2, int y2, int size) {
 
 }
 
-#include <QPaintEngine>
-
-void Page::onPaint(QPaintEvent & event, QPainter & painter, QRect & rect) {
-    wup::print("Page's onPaint called");
+void Page::onPaint(QPainter & painter, QRect & rect) {
+//    wup::print("Page's onPaint called");
 
     painter.fillRect(0, 0, rect.width(), rect.height(), backgroundBrush);
+
+    int viewX, viewY;
+    {
+        std::lock_guard<std::mutex> lock(drawing);
+        viewX = this->viewX;
+        viewY = this->viewY;
+    }
 
     int x = rect.left() - viewX;
     int y = rect.top() - viewY;

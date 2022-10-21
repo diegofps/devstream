@@ -7,7 +7,7 @@
 #include <wup/wup.hpp>
 
 
-MainWindow::MainWindow(QScreen *screen)
+Viewport::MainWindow(QScreen *screen)
     : QMainWindow(nullptr),
 
       ui(new Ui::MainWindow),
@@ -20,17 +20,17 @@ MainWindow::MainWindow(QScreen *screen)
 
     configureWindowProperties();
     positionWindow(screen);
-    configureStylesheet(false);
+//    configureStylesheet(false);
 
     show();
 }
 
-MainWindow::~MainWindow()
+Viewport::~MainWindow()
 {
     delete ui;
 }
 
-void MainWindow::setPage(Page *page)
+void Viewport::setPage(Page *page)
 {
     wup::print("Inside Viewport's setPage");
     this->page = page;
@@ -38,7 +38,7 @@ void MainWindow::setPage(Page *page)
 }
 
 
-void MainWindow::positionWindow(QScreen *screen)
+void Viewport::positionWindow(QScreen *screen)
 {
     QRect g = screen->geometry();
 
@@ -49,7 +49,7 @@ void MainWindow::positionWindow(QScreen *screen)
     this->resize(g.size());
 }
 
-void MainWindow::configureWindowProperties()
+void Viewport::configureWindowProperties()
 {
     setAttribute(Qt::WA_NoSystemBackground, true);
     setAttribute(Qt::WA_TranslucentBackground, true);
@@ -68,35 +68,40 @@ void MainWindow::configureWindowProperties()
 
 }
 
-void MainWindow::configureStylesheet(bool opaque)
+void Viewport::configureStylesheet(bool opaque)
 {
-    if (opaque) {
-        setStyleSheet(
-            "border: 0px;"
-            "background-color: #ffcccccc;"
-        );
-    }
-    else {
-        setStyleSheet(
-            "border: 0px;"
-            "background-color: #11ffffff;"
-        );
-    }
+//    if (opaque) {
+//        setStyleSheet(
+//            "border: 0px;"
+//            "background-color: #ffcccccc;"
+//        );
+//    }
+//    else {
+//        setStyleSheet(
+//            "border: 0px;"
+//            "background-color: #11ffffff;"
+//        );
+//    }
 
 }
 
-void MainWindow::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
+void Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
     page->draw(x1, y1, x2, y2, size, color);
 //    repaint(x1, y1, x2-x1, y2-y1);
 }
 
-void MainWindow::erase(int x1, int y1, int x2, int y2, int size) {
+void Viewport::erase(int x1, int y1, int x2, int y2, int size) {
     page->erase(x1, y1, x2, y2, size);
 //    repaint(x1, y1, x2-x1, y2-y1);
 }
 
-void MainWindow::onPaint(QPaintEvent & event, QPainter & painter) {
+void Viewport::onPaint(QPainter & painter) {
 //    wup::print("MainWindow's onPaint called");
     if (page != nullptr)
-        page->onPaint(event, painter, screenRect);
+        page->onPaint(painter, screenRect);
+}
+
+void Viewport::update() {
+    QMainWindow::update();
+    ui->canvas->update();
 }

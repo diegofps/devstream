@@ -14,36 +14,88 @@ import log
 import os
 
 # Configure PIPE
-class CanvasPipe(Thread):
+class Canvas(Thread):
 
     def __init__(self):
-        super().__init__(target=self.run)
-        self.filepath = "/tmp/shadow_xppen_deco_pro"
+        self.pipe_filepath = "/tmp/shadow_xppen_deco_pro"
+        self.process_filepath = "/home/diego/Sources/logitech_marble_linux_wrapper/build-canvas2-Desktop_Qt_6_4_0_GCC_64bit-Debug/canvas2"
+        self.process_filepath = ""
         self.queue = Queue()
         self.tries = 3
-        self.start()
 
-    def run(self):
+        if os.path.exists(self.pipe_filepath):
+            os.unlink(self.pipe_filepath)
+        
+        try:
+            os.umask(0)
+            os.mkfifo(self.pipe_filepath, 0o666)
+            os.umask(0o133)
+        except FileExistsError:
+            pass
+
+        self.process_thread = Thread(target=self.process_main)
+        self.pipe_thread = Thread(target=self.pipe_main)
+
+        if self.process_filepath:
+            self.process_thread.start()
+        self.pipe_thread.start()
+
+    def process_main(self):
         while True:
-            msg = self.queue.get()
+            try:
+                os.system(self.process_filepath)
+                log.error("Canvas process finished unexpectedly")
+            except Exception as e:
+                log.error("Failed to start or execute the canvas process, retrying in 5s...", 
+                    exception_class=e.__class__.__name__,
+                    description=e, 
+                )
+            time.sleep(5)
 
-            if msg is None:
-                break
-            
-            for i in range(self.tries):
-                try:
-                    with open(self.filepath, 'w') as fout:
-                        fout.write(msg)
-                        fout.write('\n')
-                    break
-                except Exception as e:
-                    log.error("Failed to send message to canvas.", msg=msg, attempt=f"{i+1}/{self.tries}", error=e)
-                    time.sleep(1)
+    def pipe_main(self):
+        while True:
+            try:
+                with open(self.pipe_filepath, 'a') as fout:
+                    while True:
+                        msg = self.queue.get()
+
+                        if msg is None:
+                            break
+
+                        if not msg[0] == ' ':
+                            msg = ' ' + msg
+                        
+                        if not msg[-1] == ' ':
+                            msg = msg + ' '
+                        
+                        for i in range(self.tries):
+                            try:
+                                log.debug("sending command: ", msg)
+                                fout.write(msg)
+                                fout.flush()
+                                log.debug("mesage sent")
+                                break
+                            except Exception as e:
+                                log.error("Failed to send message to canvas.", 
+                                    attempt=f"{i+1}/{self.tries}", 
+                                    msg=msg, 
+                                    exception_class=e.__class__.__name__, 
+                                    description=e, 
+                                )
+                                time.sleep(1)
+            except Exception as e:
+                log.error("Failed to connect to pipe.", 
+                    attempt=f"{i+1}/{self.tries}", 
+                    msg=msg, 
+                    exception_class=e.__class__.__name__,
+                    description=e, 
+                )
+                time.sleep(1)
 
     def send(self, msg):
         self.queue.put(msg)
 
-canvas = CanvasPipe()
+canvas = Canvas()
 
 TOOL_BRUSH = 1
 TOOL_ERASER = 2

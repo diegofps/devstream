@@ -2,21 +2,31 @@
 #define CANVASWIDGET_H
 
 #include <QWidget>
+#include <QOpenGLWidget>
+#include <QTimer>
+
+#include <thread>
 
 class CanvasWidgetListener {
 public:
-    virtual void onPaint(QPaintEvent & event, QPainter & painter) = 0;
+    virtual void onPaint(QPainter & painter) = 0;
 };
 
-class CanvasWidget : public QWidget
+class CanvasWidget : public QOpenGLWidget
 {
 public:
     CanvasWidget(QWidget * parent = nullptr);
-    void paintEvent(QPaintEvent *);
     void setListener(CanvasWidgetListener *listener);
+    void paintEvent(QPaintEvent *event);
+    void animate();
+    void asyncUpdate();
+
 
 private:
     CanvasWidgetListener * listener;
+//    bool mustRefresh;
+//    QTimer timer;
+    std::thread mythread;
 
 };
 

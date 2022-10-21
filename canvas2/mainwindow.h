@@ -21,7 +21,8 @@ public:
     void setPage(Page * page);
     void draw(int x1, int y1, int x2, int y2, int size, QColor &color);
     void erase(int x1, int y1, int x2, int y2, int size);
-    void onPaint(QPaintEvent &event, QPainter &painter);
+    void onPaint(QPainter &painter);
+    void update();
 
 private:
     void positionWindow(QScreen *screen);

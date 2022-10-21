@@ -6,6 +6,7 @@
 #include <QPair>
 #include <QHash>
 #include <QBrush>
+#include <QOpenGLTexture>
 
 class Page;
 
@@ -23,13 +24,15 @@ public:
     void move(int rx, int ry);
     void draw(int x1, int y1, int x2, int y2, int size, QColor &color);
     void erase(int x1, int y1, int x2, int y2, int size);
-    void onPaint(QPaintEvent & event, QPainter & painter, QRect & rect);
+    void onPaint(QPainter & painter, QRect & rect);
     QImage * getCell(int i, int j);
 
 private:
     PageListener *listener;
     int viewX;
     int viewY;
+    int lastX;
+    int lastY;
     QHash<QPair<int,int>, QImage*> cells;
     bool opaque;
     QBrush backgroundBrush;

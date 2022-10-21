@@ -12,9 +12,9 @@ Book::Book(BookListener * listener, bool opaque) :
 }
 
 Page * Book::currentPage() {
-    wup::print("Getting current page", pages.size(), pageIndex);
+//    wup::print("Getting current page", pages.size(), pageIndex);
     auto page = pageIndex == pages.size() ? extraPage : pages[pageIndex];
-    wup::print("got current page");
+//    wup::print("got current page");
     return page;
 }
 
