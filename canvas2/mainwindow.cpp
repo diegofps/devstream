@@ -33,7 +33,7 @@ void Viewport::setPage(Page *page)
 {
     wup::print("Inside Viewport's setPage");
     this->page = page;
-    this->update();
+    this->update(nullptr);
 }
 
 
@@ -83,7 +83,7 @@ void Viewport::onPaint(QPainter & painter) {
         page->onPaint(painter, screenRect);
 }
 
-void Viewport::update() {
-    QMainWindow::update();
-    ui->canvas->update();
+void Viewport::update(QRect * rect) {
+//    QMainWindow::update(rect);
+    ui->canvas->repaint(*rect);
 }

@@ -10,7 +10,7 @@ class Book;
 class BookListener {
 public:
     virtual void onPageChanged(Book * book, Page *page) = 0;
-    virtual void onRepaintPage(Book * book, Page *page) = 0;
+    virtual void onRepaintPage(Book * book, Page *page, QRect *rect) = 0;
 };
 
 class Book: public PageListener
@@ -20,7 +20,7 @@ public:
 
     Page * currentPage();
     void onPageEdited(Page *page);
-    void onRepaintPage(Page *page);
+    void onRepaintPage(Page *page, QRect *rect);
     void showPreviousPage();
     void showNextPage();
     void setVisible(bool visible);

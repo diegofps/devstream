@@ -34,7 +34,7 @@ public:
     explicit Core(QObject *parent = nullptr);
 
     void onPageChanged(Book *book, Page * page);
-    void onRepaintPage(Book *book, Page * page);
+    void onRepaintPage(Book *book, Page * page, QRect * rect);
 
 signals:
 

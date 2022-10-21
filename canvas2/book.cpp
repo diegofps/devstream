@@ -12,9 +12,7 @@ Book::Book(BookListener * listener, bool opaque) :
 }
 
 Page * Book::currentPage() {
-//    wup::print("Getting current page", pages.size(), pageIndex);
     auto page = pageIndex == pages.size() ? extraPage : pages[pageIndex];
-//    wup::print("got current page");
     return page;
 }
 
@@ -26,16 +24,16 @@ void Book::onPageEdited(Page *page)
     }
 }
 
-void Book::onRepaintPage(Page *page)
+void Book::onRepaintPage(Page *page, QRect *rect)
 {
-    listener->onRepaintPage(this, page);
+    listener->onRepaintPage(this, page, rect);
 }
 
 void Book::showPreviousPage()
 {
     if (pageIndex != 0) {
         --pageIndex;
-        listener->onRepaintPage(this, currentPage());
+        listener->onRepaintPage(this, currentPage(), nullptr);
     }
 }
 
@@ -43,13 +41,13 @@ void Book::showNextPage()
 {
     if (pageIndex != pages.size()) {
         ++pageIndex;
-        listener->onRepaintPage(this, currentPage());
+        listener->onRepaintPage(this, currentPage(), nullptr);
     }
 }
 
 void Book::setVisible(bool visible) {
     this->visible = visible;
-    listener->onRepaintPage(this, currentPage());
+    listener->onRepaintPage(this, currentPage(), nullptr);
 }
 
 void Book::movePage(int rx, int ry) {

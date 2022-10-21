@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <wup/wup.hpp>
 
+
 CanvasWidget::CanvasWidget(QWidget * parent) :
     QOpenGLWidget(parent),
     listener(nullptr)

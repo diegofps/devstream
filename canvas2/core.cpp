@@ -1,7 +1,6 @@
 #include "core.h"
 
 #include <mainwindow.h>
-#include <viewport.h>
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -127,10 +126,10 @@ void Core::onPageChanged(Book *, Page *page)
         viewport->setPage(page);
 }
 
-void Core::onRepaintPage(Book *, Page *)
+void Core::onRepaintPage(Book *, Page *, QRect *rect)
 {
     for (Viewport * viewport : viewports)
-        viewport->update();
+        viewport->update(rect);
 }
 
 void Core::changeBrushSize(int size)
@@ -198,6 +197,7 @@ void Core::movePage(int rx, int ry) {
 }
 
 void Core::draw(int x1, int y1, int x2, int y2) {
+    // Convert from tablet abs coordinates to multidisplay coordinates
     x1 = (x1 * width_space) / 32767;
     x2 = (x2 * width_space) / 32767;
 
@@ -209,6 +209,7 @@ void Core::draw(int x1, int y1, int x2, int y2) {
 }
 
 void Core::erase(int x1, int y1, int x2, int y2) {
+    // Convert from tablet abs coordinates to multidisplay coordinates
     x1 = (x1 * width_space) / 32767;
     x2 = (x2 * width_space) / 32767;
 

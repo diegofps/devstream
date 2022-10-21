@@ -22,7 +22,7 @@ public:
     void draw(int x1, int y1, int x2, int y2, int size, QColor &color);
     void erase(int x1, int y1, int x2, int y2, int size);
     void onPaint(QPainter &painter);
-    void update();
+    void update(QRect * rect);
 
 private:
     void positionWindow(QScreen *screen);
