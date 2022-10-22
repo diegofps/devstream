@@ -7,7 +7,7 @@
 
 using namespace wup;
 
-const int CELL_SIZE = 256;
+const int CELL_SIZE = 512;
 
 
 class Cell {
@@ -49,16 +49,14 @@ public:
 };
 
 
-Page::Page(PageListener *listener, bool opaque) :
-    listener(listener),
+Page::Page(PageListener *listener) :
+    book(listener),
     viewX(0),
     viewY(0),
     lastX(0),
-    lastY(0),
-    opaque(opaque),
-    backgroundBrush()
+    lastY(0)
 {
-    backgroundBrush.setColor(opaque? QColor("ffcccccc") : QColor("11ffffff"));
+
 }
 
 void Page::move(int rx, int ry) {
@@ -67,10 +65,11 @@ void Page::move(int rx, int ry) {
     std::lock_guard<std::mutex> lock(drawing);
     viewX += rx;
     viewY += ry;
-    listener->onRepaintPage(this, nullptr);
+    book->onRepaintPage(this, nullptr);
 }
 
 void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
+    print("Drawing in page ");
     std::lock_guard<std::mutex> lock(drawing);
 
     // Convert from multidisplay coordinates to world coordinates
@@ -124,29 +123,24 @@ void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
     
     // Convert from world coordinates to multiviewport coordinates
     left += viewX;
-    top += viewY;
+    top  += viewY;
 
     QRect rect(left, top, width, height);
 
     // Request an update to the widget
-    listener->onRepaintPage(this, &rect);
+    book->onRepaintPage(this, &rect);
 }
 
 void Page::erase(int x1, int y1, int x2, int y2, int size) {
 
 }
 
-void Page::onPaint(QPainter & painter, QRect & rect) {
-//    wup::print("Page's onPaint called");
+void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
+    // wup::print("Page's onPaint called");
+    std::lock_guard<std::mutex> lock(drawing);
 
-    int viewX, viewY;
-    {
-        std::lock_guard<std::mutex> lock(drawing);
-        viewX = this->viewX;
-        viewY = this->viewY;
-    }
-
-    painter.fillRect(0, 0, rect.width(), rect.height(), backgroundBrush);
+    if (backgroundColor != nullptr)
+        painter.fillRect(0, 0, rect.width(), rect.height(), *backgroundColor);
 
     // Convert from multidisplay coordinates to world coordinates
     int x = rect.left() - viewX;
@@ -172,7 +166,7 @@ Cell * Page::getCell(int i, int j, bool create) {
     //    print("Looking for cell", i, j);
 
     // Debug mode
-    if (true) {
+    if (false) {
         QPair<int, int> key(i,j);
 
         auto it = cells.find(key);

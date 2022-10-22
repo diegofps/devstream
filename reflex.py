@@ -16,6 +16,7 @@ class Reflex:
         self.listeners = []
         self.thread = None
         self.done = False
+        self.active = False
 
         self.devices_events = None
         self.state_topic = None

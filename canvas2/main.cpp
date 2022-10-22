@@ -1,5 +1,3 @@
-#include "mainwindow.h"
-
 #include <QApplication>
 #include <wup/wup.hpp>
 #include <core.h>

@@ -2,13 +2,14 @@
 #include <wup/wup.hpp>
 
 Book::Book(BookListener * listener, bool opaque) :
-    listener(listener),
+    core(listener),
     pageIndex(0),
     extraPage(nullptr),
     opaque(opaque),
-    visible(true)
+    visible(true),
+    backgroundColor("#ffdddddd")
 {
-    extraPage = new Page(this, opaque);
+    extraPage = new Page(this);
 }
 
 Page * Book::currentPage() {
@@ -20,7 +21,7 @@ void Book::onPageEdited(Page *page)
 {
     if (page == extraPage) {
         pages.append(extraPage);
-        extraPage = new Page(this, opaque);
+        extraPage = new Page(this);
     }
 }
 
@@ -28,7 +29,7 @@ void Book::showPreviousPage()
 {
     if (pageIndex != 0) {
         --pageIndex;
-        listener->onRepaintPage(this, currentPage(), nullptr);
+        core->onPageChanged(this, currentPage());
     }
 }
 
@@ -36,13 +37,13 @@ void Book::showNextPage()
 {
     if (pageIndex != pages.size()) {
         ++pageIndex;
-        listener->onRepaintPage(this, currentPage(), nullptr);
+        core->onPageChanged(this, currentPage());
     }
 }
 
 void Book::setVisible(bool visible) {
     this->visible = visible;
-    listener->onRepaintPage(this, currentPage(), nullptr);
+    core->onPageChanged(this, currentPage());
 }
 
 void Book::movePage(int rx, int ry) {
@@ -51,5 +52,15 @@ void Book::movePage(int rx, int ry) {
 
 void Book::onRepaintPage(Page *page, QRect *rect)
 {
-    listener->onRepaintPage(this, page, rect);
+    core->onRepaintPage(this, page, rect);
+}
+
+void Book::onPaint(QPainter & painter, QRect & screenRect) {
+    if (!visible)
+        return;
+
+    if (opaque)
+        currentPage()->onPaint(painter, screenRect, &backgroundColor);
+    else
+        currentPage()->onPaint(painter, screenRect, nullptr);
 }

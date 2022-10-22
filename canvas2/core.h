@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QScreen>
 #include <QList>
-#include <mainwindow.h>
+#include <viewport.h>
 #include <thread>
 #include <page.h>
 
@@ -50,7 +50,7 @@ public slots:
 
 private:
 
-    QList<MainWindow*> viewports;
+    QList<Viewport*> viewports;
 
     PageMode pageMode;
     Book transparentBook;

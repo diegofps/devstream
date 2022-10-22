@@ -1,24 +1,24 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef VIEWPORT_H
+#define VIEWPORT_H
 
+#include "book.h"
 #include "canvaswidget.h"
 
 #include <QMainWindow>
-#include <page.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow, public CanvasWidgetListener
+class Viewport : public QMainWindow, public CanvasWidgetListener
 {
     Q_OBJECT
 
 public:
-    MainWindow(QScreen *screen);
-    ~MainWindow();
+    Viewport(QScreen *screen);
+    ~Viewport();
 
-    void setPage(Page * page);
+    void setBook(Book * book);
     void draw(int x1, int y1, int x2, int y2, int size, QColor &color);
     void erase(int x1, int y1, int x2, int y2, int size);
     void onPaint(QPainter &painter);
@@ -30,11 +30,9 @@ private:
 
 private:
     Ui::MainWindow *ui;
-    Page *page;
+    Book *book;
     QRect screenRect;
 
 };
 
-typedef MainWindow Viewport;
-
-#endif // MAINWINDOW_H
+#endif // VIEWPORT_H

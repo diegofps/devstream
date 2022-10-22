@@ -1,6 +1,6 @@
 #include "core.h"
 
-#include <mainwindow.h>
+#include <viewport.h>
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -108,7 +108,7 @@ Core::Core(QObject *parent)
         auto g = screen->geometry();
 
         Viewport * viewport = new Viewport(screen);
-        viewport->setPage(activeBook->currentPage());
+        viewport->setBook(activeBook);
         viewports.append(viewport);
 
         width_space = std::max(g.right(), width_space);
@@ -120,10 +120,10 @@ Core::Core(QObject *parent)
     wup::print("sizes", size_brush, size_eraser);
 }
 
-void Core::onPageChanged(Book *, Page *page)
+void Core::onPageChanged(Book *book, Page *)
 {
     for (Viewport * viewport : viewports)
-        viewport->setPage(page);
+        viewport->setBook(book);
 }
 
 void Core::onRepaintPage(Book *, Page *, QRect *rect)

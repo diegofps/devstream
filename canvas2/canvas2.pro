@@ -16,18 +16,18 @@ SOURCES += \
     canvaswidget.cpp \
     core.cpp \
     main.cpp \
-    mainwindow.cpp \
-    page.cpp
+    page.cpp \
+    viewport.cpp
 
 HEADERS += \
     book.h \
     canvaswidget.h \
     core.h \
-    mainwindow.h \
-    page.h
+    page.h \
+    viewport.h
 
 FORMS += \
-    mainwindow.ui
+    viewport.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

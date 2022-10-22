@@ -17,7 +17,6 @@ class BaseMarbleNode(Reflex):
 
     def __init__(self, shadow):
         super().__init__(shadow)
-        self.active = False
         self.configure_states(TOPIC_MARBLE_STATE, TOPIC_DEVICE_MARBLE)
 
     def on_event(self, topic_name, event):

@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "viewport.h"
 #include "ui_mainwindow.h"
 
 #include <QRect>
@@ -7,11 +7,11 @@
 #include <wup/wup.hpp>
 
 
-Viewport::MainWindow(QScreen *screen)
+Viewport::Viewport(QScreen *screen)
     : QMainWindow(nullptr),
 
       ui(new Ui::MainWindow),
-      page(nullptr),
+      book(nullptr),
       screenRect(screen->geometry().left(), screen->geometry().top(),
            screen->geometry().width(), screen->geometry().height())
 {
@@ -24,15 +24,15 @@ Viewport::MainWindow(QScreen *screen)
     show();
 }
 
-Viewport::~MainWindow()
+Viewport::~Viewport()
 {
     delete ui;
 }
 
-void Viewport::setPage(Page *page)
+void Viewport::setBook(Book *book)
 {
-    wup::print("Inside Viewport's setPage");
-    this->page = page;
+    wup::print("Inside Viewport's setBook");
+    this->book = book;
     this->update(nullptr);
 }
 
@@ -68,24 +68,24 @@ void Viewport::configureWindowProperties()
 }
 
 void Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
-    page->draw(x1, y1, x2, y2, size, color);
-//    repaint(x1, y1, x2-x1, y2-y1);
+    book->currentPage()->draw(x1, y1, x2, y2, size, color);
 }
 
 void Viewport::erase(int x1, int y1, int x2, int y2, int size) {
-    page->erase(x1, y1, x2, y2, size);
-//    repaint(x1, y1, x2-x1, y2-y1);
+    book->currentPage()->erase(x1, y1, x2, y2, size);
 }
 
 void Viewport::onPaint(QPainter & painter) {
 //    wup::print("MainWindow's onPaint called");
-    if (page != nullptr)
-        page->onPaint(painter, screenRect);
+    if (book != nullptr)
+        book->onPaint(painter, screenRect);
 }
 
 void Viewport::update(QRect * rect) {
     wup::print("repainting");
-    QMainWindow::update();
-    ui->canvas->update();
+//    QMainWindow::update();
+    QMetaObject::invokeMethod(ui->canvas, "update", Qt::AutoConnection);
+
+//    ui->canvas->update();
 //    ui->canvas->repaint(*rect);
 }

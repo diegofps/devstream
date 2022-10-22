@@ -25,14 +25,16 @@ public:
     void showNextPage();
     void setVisible(bool visible);
     void movePage(int rx, int ry);
+    void onPaint(QPainter &painter, QRect &screenRect);
 
 private:
-    BookListener *listener;
+    BookListener *core;
     QList<Page*> pages;
     int pageIndex;
     Page * extraPage;
     bool opaque;
     bool visible;
+    QColor backgroundColor;
 };
 
 #endif // BOOK_H

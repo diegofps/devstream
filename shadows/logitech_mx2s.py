@@ -18,7 +18,6 @@ class BaseMX2SNode(Reflex):
 
     def __init__(self, shadow):
         super().__init__(shadow)
-        self.active = False
         self.configure_states(TOPIC_MX2S_STATE, TOPIC_DEVICE_MX2S)
 
     def on_event(self, device_name, event):
