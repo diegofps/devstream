@@ -169,7 +169,7 @@ Cell * Page::getCell(int i, int j, bool createOnMiss) {
     //    print("Looking for cell", i, j);
 
     // Debug mode
-    if (false) {
+    if (true) {
         QPair<int, int> key(i,j);
 
         auto it = cells.find(key);

@@ -17,6 +17,7 @@ SOURCES += \
     core.cpp \
     main.cpp \
     page.cpp \
+    scalabledisplay.cpp \
     viewport.cpp
 
 HEADERS += \
@@ -24,6 +25,7 @@ HEADERS += \
     canvaswidget.h \
     core.h \
     page.h \
+    scalabledisplay.h \
     viewport.h
 
 FORMS += \

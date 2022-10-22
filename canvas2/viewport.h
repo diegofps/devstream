@@ -5,6 +5,7 @@
 #include "canvaswidget.h"
 
 #include <QMainWindow>
+#include <scalabledisplay.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -15,7 +16,7 @@ class Viewport : public QMainWindow, public CanvasWidgetListener
     Q_OBJECT
 
 public:
-    Viewport(QScreen *screen);
+    Viewport(ScalableDisplay *display);
     ~Viewport();
 
     void setBook(Book * book);
@@ -31,7 +32,7 @@ private:
 private:
     Ui::MainWindow *ui;
     Book *book;
-    QRect screenRect;
+    ScalableDisplay *display;
 
 };
 

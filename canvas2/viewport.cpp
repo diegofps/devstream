@@ -7,19 +7,18 @@
 #include <wup/wup.hpp>
 
 
-Viewport::Viewport(QScreen *screen)
+Viewport::Viewport(ScalableDisplay *display)
     : QMainWindow(nullptr),
 
       ui(new Ui::MainWindow),
       book(nullptr),
-      screenRect(screen->geometry().left(), screen->geometry().top(),
-           screen->geometry().width(), screen->geometry().height())
+      display(display)
 {
     ui->setupUi(this);
     ui->canvas->setListener(this);
 
     configureWindowProperties();
-    positionWindow(screen);
+    positionWindow(display->screen);
 
     show();
 }
@@ -68,6 +67,15 @@ void Viewport::configureWindowProperties()
 }
 
 void Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
+
+    auto x = this->display->internalGeometry.left();
+    auto y = this->display->internalGeometry.top();
+
+    x1 = x + (x1-x)*this->display->normX;
+    x2 = x + (x2-x)*this->display->normX;
+    y1 = y + (y1-y)*this->display->normY;
+    y2 = y + (y2-y)*this->display->normY;
+
     book->currentPage()->draw(x1, y1, x2, y2, size, color);
 }
 
@@ -78,7 +86,7 @@ void Viewport::erase(int x1, int y1, int x2, int y2, int size) {
 void Viewport::onPaint(QPainter & painter) {
 //    wup::print("MainWindow's onPaint called");
     if (book != nullptr)
-        book->onPaint(painter, screenRect);
+        book->onPaint(painter, this->display->internalGeometry);
 }
 
 void Viewport::update(QRect * rect) {

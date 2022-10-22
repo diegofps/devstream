@@ -407,9 +407,9 @@ class XPPEN_DecoPro_Base(Reflex):
             self.touching = True
 
             if self.tool == TOOL_BRUSH:
-                canvas.send(f"draw {self.last_x} {self.last_y} {self.last_x} {self.last_y}")
+                canvas.send(f"draw {x} {y} {x+1} {y+1}")
             elif self.tool == TOOL_ERASER:
-                canvas.send(f"erase {self.last_x} {self.last_y} {self.last_x} {self.last_y}")
+                canvas.send(f"erase {x} {y} {x+1} {y+1}")
 
 
     def on_pen_btn_low(self, value, x, y):
