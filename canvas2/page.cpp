@@ -158,14 +158,14 @@ void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
 
     for (int i=i1;i<i2;++i) {
         for (int j=j1;j<j2;++j) {
-            Cell * cell = getCell(i, j, true);
+            Cell * cell = getCell(i, j, false);
             if (cell != nullptr)
                 painter.drawImage(cell->x - x, cell->y - y, *cell->img);
         }
     }
 }
 
-Cell * Page::getCell(int i, int j, bool create) {
+Cell * Page::getCell(int i, int j, bool createOnMiss) {
     //    print("Looking for cell", i, j);
 
     // Debug mode
@@ -189,7 +189,7 @@ Cell * Page::getCell(int i, int j, bool create) {
         if (it != cells.end())
             return *it;
 
-        if (!create)
+        if (!createOnMiss)
             return nullptr;
 
         Cell *cell = new Cell(i, j, true);
