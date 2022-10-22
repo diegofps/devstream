@@ -18,71 +18,78 @@ void
 readCommands(Core * c)
 {
     std::string cmd;
-    std::ifstream ifs(named_pipe);
+    bool restart = false;
 
-    while (true)
-    {
-        if (!(ifs >> cmd)) {
-            print("Error during cmd read");
-            sleep(1);
-            continue;
+    while (true) {
+
+        std::ifstream ifs(named_pipe);
+
+        while (!restart)
+        {
+            if (!(ifs >> cmd)) {
+                print("Error during cmd read");
+                restart = true;
+                sleep(1);
+                continue;
+            }
+
+            print("Got cmd: ", cmd);
+
+            if (cmd == "draw") {
+                int x1, y1, x2, y2;
+                if (ifs >> x1 >> y1 >> x2 >> y2)
+                    c->draw(x1,y1,x2,y2);
+            }
+
+            else if (cmd == "erase") {
+                int x1, y1, x2, y2;
+                if (ifs >> x1 >> y1 >> x2 >> y2)
+                     c->erase(x1,y1,x2,y2);
+            }
+
+            else if (cmd == "move_page") {
+                int rx, ry;
+                if (ifs >> rx >> ry)
+                    c->movePage(rx,ry);
+            }
+
+            else if (cmd == "change_brush_size") {
+                int size;
+                if (ifs >> size)
+                    c->changeBrushSize(size);
+            }
+
+            else if (cmd == "change_eraser_size") {
+                int size;
+                if (ifs >> size)
+                    c->changeEraserSize(size);
+            }
+
+            else if (cmd == "set_page_mode") {
+                int pageMode;
+                if (ifs >> pageMode)
+                    c->setPageMode(pageMode);
+            }
+
+            else if (cmd == "show_previous_page") {
+                c->showPreviousPage();
+            }
+
+            else if (cmd == "show_next_page") {
+                c->showNextPage();
+            }
+
+            else if (cmd == "") {
+                sleep(1);
+            }
+
+            else {
+                std::cout << "Unknown command:" << cmd << std::endl;
+            }
         }
 
-        print("Got cmd: ", cmd);
-
-        if (cmd == "draw") {
-            int x1, y1, x2, y2;
-            if (ifs >> x1 >> y1 >> x2 >> y2)
-                c->draw(x1,y1,x2,y2);
-        }
-
-        else if (cmd == "erase") {
-            int x1, y1, x2, y2;
-            if (ifs >> x1 >> y1 >> x2 >> y2)
-                 c->erase(x1,y1,x2,y2);
-        }
-
-        else if (cmd == "move_page") {
-            int rx, ry;
-            if (ifs >> rx >> ry)
-                c->movePage(rx,ry);
-        }
-
-        else if (cmd == "change_brush_size") {
-            int size;
-            if (ifs >> size)
-                c->changeBrushSize(size);
-        }
-
-        else if (cmd == "change_eraser_size") {
-            int size;
-            if (ifs >> size)
-                c->changeEraserSize(size);
-        }
-
-        else if (cmd == "set_page_mode") {
-            int pageMode;
-            if (ifs >> pageMode)
-                c->setPageMode(pageMode);
-        }
-
-        else if (cmd == "show_previous_page") {
-            c->showPreviousPage();
-        }
-
-        else if (cmd == "show_next_page") {
-            c->showNextPage();
-        }
-
-        else if (cmd == "") {
-            sleep(1);
-        }
-
-        else {
-            std::cout << "Unknown command:" << cmd << std::endl;
-        }
+        restart = false;
     }
-
 }
 
 

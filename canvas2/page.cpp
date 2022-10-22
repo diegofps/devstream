@@ -129,6 +129,9 @@ void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
 
     // Request an update to the widget
     book->onRepaintPage(this, &rect);
+
+    // Notify book that this page has changed
+    book->onPageEdited(this);
 }
 
 void Page::erase(int x1, int y1, int x2, int y2, int size) {

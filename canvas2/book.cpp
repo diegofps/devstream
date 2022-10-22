@@ -19,7 +19,10 @@ Page * Book::currentPage() {
 
 void Book::onPageEdited(Page *page)
 {
+    wup::print("page edited");
+
     if (page == extraPage) {
+        wup::print("extra page added");
         pages.append(extraPage);
         extraPage = new Page(this);
     }

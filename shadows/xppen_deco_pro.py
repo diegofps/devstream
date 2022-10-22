@@ -22,8 +22,8 @@ class Canvas(Thread):
         self.queue = Queue()
         self.tries = 3
 
-        if os.path.exists(self.pipe_filepath):
-            os.unlink(self.pipe_filepath)
+        # if os.path.exists(self.pipe_filepath):
+        #     os.unlink(self.pipe_filepath)
         
         try:
             os.umask(0)
@@ -337,22 +337,26 @@ class XPPEN_DecoPro_Base(Reflex):
         
     def on_key20(self, value):
         log.debug("Deco pro key 20", value)
-        canvas.send("show_previous_page")
+        if value == 0:
+            canvas.send("show_previous_page")
         # Previous page
         
     def on_key21(self, value):
         log.debug("Deco pro key 21", value)
-        canvas.send("show_next_page")
+        if value == 0:
+            canvas.send("show_next_page")
         # Next page
         
     def on_key30(self, value):
         log.debug("Deco pro key 30", value)
-        canvas.send("undo")
+        if value == 0:
+            canvas.send("undo")
         # UNDO
         
     def on_key31(self, value):
         log.debug("Deco pro key 31", value)
-        canvas.send("redo")
+        if value == 0:
+            canvas.send("redo")
         # REDO
     
     def on_orb_rel(self, rel_x, rel_y):
@@ -409,7 +413,7 @@ class XPPEN_DecoPro_Base(Reflex):
         else:
             self.tool = TOOL_ERASER
         
-        canvas.send(f"set_tool {self.tool}")
+        # canvas.send(f"set_tool {self.tool}")
 
     def on_pen_btn_high(self, value):
         log.debug("Deco pro key pen_btn_high", value)
@@ -468,11 +472,11 @@ class XPPEN_DecoPro_Passthrough(XPPEN_DecoPro_Base):
     #     if value == 0:
     #         self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Disable")
         
-    def on_key20(self, value):
-        log.debug("Deco pro key 20", value)
+    # def on_key20(self, value):
+    #     log.debug("Deco pro key 20", value)
         
-    def on_key21(self, value):
-        log.debug("Deco pro key 21", value)
+    # def on_key21(self, value):
+    #     log.debug("Deco pro key 21", value)
         
     def on_key30(self, value):
         log.debug("Deco pro key 30", value)
