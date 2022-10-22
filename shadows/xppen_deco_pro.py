@@ -22,15 +22,16 @@ class Canvas(Thread):
         self.queue = Queue()
         self.tries = 3
 
-        # if os.path.exists(self.pipe_filepath):
-        #     os.unlink(self.pipe_filepath)
-        
-        try:
-            os.umask(0)
-            os.mkfifo(self.pipe_filepath, 0o666)
-            os.umask(0o133)
-        except FileExistsError:
-            pass
+        if os.path.exists(self.pipe_filepath):
+            # os.unlink(self.pipe_filepath)
+            os.chmod(self.pipe_filepath, 0o666)
+        else:
+            try:
+                os.umask(0)
+                os.mkfifo(self.pipe_filepath, 0o666)
+                os.umask(0o133)
+            except FileExistsError:
+                pass
 
         self.process_thread = Thread(target=self.process_main)
         self.pipe_thread = Thread(target=self.pipe_main)
@@ -219,13 +220,13 @@ class XPPEN_DecoPro_Base(Reflex):
 
                 # Pen
                 if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN == 852034:
-                    self.on_pen_btn_touch(self.saw_BTN_TOUCH)
+                    self.on_pen_btn_touch(self.saw_BTN_TOUCH, self.last_ABS_X, self.last_ABS_Y)
                 
                 if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN == 852037:
-                    self.on_pen_btn_high(self.saw_BTN_TOUCH)
+                    self.on_pen_btn_high(self.saw_BTN_TOUCH, self.last_ABS_X, self.last_ABS_Y)
                     
                 if self.saw_BTN_STYLUS is not None:
-                    self.on_pen_btn_low(self.saw_BTN_STYLUS)
+                    self.on_pen_btn_low(self.saw_BTN_STYLUS, self.last_ABS_X, self.last_ABS_Y)
                 
                 if self.saw_BTN_TOOL_PEN is not None:
                     self.on_pen_btn_close(self.saw_BTN_TOOL_PEN)
@@ -382,9 +383,9 @@ class XPPEN_DecoPro_Base(Reflex):
                 canvas.send(f"draw {self.last_x} {self.last_y} {x} {y}")
             elif self.tool == TOOL_ERASER:
                 canvas.send(f"erase {self.last_x} {self.last_y} {x} {y}")
-        
-        self.last_x = x
-        self.last_y = y
+            
+            self.last_x = x
+            self.last_y = y
 
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.function("ABS", x, y, 0, 0, 0)
@@ -394,18 +395,24 @@ class XPPEN_DecoPro_Base(Reflex):
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
 
-    def on_pen_btn_touch(self, value):
+    def on_pen_btn_touch(self, value, x, y):
         log.debug("Deco pro key pen_btn_touch", value)
-        self.touching = value == 1
 
-        if self.touching:
+        if value == 0:
+            self.touching = False
+            
+        else:
+            self.last_x = x
+            self.last_y = y
+            self.touching = True
+
             if self.tool == TOOL_BRUSH:
                 canvas.send(f"draw {self.last_x} {self.last_y} {self.last_x} {self.last_y}")
             elif self.tool == TOOL_ERASER:
                 canvas.send(f"erase {self.last_x} {self.last_y} {self.last_x} {self.last_y}")
 
 
-    def on_pen_btn_low(self, value):
+    def on_pen_btn_low(self, value, x, y):
         log.debug("Deco pro key pen_btn_low", value)
         
         if value == 0:
@@ -415,7 +422,7 @@ class XPPEN_DecoPro_Base(Reflex):
         
         # canvas.send(f"set_tool {self.tool}")
 
-    def on_pen_btn_high(self, value):
+    def on_pen_btn_high(self, value, x, y):
         log.debug("Deco pro key pen_btn_high", value)
         canvas.send(f"toggle_menu")
 
@@ -500,17 +507,17 @@ class XPPEN_DecoPro_Passthrough(XPPEN_DecoPro_Base):
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
 
-    def on_pen_btn_touch(self, value):
+    def on_pen_btn_touch(self, value, x, y):
         # log.debug("Deco pro key pen_btn_touch", value)
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.update("BTN_TOUCH", self.saw_BTN_TOUCH)
 
-    def on_pen_btn_low(self, value):
+    def on_pen_btn_low(self, value, x, y):
         # log.debug("Deco pro key pen_btn_low", value)
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.update("BTN_MIDDLE", self.saw_BTN_STYLUS)
 
-    def on_pen_btn_high(self, value):
+    def on_pen_btn_high(self, value, x, y):
         # log.debug("Deco pro key pen_btn_high", value)
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.update("BTN_RIGHT", self.saw_BTN_TOUCH)

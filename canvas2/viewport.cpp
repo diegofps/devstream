@@ -82,7 +82,7 @@ void Viewport::onPaint(QPainter & painter) {
 }
 
 void Viewport::update(QRect * rect) {
-    wup::print("repainting");
+//    wup::print("repainting");
 //    QMainWindow::update();
     QMetaObject::invokeMethod(ui->canvas, "update", Qt::AutoConnection);
 

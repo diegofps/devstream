@@ -69,7 +69,7 @@ void Page::move(int rx, int ry) {
 }
 
 void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
-    print("Drawing in page ");
+//    print("Drawing in page ");
     std::lock_guard<std::mutex> lock(drawing);
 
     // Convert from multidisplay coordinates to world coordinates
