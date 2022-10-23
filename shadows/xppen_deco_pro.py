@@ -145,10 +145,10 @@ class XPPEN_DecoPro_Base(Reflex):
         self.last_ABS_TILT_X = 0
         self.last_ABS_TILT_Y = 0
 
-        self.tool = TOOL_BRUSH
         self.touching = False
-        self.last_x = 0
-        self.last_y = 0
+        self.erasing = False
+        self.touch_x = 0
+        self.touch_y = 0
 
     def on_event(self, topic_name, evt):
 
@@ -382,15 +382,14 @@ class XPPEN_DecoPro_Base(Reflex):
     def on_pen_abs(self, x, y, z, tx, ty):
         # log.debug("Deco pro key pen_abs", x, y, z, tx, ty)
 
-        if self.touching and distance(self.last_x, self.last_y, x, y) > 10:
-            if self.tool == TOOL_BRUSH:
-                canvas.send(f"draw {self.last_x} {self.last_y} {x} {y}")
-            elif self.tool == TOOL_ERASER:
-                canvas.send(f"erase {self.last_x} {self.last_y} {x} {y}")
-            
-            self.last_x = x
-            self.last_y = y
-
+        if self.touching and distance(self.touch_x, self.touch_y, x, y) > 10:
+            canvas.send(f"draw {self.touch_x} {self.touch_y} {x} {y}")
+            self.touch_x = x
+            self.touch_y = y
+        
+        if self.erasing and distance(self.erase_x, self.erase_y, x, y) > 10:
+            canvas.send(f"erase {self.erase_x} {self.erase_y} {x} {y}")
+        
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.function("ABS", x, y, 0, 0, 0)
     
@@ -401,31 +400,22 @@ class XPPEN_DecoPro_Base(Reflex):
 
     def on_pen_btn_touch(self, value, x, y):
         log.debug("Deco pro key pen_btn_touch", value)
-
-        if value == 0:
-            self.touching = False
-            
-        elif value == 1:
-            self.last_x = x
-            self.last_y = y
-            self.touching = True
-
-            if self.tool == TOOL_BRUSH:
-                canvas.send(f"draw {x} {y} {x+1} {y+1}")
-            elif self.tool == TOOL_ERASER:
-                canvas.send(f"erase {x} {y} {x+1} {y+1}")
-
+        self.touching = value != 0
+        
+        if self.touching:
+            self.touch_x = x
+            self.touch_y = y
+            canvas.send(f"draw {x} {y} {x+1} {y+1}")
 
     def on_pen_btn_low(self, value, x, y):
         log.debug("Deco pro key pen_btn_low", value)
-        
-        if value == 0:
-            self.tool = TOOL_BRUSH
-        else:
-            self.tool = TOOL_ERASER
-        
-        # canvas.send(f"set_tool {self.tool}")
+        self.erasing = value != 0
 
+        if self.erasing:
+            self.erase_x = x
+            self.erase_y = y
+            canvas.send(f"erase {x} {y} {x+1} {y+1}")
+        
     def on_pen_btn_high(self, value, x, y):
         log.debug("Deco pro key pen_btn_high", value)
         canvas.send(f"toggle_menu")
