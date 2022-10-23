@@ -17,10 +17,7 @@ Page * Book::currentPage() {
     return page;
 }
 
-void Book::onPageEdited(Page *page)
-{
-    wup::print("page edited");
-
+void Book::onPageEdited(Page *page) {
     if (page == extraPage) {
         wup::print("extra page added");
         pages.append(extraPage);
@@ -28,16 +25,14 @@ void Book::onPageEdited(Page *page)
     }
 }
 
-void Book::showPreviousPage()
-{
+void Book::showPreviousPage() {
     if (pageIndex != 0) {
         --pageIndex;
         core->onPageChanged(this, currentPage());
     }
 }
 
-void Book::showNextPage()
-{
+void Book::showNextPage() {
     if (pageIndex != pages.size()) {
         ++pageIndex;
         core->onPageChanged(this, currentPage());
@@ -53,8 +48,7 @@ void Book::movePage(int rx, int ry) {
     currentPage()->move(rx, ry);
 }
 
-void Book::onRepaintPage(Page *page, QRect *rect)
-{
+void Book::onRepaintPage(Page *page, QRect *rect) {
     core->onRepaintPage(this, page, rect);
 }
 

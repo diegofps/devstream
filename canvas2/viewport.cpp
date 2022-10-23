@@ -30,7 +30,7 @@ Viewport::~Viewport()
 
 void Viewport::setBook(Book *book)
 {
-    wup::print("Inside Viewport's setBook");
+//    wup::print("Inside Viewport's setBook");
     this->book = book;
     this->update(nullptr);
 }

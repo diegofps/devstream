@@ -10,6 +10,7 @@ from queue import Queue
 import time
 import math
 import log
+import sys
 import os
 
 # Configure PIPE
@@ -18,7 +19,7 @@ class Canvas(Thread):
     def __init__(self):
         self.pipe_filepath = "/tmp/shadow_xppen_deco_pro"
         self.process_filepath = "/home/diego/Sources/logitech_marble_linux_wrapper/build-canvas2-Desktop_Qt_6_4_0_GCC_64bit-Debug/canvas2"
-        self.process_filepath = ""
+        self.process_filepath = "./build-canvas2-Desktop_Qt_6_4_0_GCC_64bit-Debug/canvas2"
         self.queue = Queue()
         self.tries = 3
 
@@ -43,8 +44,12 @@ class Canvas(Thread):
     def process_main(self):
         while True:
             try:
-                os.system(self.process_filepath)
-                log.error("Canvas process finished unexpectedly")
+                status = os.system(self.process_filepath)
+                if status == 2:
+                    log.warn("Canvas exited with exit status 2, exiting")
+                    os._exit(os.EX_OK)
+                else:
+                    log.error("Canvas process finished unexpectedly", status)
             except Exception as e:
                 log.error("Failed to start or execute the canvas process, retrying in 5s...", 
                     exception_class=e.__class__.__name__,
@@ -96,9 +101,6 @@ class Canvas(Thread):
         self.queue.put(msg)
 
 canvas = Canvas()
-
-TOOL_BRUSH = 1
-TOOL_ERASER = 2
 
 MAX_BRUSH = 15
 MIN_BRUSH = 1
@@ -370,14 +372,7 @@ class XPPEN_DecoPro_Base(Reflex):
 
     def on_orb_wheel(self, value):
         # log.debug("Deco pro key orb_wheel", value)
-        if self.tool == TOOL_BRUSH:
-            canvas.send(f"change_brush_size {value}")
-        
-        elif self.tool == TOOL_ERASER:
-            canvas.send(f"change_eraser_size {value}")
-
-        else:
-            log.error(f"Invalid VirtualPen tool: {self.tool}")
+        canvas.send(f"change_brush_size {value}")
 
     def on_pen_abs(self, x, y, z, tx, ty):
         # log.debug("Deco pro key pen_abs", x, y, z, tx, ty)
@@ -389,6 +384,8 @@ class XPPEN_DecoPro_Base(Reflex):
         
         if self.erasing and distance(self.erase_x, self.erase_y, x, y) > 10:
             canvas.send(f"erase {self.erase_x} {self.erase_y} {x} {y}")
+            # self.erase_x = x
+            # self.erase_y = y
         
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.function("ABS", x, y, 0, 0, 0)
@@ -436,7 +433,6 @@ class XPPEN_DecoPro_Opaque(XPPEN_DecoPro_Base): # N
 
     def __init__(self, shadow):
         super().__init__(shadow)
-        self.tool = TOOL_BRUSH
         self.size_brush = 20
         self.size_eraser = 20
     
