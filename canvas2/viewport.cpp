@@ -68,6 +68,12 @@ void Viewport::configureWindowProperties()
 
 void Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
 
+    auto g = this->display->internalGeometry;
+    wup::print("Viewport::draw", g.left(), g.top(), g.width(), g.height(), x1, y1, x2, y2);
+
+    if (!g.contains(x1, y1) || !g.contains(x2,y2))
+        return;
+
     auto x = this->display->internalGeometry.left();
     auto y = this->display->internalGeometry.top();
 

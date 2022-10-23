@@ -7,7 +7,7 @@
 
 using namespace wup;
 
-const int CELL_SIZE = 512;
+const int CELL_SIZE = 256;
 
 
 class Cell {
