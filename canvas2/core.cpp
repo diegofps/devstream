@@ -104,8 +104,8 @@ Core::Core(QObject *parent)
       opaqueBook(this, true),
       activeBook(&transparentBook),
       reader(readCommands, this),
-      size_brush_index(5),
-      size_eraser_index(5),
+      size_brush_index(3), // 3
+      size_eraser_index(8), // 8
       size_brush(pow(BRUSH_BASE, size_brush_index)),
       size_eraser(pow(ERASER_BASE, size_eraser_index)),
       brush_color(QColor("#0000ff")),
@@ -113,8 +113,6 @@ Core::Core(QObject *parent)
       height_space(0)
 {
     QList<ScalableDisplay*> displays = ScalableDisplay::parseDisplays();
-
-//    QList<QScreen*> screens = QGuiApplication::screens();
 
     for (int i=0;i!=displays.size();++i) {
         auto display = displays[i];
@@ -129,29 +127,29 @@ Core::Core(QObject *parent)
 
         //////////////
 
-        QSize  size   = display->screen->virtualSize();
-        QSize  size2  = display->screen->availableVirtualSize();
-        QSizeF size3  = display->screen->physicalSize();
-        QRect  g2     = display->screen->availableVirtualGeometry();
-        qreal  dots   = display->screen->logicalDotsPerInch();
-        QSize  size4  = display->screen->availableSize();
-        auto   serial = display->screen->serialNumber();
+//        QSize  size   = display->screen->virtualSize();
+//        QSize  size2  = display->screen->availableVirtualSize();
+//        QSizeF size3  = display->screen->physicalSize();
+//        QRect  g2     = display->screen->availableVirtualGeometry();
+//        qreal  dots   = display->screen->logicalDotsPerInch();
+//        QSize  size4  = display->screen->availableSize();
+//        auto   serial = display->screen->serialNumber();
 
-        print("Screen", i);
-        print("  Geometry:", g.left(), g.top(), g.width(), g.height());
-        print("  VirtualGeometry: ", g2.left(), g2.top(), g2.width(), g2.height());
-        print("  VirtualSize: ", size.width(), size.height());
-        print("  AvailableVirtualSize: ", size2.width(), size2.height());
-        print("  PhysicalSize: ", size3.width(), size3.height());
-        print("  AvailableSize: ", size4.width(), size4.height());
-        print("  DotsPerInch: ", dots);
-        print("  SerialNumber: ", serial);
+//        print("Screen", i);
+//        print("  Geometry:", g.left(), g.top(), g.width(), g.height());
+//        print("  VirtualGeometry: ", g2.left(), g2.top(), g2.width(), g2.height());
+//        print("  VirtualSize: ", size.width(), size.height());
+//        print("  AvailableVirtualSize: ", size2.width(), size2.height());
+//        print("  PhysicalSize: ", size3.width(), size3.height());
+//        print("  AvailableSize: ", size4.width(), size4.height());
+//        print("  DotsPerInch: ", dots);
+//        print("  SerialNumber: ", serial);
 
-        print();
+//        print();
     }
 
-    wup::print("space", width_space, height_space);
-    wup::print("sizes", size_brush, size_eraser);
+//    wup::print("space", width_space, height_space);
+//    wup::print("sizes", size_brush, size_eraser);
 }
 
 void Core::onPageChanged(Book *book, Page *)
@@ -238,10 +236,10 @@ void Core::draw(int x1, int y1, int x2, int y2) {
     y1 = (y1 * height_space) / 32767;
     y2 = (y2 * height_space) / 32767;
 
-    print("Core::draw", x1, y1, x2, y2);
+//    print("Core::draw", x1, y1, x2, y2);
 
     for (Viewport * viewport : viewports)
-        viewport->draw(x1, y1, x2, y2, size_brush, brush_color);
+        viewport->draw(x1, y1, x2, y2, size_brush, &brush_color);
 }
 
 void Core::erase(int x1, int y1, int x2, int y2) {
@@ -253,6 +251,6 @@ void Core::erase(int x1, int y1, int x2, int y2) {
     y2 = (y2 * height_space) / 32767;
 
     for (Viewport * viewport : viewports)
-        viewport->erase(x1, y1, x2, y2, size_brush);
+        viewport->erase(x1, y1, x2, y2, size_eraser);
 }
 

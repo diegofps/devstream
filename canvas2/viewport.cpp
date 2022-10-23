@@ -66,31 +66,31 @@ void Viewport::configureWindowProperties()
 
 }
 
-void Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
+QRect Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor *color) {
 
-    auto g = this->display->internalGeometry;
-    wup::print("Viewport::draw", g.left(), g.top(), g.width(), g.height(), x1, y1, x2, y2);
+    QRect & g = this->display->internalGeometry;
 
     if (!g.contains(x1, y1) || !g.contains(x2,y2))
-        return;
+        return QRect();
 
-    auto x = this->display->internalGeometry.left();
-    auto y = this->display->internalGeometry.top();
+    auto x = g.left();
+    auto y = g.top();
 
     x1 = x + (x1-x)*this->display->normX;
     x2 = x + (x2-x)*this->display->normX;
     y1 = y + (y1-y)*this->display->normY;
     y2 = y + (y2-y)*this->display->normY;
 
-    book->currentPage()->draw(x1, y1, x2, y2, size, color);
+    QRect updateArea = book->currentPage()->draw(x1, y1, x2, y2, size, color);
+    return updateArea;
 }
 
-void Viewport::erase(int x1, int y1, int x2, int y2, int size) {
-    book->currentPage()->erase(x1, y1, x2, y2, size);
+QRect Viewport::erase(int x1, int y1, int x2, int y2, int size) {
+    QRect updateArea = this->draw(x1, y1, x2, y2, size, nullptr);
+    return updateArea;
 }
 
 void Viewport::onPaint(QPainter & painter) {
-//    wup::print("MainWindow's onPaint called");
     if (book != nullptr)
         book->onPaint(painter, this->display->internalGeometry);
 }

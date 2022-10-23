@@ -168,7 +168,7 @@ class XPPEN_DecoPro_Base(Reflex):
             elif evt.code == e.ABS_PRESSURE:
                 self.saw_ABS_PRESSURE = evt.value
 
-        elif evt.type == e.EV_KEY:
+        if evt.type == e.EV_KEY:
 
             if evt.code == e.BTN_TOUCH:
                 self.saw_BTN_TOUCH = evt.value
@@ -200,12 +200,15 @@ class XPPEN_DecoPro_Base(Reflex):
             elif evt.code == e.KEY_N:
                 self.saw_N = evt.value
             
-        elif evt.type == e.EV_MSC:
+        if evt.type == e.EV_MSC:
 
             if evt.code == e.MSC_SCAN:
-                self.saw_MSC_SCAN = evt.value
+                if evt.value == 852034:
+                    self.saw_MSC_SCAN_852034 = evt.value
+                elif evt.value == 852037:
+                    self.saw_MSC_SCAN_852037 = evt.value
 
-        elif evt.type == e.EV_REL:
+        if evt.type == e.EV_REL:
 
             if evt.code == e.REL_WHEEL:
                 self.saw_REL_WHEEL = evt.value
@@ -214,15 +217,15 @@ class XPPEN_DecoPro_Base(Reflex):
             elif evt.code == e.REL_Y:
                 self.saw_REL_Y = evt.value
             
-        elif evt.type == e.EV_SYN:
+        if evt.type == e.EV_SYN:
 
             if evt.code == e.SYN_REPORT:
 
                 # Pen
-                if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN == 852034:
+                if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN_852034 is not None:
                     self.on_pen_btn_touch(self.saw_BTN_TOUCH, self.last_ABS_X, self.last_ABS_Y)
                 
-                if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN == 852037:
+                if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN_852037 is not None:
                     self.on_pen_btn_high(self.saw_BTN_TOUCH, self.last_ABS_X, self.last_ABS_Y)
                     
                 if self.saw_BTN_STYLUS is not None:
@@ -309,7 +312,8 @@ class XPPEN_DecoPro_Base(Reflex):
         self.saw_BTN_TOUCH = None
         self.saw_BTN_STYLUS = None
         self.saw_BTN_TOOL_PEN = None
-        self.saw_MSC_SCAN = None
+        self.saw_MSC_SCAN_852034 = None
+        self.saw_MSC_SCAN_852037 = None
 
     def on_activate(self):
         self.clear()
@@ -401,7 +405,7 @@ class XPPEN_DecoPro_Base(Reflex):
         if value == 0:
             self.touching = False
             
-        else:
+        elif value == 1:
             self.last_x = x
             self.last_y = y
             self.touching = True

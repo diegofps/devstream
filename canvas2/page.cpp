@@ -56,7 +56,13 @@ Page::Page(PageListener *listener) :
     lastX(0),
     lastY(0)
 {
+    eraserPen.setCapStyle(Qt::PenCapStyle::RoundCap);
+    eraserPen.setStyle(Qt::PenStyle::SolidLine);
+    eraserPen.setJoinStyle(Qt::PenJoinStyle::RoundJoin);
+//    eraserPen.setColor(QColor(255,255,255,255));
 
+    inkPen.setCapStyle(Qt::PenCapStyle::RoundCap);
+    inkPen.setStyle(Qt::PenStyle::SolidLine);
 }
 
 void Page::move(int rx, int ry) {
@@ -68,7 +74,7 @@ void Page::move(int rx, int ry) {
     book->onRepaintPage(this, nullptr);
 }
 
-void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
+QRect Page::draw(int x1, int y1, int x2, int y2, int size, QColor * color) {
 //    print("Drawing in page ");
     std::lock_guard<std::mutex> lock(drawing);
 
@@ -81,18 +87,24 @@ void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
 
     // Obtain indexes that may intersect the area
     int i1 = (std::min(y1,y2) - CELL_SIZE) / CELL_SIZE;
-    int i2 = ceil(std::max(y1,y2) / double(CELL_SIZE));
+    int i2 = ceil((std::max(y1,y2) + CELL_SIZE) / double(CELL_SIZE));
 
     int j1 = (std::min(x1,x2) - CELL_SIZE) / CELL_SIZE;
-    int j2 = ceil(std::max(x1,x2) / double(CELL_SIZE));
+    int j2 = ceil((std::max(x1,x2) + CELL_SIZE) / double(CELL_SIZE));
 
     // Create the pen we will use to draw
     // TODO: Precalculate it in the class?
-    QPen pen;
-    pen.setColor(color);
-    pen.setWidth(size);
-    pen.setCapStyle(Qt::PenCapStyle::RoundCap);
-    pen.setStyle(Qt::PenStyle::SolidLine);
+
+    if (color == nullptr) {
+        eraserPen.setWidth(size);
+    }
+    else {
+        inkPen.setWidth(size);
+        inkPen.setColor(*color);
+    }
+//        pen.setColor(*color);
+//    else
+//        pen.setColor(QColor(0,0,0,0));
 
     // Paint all cells in the indexes selected
     for (int i=i1;i<i2;++i) {
@@ -109,7 +121,15 @@ void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
             // Draw the line
             QPainter painter(cell->img);
             painter.setRenderHint(QPainter::Antialiasing, true);
-            painter.setPen(pen);
+//            painter.setBrush(Qt::NoBrush);
+
+            if (color == nullptr) {
+                painter.setCompositionMode(QPainter::CompositionMode_Clear);
+                painter.setPen(eraserPen);
+            } else {
+                painter.setPen(inkPen);
+            }
+
             painter.drawLine(xx1,yy1,xx2,yy2);
         }
     }
@@ -132,10 +152,13 @@ void Page::draw(int x1, int y1, int x2, int y2, int size, QColor &color) {
 
     // Notify book that this page has changed
     book->onPageEdited(this);
+
+    return rect;
 }
 
-void Page::erase(int x1, int y1, int x2, int y2, int size) {
-
+QRect Page::erase(int x1, int y1, int x2, int y2, int size) {
+    print("Page::eraser", x1, y1, x2, y2, size);
+    return this->draw(x1, y1, x2, y2, size, nullptr);
 }
 
 void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
@@ -169,7 +192,7 @@ Cell * Page::getCell(int i, int j, bool createOnMiss) {
     //    print("Looking for cell", i, j);
 
     // Debug mode
-    if (true) {
+    if (false) {
         QPair<int, int> key(i,j);
 
         auto it = cells.find(key);

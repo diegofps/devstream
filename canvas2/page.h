@@ -8,6 +8,7 @@
 #include <QBrush>
 #include <QOpenGLTexture>
 #include <mutex>
+#include <QPen>
 
 
 class Page;
@@ -25,8 +26,8 @@ public:
     Page(PageListener *listener);
 
     void move(int rx, int ry);
-    void draw(int x1, int y1, int x2, int y2, int size, QColor &color);
-    void erase(int x1, int y1, int x2, int y2, int size);
+    QRect draw(int x1, int y1, int x2, int y2, int size, QColor * color);
+    QRect erase(int x1, int y1, int x2, int y2, int size);
     void onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor);
     Cell * getCell(int i, int j, bool create=false);
 
@@ -40,6 +41,8 @@ private:
     bool opaque;
     QBrush backgroundBrush;
     std::mutex drawing;
+    QPen eraserPen;
+    QPen inkPen;
 
 };
 
