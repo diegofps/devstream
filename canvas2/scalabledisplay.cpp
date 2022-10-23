@@ -131,7 +131,9 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
     // Now we will use edid-decode to decode the editData and read the serial numbers and product name
     for (ScalableDisplay * display : displays) {
         QString cmd = "echo \"" + display->edidData.join("") + "\" | edid-decode";
-        QStringList lines = exec(cmd).split('\n');
+        QString stdout = exec(cmd);
+        print(stdout);
+        QStringList lines = stdout.split('\n');
 
         for (QString & line : lines) {
             match = serialNumberRegex.match(line);
@@ -157,21 +159,31 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
     // Now we obtain the externalRect from the QScreens provided by QGuiApplication
     QList<QScreen*> screens = QGuiApplication::screens();
 
-    for (int i=0;i!=screens.size();++i) {
-        auto screen = screens[i];
+    if (screens.size() == 1 && displays.size() == 1) {
+        auto screen = screens[0];
+        auto *display = displays[0];
+        display->externalGeometry = screen->geometry();
+        display->screen = screen;
+    }
 
-        for (ScalableDisplay * display : displays) {
-            if (display->displaySerialNumber == "") {
-                if (screen->serialNumber().startsWith(display->serialNumber)) {
-                    display->externalGeometry = screen->geometry();
-                    display->screen = screen;
-                    break;
-                }
-            } else {
-                if (screen->serialNumber().startsWith(display->displaySerialNumber)) {
-                    display->externalGeometry = screen->geometry();
-                    display->screen = screen;
-                    break;
+    else {
+        for (int i=0;i!=screens.size();++i) {
+            auto screen = screens[i];
+            print("Looking for screen", screen->serialNumber());
+
+            for (ScalableDisplay * display : displays) {
+                if (display->displaySerialNumber == "") {
+                    if (screen->serialNumber().startsWith(display->serialNumber)) {
+                        display->externalGeometry = screen->geometry();
+                        display->screen = screen;
+                        break;
+                    }
+                } else {
+                    if (screen->serialNumber().startsWith(display->displaySerialNumber)) {
+                        display->externalGeometry = screen->geometry();
+                        display->screen = screen;
+                        break;
+                    }
                 }
             }
         }
