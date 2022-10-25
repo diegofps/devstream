@@ -1,5 +1,6 @@
 
 from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
+from shadows.watch_login import TOPIC_LOGIN_CHANGED
 from shadows.virtual_keyboard import OutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
@@ -18,8 +19,9 @@ class Canvas(Thread):
 
     def __init__(self):
         self.pipe_filepath = "/tmp/shadow_xppen_deco_pro"
-        self.process_filepath = "/home/diego/Sources/logitech_marble_linux_wrapper/build-canvas2-Desktop_Qt_6_4_0_GCC_64bit-Debug/canvas2"
-        self.process_filepath = "./build-canvas2-Desktop_Qt_6_4_0_GCC_64bit-Debug/canvas2"
+        self.process_filepath = ["./canvas2", "./build-canvas2-Desktop_Qt_6_4_0_GCC_64bit-Debug/canvas2"]
+        self.userdisplay = None
+        self.username = None
         self.queue = Queue()
         self.tries = 3
 
@@ -43,13 +45,24 @@ class Canvas(Thread):
 
     def process_main(self):
         while True:
+            if self.username is None or self.userdisplay is None:
+                log.warn("Deco Pro is waiting for user interface")
+                time.sleep(5)
+                continue
+            
             try:
-                status = os.system(self.process_filepath)
-                if status == 2:
-                    log.warn("Canvas exited with exit status 2, exiting")
-                    os._exit(os.EX_OK)
-                else:
-                    log.error("Canvas process finished unexpectedly", status)
+                for filepath in self.process_filepath:
+                    if os.path.exists(filepath):
+                        cmd = "su %s -c 'DISPLAY=%s %s'" % (self.username, self.userdisplay, filepath)
+                        status = os.system(cmd)
+
+                        if status == 2:
+                            log.warn("Canvas exited with exit status 2, exiting")
+                            os._exit(os.EX_OK)
+                        else:
+                            log.error("Canvas process finished unexpectedly", status)
+                
+                log.warn("Failed to start canvas process for xppen deco pro")
             except Exception as e:
                 log.error("Failed to start or execute the canvas process, retrying in 5s...", 
                     exception_class=e.__class__.__name__,
@@ -75,10 +88,10 @@ class Canvas(Thread):
                         
                         for i in range(self.tries):
                             try:
-                                log.debug("sending command: ", msg)
+                                # log.debug("sending command: ", msg)
                                 fout.write(msg)
                                 fout.flush()
-                                log.debug("mesage sent")
+                                # log.debug("message sent")
                                 break
                             except Exception as e:
                                 log.error("Failed to send message to canvas.", 
@@ -139,6 +152,7 @@ class XPPEN_DecoPro_Base(Reflex):
     def __init__(self, shadow):
         super().__init__(shadow)
         self.configure_states(TOPIC_DECOPRO_STATE, TOPIC_DECOPRO_EVENT)
+        self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
         self.clear()
 
         self.last_ABS_X = 0
@@ -296,6 +310,13 @@ class XPPEN_DecoPro_Base(Reflex):
                     
                 self.clear()
         
+    def on_login_changed(self, topic_name, event):
+        if len(event) == 0:
+            canvas.username, canvas.userdisplay = None, None
+        else:
+            canvas.username, canvas.userdisplay = event[0]
+        log.info("login changed received", self.username, self.userdisplay)
+
     def clear(self):
         self.saw_B = None
         self.saw_E = None

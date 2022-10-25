@@ -1,5 +1,5 @@
 #include "viewport.h"
-#include "ui_mainwindow.h"
+#include "ui_viewport.h"
 
 #include <QDateTime>
 #include <QRect>

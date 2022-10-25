@@ -140,14 +140,20 @@ cd ../..
 Install the python service and compiled programs
 
 ```shell
+# Open the shell as root
+sudo bash
+
+# Make sure you qmake is installed and accessible via PATH. 
+export PATH="/home/diego/Qt/6.4.0/gcc_64/bin/":$PATH
+
 # Install the service and python sources
-sudo ./install.sh
+./install.sh
 
 # Start the service in the system
-sudo service devstream start
+service devstream start
 
 # Activate autostart during system boot
-sudo systemctl enable devstream
+systemctl enable devstream
 ```
 
 # Uninstall

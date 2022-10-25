@@ -4,10 +4,19 @@
 set -e
 
 
+echo "Building canvas2..."
+mkdir -p ./build/canvas2
+cd ./build/canvas2
+qmake CONFIG+=release -o Makefile ../../canvas2/canvas2.pro
+make -j`nproc`
+cd ../..
+
+
 echo "Copying files..."
 mkdir -p /etc/devstream
 cp -r ./*.py shadows /etc/devstream/
 cp ./devstream /etc/init.d/devstream
+cp ./build/canvas2/canvas2 /etc/devstream/
 
 
 echo "Configuring service..."
