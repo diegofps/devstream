@@ -180,7 +180,7 @@ void Viewport::erase(EraseCommand cmd) {
 void Viewport::onPaint(QPainter & painter) {
 //    mustRepaint = false;
     if (book != nullptr) {
-        wup::print("repainting");
+//        wup::print("repainting");
         mustRepaint = book->onPaint(painter, this->display->internalGeometry);
     }
 }

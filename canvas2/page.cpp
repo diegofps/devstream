@@ -49,7 +49,7 @@ void Page::move(MovePageCommand & cmd) {
 }
 
 void Page::highlightPosition(ChangePenSizeCommand & cmd) {
-    print("setting highlight", cmd.size, cmd.x, cmd.y);
+//    print("setting highlight", cmd.size, cmd.x, cmd.y);
 
     highlightSize  = cmd.size;
     highlightStart = QDateTime::currentMSecsSinceEpoch();
@@ -130,9 +130,9 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
 
     book->onPageEdited(this);
 
-    c.stop();
-    auto time = c.ellapsed_milli();
-    print("time to draw:", time);
+//    c.stop();
+//    auto time = c.ellapsed_milli();
+//    print("time to draw:", time);
 
 }
 
@@ -207,9 +207,9 @@ void Page::erase(EraseCommand & cmd) {
 
     book->onPageEdited(this);
 
-    c.stop();
-    auto time = c.ellapsed_milli();
-    print("time to erase:", time);
+//    c.stop();
+//    auto time = c.ellapsed_milli();
+//    print("time to erase:", time);
 }
 
 bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
@@ -257,7 +257,7 @@ bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
 
         int size_2 = highlightSizeSmooth / 2;
 
-        print("drawing ellipse", highlightX, highlightY, highlightSize, highlightSizeSmooth);
+//        print("drawing ellipse", highlightX, highlightY, highlightSize, highlightSizeSmooth);
 
         painter.drawEllipse(
                     highlightX - size_2 - rect.left(), highlightY - size_2 - rect.top() - 20,

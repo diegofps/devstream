@@ -75,7 +75,7 @@ runReader(Core * c)
                 continue;
             }
 
-            print("Got cmd: ", cmd);
+//            print("Got cmd: ", cmd);
 
             if (cmd == "draw") {
                 int x1, y1, x2, y2;
@@ -141,7 +141,7 @@ void runWorker() {
                 tail = nullptr;
         }
 
-        print("Got cmd", cmd->name,  "executing...");
+//        print("Got cmd", cmd->name,  "executing...");
         cmd->callback();
         delete cmd;
     }
