@@ -19,11 +19,10 @@ public:
 
     Page * currentPage();
     void onPageEdited(Page *page);
-    void showPreviousPage();
-    void showNextPage();
+    void changePage(ChangePageCommand & cmd);
     void setVisible(bool visible);
-    void movePage(int rx, int ry);
-    void onPaint(QPainter &painter, QRect &screenRect);
+    void movePage(MovePageCommand & cmd);
+    bool onPaint(QPainter &painter, QRect &screenRect);
 
 private:
     BookListener *core;

@@ -15,9 +15,14 @@ Page::Page(PageListener *listener) :
     book(listener),
     viewX(0),
     viewY(0),
-    lastX(0),
-    lastY(0),
-    highlightSize(5)
+    viewXSmooth(0),
+    viewYSmooth(0),
+    highlightSize(5),
+    highlightSizeSmooth(highlightSize),
+    highlightStart(0),
+    highlightEnd(0),
+    highlightX(0),
+    highlightY(0)
 {
     eraserPen.setCapStyle(Qt::PenCapStyle::RoundCap);
     eraserPen.setStyle(Qt::PenStyle::SolidLine);
@@ -28,53 +33,66 @@ Page::Page(PageListener *listener) :
     inkPen.setCapStyle(Qt::PenCapStyle::RoundCap);
 
     highlightBrush.setStyle(Qt::BrushStyle::SolidPattern);
-    highlightBrush.setColor(QColor(255,0,0));
+    highlightBrush.setColor(QColor(0,0,255, 128));
 
     eraserBrush.setStyle(Qt::BrushStyle::SolidPattern);
     eraserBrush.setColor(QColor(0,0,0));
 
 }
 
-void Page::move(int rx, int ry) {
+void Page::move(MovePageCommand & cmd) {
 //    print("Moving viewport", rx, ry, viewX, viewY);
 
     std::lock_guard<std::mutex> lock(drawing);
-    viewX += rx;
-    viewY += ry;
+    viewX += cmd.point.x();
+    viewY += cmd.point.y();
 }
 
-QRect Page::setHighlightPosition(int size, int x, int y) {
-    print("setting highlight", size);
+void Page::highlightPosition(ChangePenSizeCommand & cmd) {
+    print("setting highlight", cmd.size, cmd.x, cmd.y);
 
-    lastX = x;
-    lastY = y;
-    highlightSize = size;
-
-    QRect area(x, y, size, size);
-
-    return area;
+    highlightSize  = cmd.size;
+    highlightStart = QDateTime::currentMSecsSinceEpoch();
+    highlightEnd   = highlightStart + 2000;
+    highlightX     = cmd.x;
+    highlightY     = cmd.y;
 }
 
-void Page::draw(int x1, int y1, int x2, int y2, int size, QColor * color) {
+void Page::draw(DrawCommand & cmd, int size, QColor * color) {
 
     std::lock_guard<std::mutex> lock(drawing);
+    Clock c;
 
     // Convert from multidisplay coordinates to world coordinates
 
-    x1 -= viewX;
-    y1 -= viewY;
+    for (QPoint &p : cmd.points) {
+        p.setX(p.x() - viewX);
+        p.setY(p.y() - viewY);
+    }
 
-    x2 -= viewX;
-    y2 -= viewY;
+    int min_x=cmd.points[0].x(), min_y=cmd.points[0].y();
+    int max_x=min_x, max_y=min_y;
+
+    for (QPoint &p : cmd.points) {
+        if (p.x() < min_x)
+            min_x = p.x();
+        if (p.x() > max_x)
+            max_x = p.x();
+
+        if (p.y() < min_y)
+            min_y = p.y();
+        if (p.y() > max_y)
+            max_y = p.y();
+    }
 
     // Obtain indexes that may intersect the area
     int size_2 = size % 2 ? size / 2 + 1 : size;
 
-    int i1 = (std::min(y1,y2) - CELL_SIZE - size_2) / CELL_SIZE;
-    int i2 = ceil((std::max(y1,y2) + CELL_SIZE + size_2) / double(CELL_SIZE));
+    int i1 = (min_y - CELL_SIZE - size_2) / CELL_SIZE;
+    int i2 = ceil((max_y + CELL_SIZE + size_2) / double(CELL_SIZE));
 
-    int j1 = (std::min(x1,x2) - CELL_SIZE - size_2) / CELL_SIZE;
-    int j2 = ceil((std::max(x1,x2) + CELL_SIZE + size_2) / double(CELL_SIZE));
+    int j1 = (min_x - CELL_SIZE - size_2) / CELL_SIZE;
+    int j2 = ceil((max_x + CELL_SIZE + size_2) / double(CELL_SIZE));
 
     // Create the pen we will use to draw
 
@@ -89,18 +107,22 @@ void Page::draw(int x1, int y1, int x2, int y2, int size, QColor * color) {
 
             // Calculate the position relative to the cell coordinates
 
-            int xx1 = x1 - cell->x;
-            int yy1 = y1 - cell->y;
-
-            int xx2 = x2 - cell->x;
-            int yy2 = y2 - cell->y;
+            for (QPoint &p : cmd.points) {
+                p.setX(p.x() - cell->x);
+                p.setY(p.y() - cell->y);
+            }
 
             // Draw the line
 
             QPainter painter(cell->img);
             painter.setRenderHint(QPainter::Antialiasing, true);
             painter.setPen(inkPen);
-            painter.drawLine(xx1,yy1,xx2,yy2);
+            painter.drawLines(cmd.points);
+
+            for (QPoint &p : cmd.points) {
+                p.setX(p.x() + cell->x);
+                p.setY(p.y() + cell->y);
+            }
         }
     }
 
@@ -108,11 +130,13 @@ void Page::draw(int x1, int y1, int x2, int y2, int size, QColor * color) {
 
     book->onPageEdited(this);
 
-    lastX = x2;
-    lastY = y2;
+    c.stop();
+    auto time = c.ellapsed_milli();
+    print("time to draw:", time);
+
 }
 
-void Page::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
+void Page::erase(EraseCommand & cmd) {
 //    print("Page::eraser", x1, y1, x2, y2, x3, y3);
 
     std::lock_guard<std::mutex> lock(drawing);
@@ -121,22 +145,33 @@ void Page::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
 
     // Convert from multidisplay coordinates to world coordinates
 
-    x1 -= viewX;
-    y1 -= viewY;
+    for (QPoint &p : cmd.points) {
+        p.setX(p.x() - viewX);
+        p.setY(p.y() - viewY);
+    }
 
-    x2 -= viewX;
-    y2 -= viewY;
+    int min_x=cmd.points[0].x(), min_y=cmd.points[0].y();
+    int max_x=min_x, max_y=min_y;
 
-    x3 -= viewX;
-    y3 -= viewY;
+    for (QPoint &p : cmd.points) {
+        if (p.x() < min_x)
+            min_x = p.x();
+        if (p.x() > max_x)
+            max_x = p.x();
+
+        if (p.y() < min_y)
+            min_y = p.y();
+        if (p.y() > max_y)
+            max_y = p.y();
+    }
 
     // Obtain indexes that may intersect the area
 
-    int i1 = (std::min(y1,y2) - CELL_SIZE) / CELL_SIZE;
-    int i2 = ceil((std::max(y1,y2) + CELL_SIZE) / double(CELL_SIZE));
+    int i1 = (min_y - CELL_SIZE) / CELL_SIZE;
+    int i2 = ceil((max_y + CELL_SIZE) / double(CELL_SIZE));
 
-    int j1 = (std::min(x1,x2) - CELL_SIZE) / CELL_SIZE;
-    int j2 = ceil((std::max(x1,x2) + CELL_SIZE) / double(CELL_SIZE));
+    int j1 = (min_x - CELL_SIZE) / CELL_SIZE;
+    int j2 = ceil((max_x + CELL_SIZE) / double(CELL_SIZE));
 
     // Paint all cells in the indexes selected
 
@@ -146,13 +181,10 @@ void Page::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
 
             // Calculate the position relative to the cell coordinates
 
-            erasePolygon[0].setX(x1 - cell->x);
-            erasePolygon[1].setX(x2 - cell->x);
-            erasePolygon[2].setX(x3 - cell->x);
-
-            erasePolygon[0].setY(y1 - cell->y);
-            erasePolygon[1].setY(y2 - cell->y);
-            erasePolygon[2].setY(y3 - cell->y);
+            for (QPoint &p : cmd.points) {
+                p.setX(p.x() - cell->x);
+                p.setY(p.y() - cell->y);
+            }
 
             // Erase the polygon area
 
@@ -160,14 +192,14 @@ void Page::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
             painter.setRenderHint(QPainter::Antialiasing, true);
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
             painter.setBrush(eraserBrush);
-            painter.drawPolygon(&erasePolygon[0], 3);
+//            painter.drawPolygon(&erasePolygon[0], 3);
 
-//            painter.drawRect(
-//                        erasePolygon[0].x(),
-//                        erasePolygon[0].y(),
-//                        erasePolygon[2].x() - erasePolygon[0].x(),
-//                        erasePolygon[2].y() - erasePolygon[0].y()
-//                    );
+            painter.drawPolygon(cmd.points.data(), cmd.points.size());
+
+            for (QPoint &p : cmd.points) {
+                p.setX(p.x() + cell->x);
+                p.setY(p.y() + cell->y);
+            }
         }
     }
 
@@ -175,15 +207,12 @@ void Page::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
 
     book->onPageEdited(this);
 
-    lastX = x2;
-    lastY = y2;
-
     c.stop();
     auto time = c.ellapsed_milli();
-    print("time to draw:", time);
+    print("time to erase:", time);
 }
 
-void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
+bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
 
     std::lock_guard<std::mutex> lock(drawing);
 
@@ -192,8 +221,8 @@ void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
 
     // Convert from multidisplay coordinates to world coordinates
 
-    int x = rect.left() - viewX;
-    int y = rect.top() - viewY;
+    int x = rect.left() - viewXSmooth;
+    int y = rect.top() - viewYSmooth;
 
     // Obtain indexes that may intersect the area
 
@@ -211,11 +240,45 @@ void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
         }
     }
 
-//    if (highlightSize != 0) {
-//        print("drawing highlight", lastX, lastY, highlightSize, highlightSize);
-//        painter.setBrush(highlightBrush);
-//        painter.drawEllipse(lastX - highlightSize / 2, lastY - highlightSize / 2, highlightSize, highlightSize);
-//    }
+    auto now = QDateTime::currentMSecsSinceEpoch();
+
+    bool result = false;
+
+    if (now < highlightEnd)
+    {
+        // Step
+        result = true;
+        highlightSizeSmooth = highlightSizeSmooth + (highlightSize - highlightSizeSmooth) / 4;
+
+        // Paint
+        highlightBrush.setColor(inkPen.color());
+        painter.setBrush(highlightBrush);
+        painter.setPen(Qt::NoPen);
+
+        int size_2 = highlightSizeSmooth / 2;
+
+        print("drawing ellipse", highlightX, highlightY, highlightSize, highlightSizeSmooth);
+
+        painter.drawEllipse(
+                    highlightX - size_2 - rect.left(), highlightY - size_2 - rect.top() - 20,
+                    highlightSizeSmooth, highlightSizeSmooth);
+    }
+
+    if (viewX != viewXSmooth || viewY != viewYSmooth)
+    {
+        result = true;
+
+        viewXSmooth = viewXSmooth + (viewX - viewXSmooth) / 3;
+        viewYSmooth = viewYSmooth + (viewY - viewYSmooth) / 3;
+
+        if (abs(viewX - viewXSmooth) < 2)
+            viewXSmooth = viewX;
+
+        if (abs(viewY - viewYSmooth) < 2)
+            viewYSmooth = viewY;
+    }
+
+    return result;
 }
 
 Cell * Page::getCell(int i, int j, bool createOnMiss) {

@@ -17,9 +17,47 @@ const char * named_pipe = "/tmp/shadow_xppen_deco_pro";
 
 using wup::print;
 
+#include "commands.h"
+
+wup::Semaphore semCommands;
+std::mutex syncCommands;
+Command * head = nullptr;
+Command * tail = nullptr;
+
+#define PUSH_CMD(COMMAND_TYPE, CORE_METHOD, ...) \
+{\
+    std::lock_guard<std::mutex> lock(syncCommands);\
+\
+    if (tail != nullptr && tail->name == cmd.c_str()) \
+    { \
+        ((COMMAND_TYPE*)tail)->add(__VA_ARGS__); \
+    } \
+    else \
+    { \
+        COMMAND_TYPE * newCmd = new COMMAND_TYPE(); \
+        newCmd->add(__VA_ARGS__); \
+        newCmd->callback = [c, newCmd]() \
+        { \
+            c->CORE_METHOD(*newCmd); \
+        }; \
+\
+        if (head == nullptr) \
+        { \
+            head = newCmd; \
+            tail = newCmd; \
+        } \
+        else \
+        { \
+            tail->next = newCmd; \
+            tail = newCmd; \
+        } \
+\
+        semCommands.release(); \
+    } \
+}
 
 void
-readCommands(Core * c)
+runReader(Core * c)
 {
     std::string cmd;
     bool restart = false;
@@ -42,39 +80,37 @@ readCommands(Core * c)
             if (cmd == "draw") {
                 int x1, y1, x2, y2;
                 if (ifs >> x1 >> y1 >> x2 >> y2)
-                    c->draw(x1,y1,x2,y2);
+                    PUSH_CMD(DrawCommand, draw, x1, y1, x2, y2);
             }
 
             else if (cmd == "erase") {
                 int x1, y1, x2, y2, x3, y3;
                 if (ifs >> x1 >> y1 >> x2 >> y2 >> x3 >> y3)
-                     c->erase(x1,y1,x2,y2,x3,y3);
+                    PUSH_CMD(EraseCommand, erase, x1, y1, x2, y2, x3, y3);
             }
 
             else if (cmd == "move_page") {
                 int rx, ry;
                 if (ifs >> rx >> ry)
-                    c->movePage(rx,ry);
+                    PUSH_CMD(MovePageCommand, movePage, rx, ry);
             }
 
             else if (cmd == "change_brush_size") {
                 int size, x, y;
                 if (ifs >> size >> x >> y)
-                    c->changeBrushSize(size, x, y);
+                    PUSH_CMD(ChangePenSizeCommand, changePenSize, size, x, y);
             }
 
             else if (cmd == "set_page_mode") {
                 int pageMode;
                 if (ifs >> pageMode)
-                    c->setPageMode(pageMode);
+                    PUSH_CMD(SetPageModeCommand, setPageMode, pageMode);
             }
 
-            else if (cmd == "show_previous_page") {
-                c->showPreviousPage();
-            }
-
-            else if (cmd == "show_next_page") {
-                c->showNextPage();
+            else if (cmd == "change_page") {
+                int offset;
+                if (ifs >> offset)
+                    PUSH_CMD(ChangePageCommand, changePage, offset);
             }
 
             else if (cmd == "") {
@@ -90,14 +126,36 @@ readCommands(Core * c)
     }
 }
 
+void runWorker() {
+    Command * cmd;
+
+    while (true) {
+        semCommands.acquire();
+
+        {
+            std::lock_guard<std::mutex> lock(syncCommands);
+            cmd = head;
+            head = head->next;
+
+            if (head == nullptr)
+                tail = nullptr;
+        }
+
+        print("Got cmd", cmd->name,  "executing...");
+        cmd->callback();
+        delete cmd;
+    }
+}
+
 Core::Core(QObject *parent)
     : QObject{parent},
       pageMode(PageMode::MODE_TRANSPARENT),
       transparentBook(this, false),
       opaqueBook(this, true),
       activeBook(&transparentBook),
-      reader(readCommands, this),
-      size_pen_index(2), // 3
+      reader(runReader, this),
+      worker(runWorker),
+      size_pen_index(3  ), // 3
       size_pen(pow(PEN_BASE, size_pen_index)),
       brush_color(QColor("#0000ff")),
       width_space(0),
@@ -127,52 +185,32 @@ void Core::onPageChanged(Book *book, Page *)
         viewport->setBook(book);
 }
 
-void Core::changeBrushSize(int size, int x, int y)
+void Core::changePenSize(ChangePenSizeCommand & cmd)
 {
-    size_pen_index += size;
+    size_pen_index += cmd.size;
     size_pen_index = std::min(size_pen_index, MAX_PEN_INDEX);
     size_pen_index = std::max(size_pen_index, MIN_PEN_INDEX);
     size_pen       = int(pow(PEN_BASE, size_pen_index));
 
-    x = (x * width_space) / 32767;
-    y = (y * height_space) / 32767;
+    cmd.x    = (cmd.x * width_space) / 32767;
+    cmd.y    = (cmd.y * height_space) / 32767;
+    cmd.size = size_pen;
 
     for (Viewport * viewport : viewports)
-        viewport->setHighlightPosition(size_pen, x, y);
-
-    highlightPositionUntil = QDateTime::currentMSecsSinceEpoch() + 3000;
-    QTimer::singleShot(3000, this, &Core::endHighlight);
+        viewport->highlightPosition(cmd);
 }
 
-void Core::endHighlight()
+void Core::changePage(ChangePageCommand & cmd)
 {
-    auto now = QDateTime::currentMSecsSinceEpoch();
-    wup::print("Ending highlight", now, highlightPositionUntil);
-
-    if (now >= highlightPositionUntil) {
-        for (Viewport * viewport : viewports)
-            viewport->setHighlightPosition(0,0,0);
-    }
+    activeBook->changePage(cmd);
 }
 
-void Core::showPreviousPage()
+void Core::setPageMode(SetPageModeCommand & cmd)
 {
-    activeBook->showPreviousPage();
-}
-
-void Core::showNextPage()
-{
-    activeBook->showNextPage();
-}
-
-void Core::setPageMode(int iPageMode)
-{
-    PageMode pageMode = PageMode(iPageMode);
-
-    if (this->pageMode == pageMode)
+    if (pageMode == cmd.pageMode)
         return;
 
-    this->pageMode = pageMode;
+    this->pageMode = cmd.pageMode;
 
     switch (pageMode) {
     case MODE_TRANSPARENT:
@@ -199,36 +237,40 @@ void Core::setPageMode(int iPageMode)
 
 }
 
-void Core::movePage(int rx, int ry) {
-    activeBook->movePage(rx, ry);
+void Core::movePage(MovePageCommand & cmd) {
+
+    activeBook->movePage(cmd);
+
+    for (Viewport * viewport : viewports)
+        viewport->asyncUpdate();
 }
 
-void Core::draw(int x1, int y1, int x2, int y2) {
+void Core::draw(DrawCommand & cmd) {
 
     // Convert from tablet abs coordinates to multidisplay coordinates
 
-    x1 = (x1 * width_space) / 32767;
-    x2 = (x2 * width_space) / 32767;
+    for (QPoint & p : cmd.points)
+    {
+        p.setX((p.x() * width_space) / 32767);
+        p.setY((p.y() * height_space) / 32767);
+    }
 
-    y1 = (y1 * height_space) / 32767;
-    y2 = (y2 * height_space) / 32767;
+    // Ask each viewport to draw, if necessary
 
     for (Viewport * viewport : viewports)
-        viewport->draw(x1, y1, x2, y2, size_pen, &brush_color);
+        viewport->draw(cmd, size_pen, &brush_color);
 }
 
-void Core::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
+void Core::erase(EraseCommand & cmd) {
 
     // Convert from tablet abs coordinates to multidisplay coordinates
 
-    x1 = (x1 * width_space) / 32767;
-    x2 = (x2 * width_space) / 32767;
-    x3 = (x3 * width_space) / 32767;
-
-    y1 = (y1 * height_space) / 32767;
-    y2 = (y2 * height_space) / 32767;
-    y3 = (y3 * height_space) / 32767;
+    for (QPoint & p : cmd.points)
+    {
+        p.setX((p.x() * width_space) / 32767);
+        p.setY((p.y() * height_space) / 32767);
+    }
 
     for (Viewport * viewport : viewports)
-        viewport->erase(x1, y1, x2, y2, x3, y3);
+        viewport->erase(cmd);
 }

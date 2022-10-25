@@ -347,13 +347,13 @@ class XPPEN_DecoPro_Base(Reflex):
     def on_key20(self, value):
         log.debug("Deco pro key 20", value)
         if value == 0:
-            canvas.send("show_previous_page")
+            canvas.send("change_page -1")
         # Previous page
         
     def on_key21(self, value):
         log.debug("Deco pro key 21", value)
         if value == 0:
-            canvas.send("show_next_page")
+            canvas.send("change_page +1")
         # Next page
         
     def on_key30(self, value):

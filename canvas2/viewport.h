@@ -3,6 +3,7 @@
 
 #include "book.h"
 #include "canvaswidget.h"
+#include "commands.h"
 
 #include <QMainWindow>
 #include <scalabledisplay.h>
@@ -20,13 +21,13 @@ public:
     ~Viewport();
 
     void setBook(Book * book);
-    QRect draw(int x1, int y1, int x2, int y2, int size, QColor * color);
-    QRect erase(int x1, int y1, int x2, int y2, int x3, int y3);
-    void onPaint(QPainter &painter);
-    QRect setHighlightPosition(int size, int x, int y);
+    void draw(DrawCommand cmd, int size, QColor * color);
+    void erase(EraseCommand cmd);
+    void onPaint(QPainter & painter);
+    void highlightPosition(ChangePenSizeCommand cmd);
+    void asyncUpdate();
 
 public Q_SLOTS:
-    void redraw(int left, int top, int width, int height);
     void animate();
 
 private:
@@ -37,7 +38,7 @@ private:
     Ui::MainWindow *ui;
     Book *book;
     ScalableDisplay *display;
-    QTimer timer;// animate
+    QTimer timer;
     bool mustRepaint;
 
 };

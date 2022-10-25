@@ -25,6 +25,7 @@ HEADERS += \
     book.h \
     canvaswidget.h \
     cell.h \
+    commands.h \
     core.h \
     page.h \
     scalabledisplay.h \

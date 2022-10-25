@@ -10,18 +10,12 @@
 #include <thread>
 #include <page.h>
 
-const int    MAX_PEN_INDEX = 9;
+const int    MAX_PEN_INDEX = 15;
 const int    MIN_PEN_INDEX = 1;
-const double PEN_BASE      = 2;
+const double PEN_BASE      = 1.5;
 
 
-enum PageMode {
-    MODE_TRANSPARENT = 1,
-    MODE_OPAQUE      = 2,
-    MODE_PASSTHROUGH = 3,
-    MODE_DISABLED    = 4,
-};
-
+class DrawCommand;
 
 class Core : public QObject, public BookListener
 {
@@ -30,18 +24,19 @@ public:
     explicit Core(QObject *parent = nullptr);
 
     void onPageChanged(Book *book, Page * page);
-    void endHighlight();
+//    void endHighlight();
 
 signals:
 
 public slots:
-    void changeBrushSize(int size, int x, int y);
-    void showPreviousPage();
-    void showNextPage();
-    void setPageMode(int pageMode);
-    void movePage(int rx, int ry);
-    void draw(int x1, int y1, int x2, int y2);
-    void erase(int x1, int y1, int x2, int y2, int x3, int y3);
+    void changePenSize(ChangePenSizeCommand & cmd);
+    void changePage(ChangePageCommand & cmd);
+//    void showPreviousPage();
+//    void showNextPage();
+    void setPageMode(SetPageModeCommand & cmd);
+    void movePage(MovePageCommand & cmd);
+    void draw(DrawCommand & cmd);
+    void erase(EraseCommand & cmd);
 
 private:
 
@@ -52,6 +47,7 @@ private:
     Book opaqueBook;
     Book * activeBook;
     std::thread reader;
+    std::thread worker;
 
     int size_pen_index;
     int size_pen;

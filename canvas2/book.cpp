@@ -25,18 +25,21 @@ void Book::onPageEdited(Page *page) {
     }
 }
 
-void Book::showPreviousPage() {
-    if (pageIndex != 0) {
-        --pageIndex;
-        core->onPageChanged(this, currentPage());
-    }
-}
+void Book::changePage(ChangePageCommand & cmd) {
+    int oldPageIndex = pageIndex;
 
-void Book::showNextPage() {
-    if (pageIndex != pages.size()) {
-        ++pageIndex;
-        core->onPageChanged(this, currentPage());
-    }
+    pageIndex += cmd.offset;
+
+    if (pageIndex < 0)
+        pageIndex = 0;
+
+    if (pageIndex > pages.size())
+        pageIndex = pages.size();
+
+    if (pageIndex == oldPageIndex)
+        return;
+
+    core->onPageChanged(this, currentPage());
 }
 
 void Book::setVisible(bool visible) {
@@ -44,16 +47,16 @@ void Book::setVisible(bool visible) {
     core->onPageChanged(this, currentPage());
 }
 
-void Book::movePage(int rx, int ry) {
-    currentPage()->move(rx, ry);
+void Book::movePage(MovePageCommand & cmd) {
+    currentPage()->move(cmd);
 }
 
-void Book::onPaint(QPainter & painter, QRect & screenRect) {
+bool Book::onPaint(QPainter & painter, QRect & screenRect) {
     if (!visible)
-        return;
+        return false;
 
     if (opaque)
-        currentPage()->onPaint(painter, screenRect, &backgroundColor);
+        return currentPage()->onPaint(painter, screenRect, &backgroundColor);
     else
-        currentPage()->onPaint(painter, screenRect, nullptr);
+        return currentPage()->onPaint(painter, screenRect, nullptr);
 }

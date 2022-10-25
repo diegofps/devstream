@@ -27,7 +27,7 @@ Viewport::Viewport(ScalableDisplay *display)
     show();
 
     connect(&timer, &QTimer::timeout, this, &Viewport::animate);
-    timer.start(17);
+    timer.start(20);
 }
 
 Viewport::~Viewport()
@@ -45,7 +45,6 @@ void Viewport::animate() {
 void Viewport::setBook(Book *book)
 {
     this->book = book;
-//    ui->canvas->update();
     mustRepaint = true;
 }
 
@@ -79,129 +78,114 @@ void Viewport::configureWindowProperties()
     );
 }
 
-QRect Viewport::setHighlightPosition(int size, int x1, int y1) {
+void Viewport::highlightPosition(ChangePenSizeCommand cmd) {
 
     QRect & g = this->display->internalGeometry;
 
-    if (!g.contains(x1, y1))
-        return QRect();
-
-    QRect updateArea(
-                x1 - size / 2,
-                y1 - size / 2,
-                x1 + size / 2,
-                y1 + size / 2);
+    if (!g.contains(cmd.x, cmd.y))
+        return;
 
     auto x = g.left();
     auto y = g.top();
 
-    x1 = x + (x1 - x) * this->display->normX;
-    y1 = y + (y1 - y) * this->display->normY;
+    cmd.x = x + (cmd.x - x) * this->display->normX;
+    cmd.y = y + (cmd.y - y) * this->display->normY;
 
-    book->currentPage()->setHighlightPosition(size, x1, y1);
-
-    mustRepaint = true;
-
-//    QMetaObject::invokeMethod(this, "redraw", Qt::AutoConnection,
-//                              Q_ARG(int, updateArea.left()),
-//                              Q_ARG(int, updateArea.top()),
-//                              Q_ARG(int, updateArea.width()),
-//                              Q_ARG(int, updateArea.height()));
-
-    return updateArea;
+    book->currentPage()->highlightPosition(cmd);
+    asyncUpdate();
 }
 
-QRect Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor *color) {
+void Viewport::draw(DrawCommand cmd, int size, QColor *color) {
+
+    // Check if this drawing is out of viewport
 
     QRect & g = this->display->internalGeometry;
+    bool skip = true;
 
-    if (!g.contains(x1, y1) && !g.contains(x2,y2))
-        return QRect();
+//    wup::print("geometry is", g.left(), g.top(), g.width(), g.height());
 
-    QRect updateArea(
-                std::min(x1,x2),
-                std::min(y1,y2),
-                std::max(x1,x2)-std::min(x1,x2),
-                std::max(y1,y2)-std::min(y1,y2));
+    for (QPoint &p : cmd.points) {
+//        wup::print("checking", p.x(), p.y());
+
+        if (g.contains(p.x(), p.y())) {            
+//            wup::print("contained!");
+
+            skip = false;
+            break;
+        }
+    }
+
+    if (skip)
+        return;
+
+    // Normalize to global coordinates
+//    wup::print("Didn't skip");
 
     auto x = g.left();
     auto y = g.top();
 
-    x1 = x + (x1 - x) * this->display->normX;
-    x2 = x + (x2 - x) * this->display->normX;
-    y1 = y + (y1 - y) * this->display->normY;
-    y2 = y + (y2 - y) * this->display->normY;
+    for (QPoint &p : cmd.points) {
+        p.setX(x + (p.x() - x) * this->display->normX);
+        p.setY(y + (p.y() - y) * this->display->normY);
+    }
 
-    book->currentPage()->draw(x1, y1, x2, y2, size, color);
+    // Ask the book to draw it
 
-    mustRepaint = true;
+    book->currentPage()->draw(cmd, size, color);
 
-//    ui->canvas->update();
+    // Update canvas
 
-//    wup::print("updateArea:", updateArea.left(), updateArea.top(), updateArea.width(), updateArea.height());
-
-//    QMetaObject::invokeMethod(this, "redraw", Qt::AutoConnection,
-//                              Q_ARG(int, updateArea.left()),
-//                              Q_ARG(int, updateArea.top()),
-//                              Q_ARG(int, updateArea.width()),
-//                              Q_ARG(int, updateArea.height()));
-
-    return updateArea;
+    asyncUpdate();
 }
 
-QRect Viewport::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
+void Viewport::erase(EraseCommand cmd) {
 //    QRect updateArea = this->draw(x1, y1, x2, y2, x3, y3, nullptr);
 
+    // Check if this drawing is out of viewport
+
     QRect & g = this->display->internalGeometry;
+    bool skip = true;
 
-    if (!g.contains(x1, y1) && !g.contains(x2,y2) && !g.contains(x3,y3))
-        return QRect();
+//    wup::print("geometry is", g.left(), g.top(), g.width(), g.height());
 
-    QRect updateArea(
-                std::min(x1,std::min(x2,x3)),
-                std::min(y1,std::min(y2,x3)),
-                std::max(x1,std::min(x2,x3))-std::min(x1,std::min(x2,x3)),
-                std::max(y1,std::min(y2,x3))-std::min(y1,std::min(y2,x3)));
+    for (QPoint &p : cmd.points) {
+//        wup::print("checking", p.x(), p.y());
+
+        if (g.contains(p.x(), p.y())) {
+//            wup::print("contained!");
+
+            skip = false;
+            break;
+        }
+    }
+
+    if (skip)
+        return;
+
+    // Normalize to global coordinates
+//    wup::print("Didn't skip");
 
     auto x = g.left();
     auto y = g.top();
 
-    x1 = x + (x1 - x) * this->display->normX;
-    x2 = x + (x2 - x) * this->display->normX;
-    x3 = x + (x3 - x) * this->display->normX;
+    for (QPoint &p : cmd.points) {
+        p.setX(x + (p.x() - x) * this->display->normX);
+        p.setY(y + (p.y() - y) * this->display->normY);
+    }
 
-    y1 = y + (y1 - y) * this->display->normY;
-    y2 = y + (y2 - y) * this->display->normY;
-    y3 = y + (y3 - y) * this->display->normY;
-
-    book->currentPage()->erase(x1, y1, x2, y2, x3, y3);
-
-//    wup::print("updateArea:", updateArea.left(), updateArea.top(), updateArea.width(), updateArea.height());
-
-    mustRepaint = true;
-
-//    ui->canvas->update();
-
-//    QMetaObject::invokeMethod(this, "redraw", Qt::AutoConnection,
-//                              Q_ARG(int, updateArea.left()),
-//                              Q_ARG(int, updateArea.top()),
-//                              Q_ARG(int, updateArea.width()),
-//                              Q_ARG(int, updateArea.height()));
-
-    return updateArea;
+    book->currentPage()->erase(cmd);
+    asyncUpdate();
 }
 
 void Viewport::onPaint(QPainter & painter) {
 //    mustRepaint = false;
     if (book != nullptr) {
         wup::print("repainting");
-        book->onPaint(painter, this->display->internalGeometry);
+        mustRepaint = book->onPaint(painter, this->display->internalGeometry);
     }
 }
 
-void Viewport::redraw(int left, int top, int width, int height)
-{
-    ui->canvas->update();
-//    ui->canvas->repaint(left, top, width, height);
-//    QThread::msleep(10);
+
+void Viewport::asyncUpdate() {
+    mustRepaint = true;
 }
