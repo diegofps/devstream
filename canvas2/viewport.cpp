@@ -1,9 +1,11 @@
 #include "viewport.h"
 #include "ui_mainwindow.h"
 
+#include <QDateTime>
 #include <QRect>
 #include <QScreen>
 #include <QShortcut>
+#include <QThread>
 #include <wup/wup.hpp>
 
 
@@ -30,9 +32,8 @@ Viewport::~Viewport()
 
 void Viewport::setBook(Book *book)
 {
-//    wup::print("Inside Viewport's setBook");
     this->book = book;
-    this->update(nullptr);
+    update();
 }
 
 
@@ -66,22 +67,66 @@ void Viewport::configureWindowProperties()
 
 }
 
-QRect Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor *color) {
+QRect Viewport::setHighlightPosition(int size, int x1, int y1) {
 
     QRect & g = this->display->internalGeometry;
 
-    if (!g.contains(x1, y1) || !g.contains(x2,y2))
+    if (!g.contains(x1, y1))
         return QRect();
+
+    QRect updateArea(
+                x1 - size / 2,
+                y1 - size / 2,
+                x1 + size / 2,
+                y1 + size / 2);
 
     auto x = g.left();
     auto y = g.top();
 
-    x1 = x + (x1-x)*this->display->normX;
-    x2 = x + (x2-x)*this->display->normX;
-    y1 = y + (y1-y)*this->display->normY;
-    y2 = y + (y2-y)*this->display->normY;
+    x1 = x + (x1 - x) * this->display->normX;
+    y1 = y + (y1 - y) * this->display->normY;
 
-    QRect updateArea = book->currentPage()->draw(x1, y1, x2, y2, size, color);
+    book->currentPage()->setHighlightPosition(size, x1, y1);
+
+    QMetaObject::invokeMethod(this, "redraw", Qt::AutoConnection,
+                              Q_ARG(int, updateArea.left()),
+                              Q_ARG(int, updateArea.top()),
+                              Q_ARG(int, updateArea.width()),
+                              Q_ARG(int, updateArea.height()));
+
+    return updateArea;
+}
+
+QRect Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor *color) {
+
+    QRect & g = this->display->internalGeometry;
+
+    if (!g.contains(x1, y1) && !g.contains(x2,y2))
+        return QRect();
+
+    QRect updateArea(
+                std::min(x1,x2),
+                std::min(y1,y2),
+                std::max(x1,x2)-std::min(x1,x2),
+                std::max(y1,y2)-std::min(y1,y2));
+
+    auto x = g.left();
+    auto y = g.top();
+
+    x1 = x + (x1 - x) * this->display->normX;
+    x2 = x + (x2 - x) * this->display->normX;
+    y1 = y + (y1 - y) * this->display->normY;
+    y2 = y + (y2 - y) * this->display->normY;
+
+    book->currentPage()->draw(x1, y1, x2, y2, size, color);
+
+    wup::print("updateArea:", updateArea.left(), updateArea.top(), updateArea.width(), updateArea.height());
+    QMetaObject::invokeMethod(this, "redraw", Qt::AutoConnection,
+                              Q_ARG(int, updateArea.left()),
+                              Q_ARG(int, updateArea.top()),
+                              Q_ARG(int, updateArea.width()),
+                              Q_ARG(int, updateArea.height()));
+
     return updateArea;
 }
 
@@ -95,11 +140,9 @@ void Viewport::onPaint(QPainter & painter) {
         book->onPaint(painter, this->display->internalGeometry);
 }
 
-void Viewport::update(QRect * rect) {
-//    wup::print("repainting");
-//    QMainWindow::update();
-    QMetaObject::invokeMethod(ui->canvas, "update", Qt::AutoConnection);
-
-//    ui->canvas->update();
-//    ui->canvas->repaint(*rect);
+void Viewport::redraw(int left, int top, int width, int height)
+{
+    ui->canvas->update();
+//    ui->canvas->repaint(left, top, width, height);
+//    QThread::msleep(10);
 }

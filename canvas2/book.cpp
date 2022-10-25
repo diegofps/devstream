@@ -48,10 +48,6 @@ void Book::movePage(int rx, int ry) {
     currentPage()->move(rx, ry);
 }
 
-void Book::onRepaintPage(Page *page, QRect *rect) {
-    core->onRepaintPage(this, page, rect);
-}
-
 void Book::onPaint(QPainter & painter, QRect & screenRect) {
     if (!visible)
         return;

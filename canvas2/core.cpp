@@ -10,13 +10,12 @@
 #include <wup/wup.hpp>
 
 #include <QApplication>
+#include <QDateTime>
 #include <QRegularExpression>
 
 const char * named_pipe = "/tmp/shadow_xppen_deco_pro";
 
 using wup::print;
-
-
 
 
 void
@@ -59,9 +58,9 @@ readCommands(Core * c)
             }
 
             else if (cmd == "change_brush_size") {
-                int size;
-                if (ifs >> size)
-                    c->changeBrushSize(size);
+                int size, x, y;
+                if (ifs >> size >> x >> y)
+                    c->changeBrushSize(size, x, y);
             }
 
             else if (cmd == "change_eraser_size") {
@@ -158,18 +157,32 @@ void Core::onPageChanged(Book *book, Page *)
         viewport->setBook(book);
 }
 
-void Core::onRepaintPage(Book *, Page *, QRect *rect)
-{
-    for (Viewport * viewport : viewports)
-        viewport->update(rect);
-}
-
-void Core::changeBrushSize(int size)
+void Core::changeBrushSize(int size, int x, int y)
 {
     size_brush_index += size;
     size_brush_index = std::min(size_brush_index, MAX_BRUSH_INDEX);
     size_brush_index = std::max(size_brush_index, MIN_BRUSH_INDEX);
     size_brush       = int(pow(BRUSH_BASE, size_brush_index));
+
+    x = (x * width_space) / 32767;
+    y = (y * height_space) / 32767;
+
+    for (Viewport * viewport : viewports)
+        viewport->setHighlightPosition(size_brush, x, y);
+
+    highlightPositionUntil = QDateTime::currentMSecsSinceEpoch() + 3000;
+    QTimer::singleShot(3000, this, &Core::endHighlight);
+}
+
+void Core::endHighlight()
+{
+    auto now = QDateTime::currentMSecsSinceEpoch();
+    wup::print("Ending highlight", now, highlightPositionUntil);
+
+    if (now >= highlightPositionUntil) {
+        for (Viewport * viewport : viewports)
+            viewport->setHighlightPosition(0,0,0);
+    }
 }
 
 void Core::changeEraserSize(int size)
@@ -236,8 +249,6 @@ void Core::draw(int x1, int y1, int x2, int y2) {
     y1 = (y1 * height_space) / 32767;
     y2 = (y2 * height_space) / 32767;
 
-//    print("Core::draw", x1, y1, x2, y2);
-
     for (Viewport * viewport : viewports)
         viewport->draw(x1, y1, x2, y2, size_brush, &brush_color);
 }
@@ -253,4 +264,3 @@ void Core::erase(int x1, int y1, int x2, int y2) {
     for (Viewport * viewport : viewports)
         viewport->erase(x1, y1, x2, y2, size_eraser);
 }
-

@@ -23,7 +23,10 @@ public:
     QRect draw(int x1, int y1, int x2, int y2, int size, QColor * color);
     QRect erase(int x1, int y1, int x2, int y2, int size);
     void onPaint(QPainter &painter);
-    void update(QRect * rect);
+    QRect setHighlightPosition(int size, int x, int y);
+
+public Q_SLOTS:
+    void redraw(int left, int top, int width, int height);
 
 private:
     void positionWindow(QScreen *screen);

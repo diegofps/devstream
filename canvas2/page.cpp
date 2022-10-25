@@ -1,8 +1,10 @@
 #include "page.h"
 
-#include <QImage>
-#include <QBrush>
+#include <QDateTime>
 #include <QPainter>
+#include <QBrush>
+#include <QImage>
+
 #include <wup/wup.hpp>
 
 using namespace wup;
@@ -54,7 +56,8 @@ Page::Page(PageListener *listener) :
     viewX(0),
     viewY(0),
     lastX(0),
-    lastY(0)
+    lastY(0),
+    highlightSize(5)
 {
     eraserPen.setCapStyle(Qt::PenCapStyle::RoundCap);
     eraserPen.setStyle(Qt::PenStyle::SolidLine);
@@ -63,6 +66,10 @@ Page::Page(PageListener *listener) :
 
     inkPen.setCapStyle(Qt::PenCapStyle::RoundCap);
     inkPen.setStyle(Qt::PenStyle::SolidLine);
+    inkPen.setCapStyle(Qt::PenCapStyle::RoundCap);
+
+    highlightBrush.setStyle(Qt::BrushStyle::SolidPattern);
+    highlightBrush.setColor(QColor(255,0,0));
 }
 
 void Page::move(int rx, int ry) {
@@ -71,10 +78,21 @@ void Page::move(int rx, int ry) {
     std::lock_guard<std::mutex> lock(drawing);
     viewX += rx;
     viewY += ry;
-    book->onRepaintPage(this, nullptr);
 }
 
-QRect Page::draw(int x1, int y1, int x2, int y2, int size, QColor * color) {
+QRect Page::setHighlightPosition(int size, int x, int y) {
+    print("setting highlight", size);
+
+    lastX = x;
+    lastY = y;
+    highlightSize = size;
+
+    QRect area(x, y, size, size);
+
+    return area;
+}
+
+void Page::draw(int x1, int y1, int x2, int y2, int size, QColor * color) {
 //    print("Drawing in page ");
     std::lock_guard<std::mutex> lock(drawing);
 
@@ -134,31 +152,16 @@ QRect Page::draw(int x1, int y1, int x2, int y2, int size, QColor * color) {
         }
     }
 
-    // Calculate the region in the widget that must be updated
-    int left = std::min(x1,x2) * CELL_SIZE;
-    int top  = std::min(y1,y2) * CELL_SIZE;
-
-    int width  = std::max(x1,x2) * CELL_SIZE - std::min(x1,x2) * CELL_SIZE;
-    int height = std::max(y1,y2) * CELL_SIZE - std::min(y1,y2) * CELL_SIZE;
-    
-    // Convert from world coordinates to multiviewport coordinates
-    left += viewX;
-    top  += viewY;
-
-    QRect rect(left, top, width, height);
-
-    // Request an update to the widget
-    book->onRepaintPage(this, &rect);
-
     // Notify book that this page has changed
     book->onPageEdited(this);
 
-    return rect;
+    lastX = x2;
+    lastY = y2;
 }
 
-QRect Page::erase(int x1, int y1, int x2, int y2, int size) {
+void Page::erase(int x1, int y1, int x2, int y2, int size) {
     print("Page::eraser", x1, y1, x2, y2, size);
-    return this->draw(x1, y1, x2, y2, size, nullptr);
+    this->draw(x1, y1, x2, y2, size, nullptr);
 }
 
 void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
@@ -185,6 +188,12 @@ void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
             if (cell != nullptr)
                 painter.drawImage(cell->x - x, cell->y - y, *cell->img);
         }
+    }
+
+    if (highlightSize != 0) {
+        print("drawing highlight", lastX, lastY, highlightSize, highlightSize);
+        painter.setBrush(highlightBrush);
+        painter.drawEllipse(lastX - highlightSize / 2, lastY - highlightSize / 2, highlightSize, highlightSize);
     }
 }
 

@@ -34,12 +34,12 @@ public:
     explicit Core(QObject *parent = nullptr);
 
     void onPageChanged(Book *book, Page * page);
-    void onRepaintPage(Book *book, Page * page, QRect * rect);
+    void endHighlight();
 
 signals:
 
 public slots:
-    void changeBrushSize(int size);
+    void changeBrushSize(int size, int x, int y);
     void changeEraserSize(int size);
     void showPreviousPage();
     void showNextPage();
@@ -69,7 +69,7 @@ private:
     int width_space;
     int height_space;
 
-    QList<std::function<void(void)>> callbacksCopy;
+    qint64 highlightPositionUntil;
 
 };
 

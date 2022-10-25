@@ -151,6 +151,8 @@ class XPPEN_DecoPro_Base(Reflex):
         self.erasing = False
         self.touch_x = 0
         self.touch_y = 0
+        self.erase_x = 0
+        self.erase_y = 0
 
     def on_event(self, topic_name, evt):
 
@@ -372,7 +374,7 @@ class XPPEN_DecoPro_Base(Reflex):
 
     def on_orb_wheel(self, value):
         # log.debug("Deco pro key orb_wheel", value)
-        canvas.send(f"change_brush_size {value}")
+        canvas.send(f"change_brush_size {value} {self.last_ABS_X} {self.last_ABS_Y}")
 
     def on_pen_abs(self, x, y, z, tx, ty):
         # log.debug("Deco pro key pen_abs", x, y, z, tx, ty)
@@ -386,6 +388,9 @@ class XPPEN_DecoPro_Base(Reflex):
             canvas.send(f"erase {self.erase_x} {self.erase_y} {x} {y}")
             # self.erase_x = x
             # self.erase_y = y
+        
+        self.last_x = x
+        self.last_y = y
         
         with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
             eb.function("ABS", x, y, 0, 0, 0)

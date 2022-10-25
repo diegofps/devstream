@@ -21,7 +21,6 @@ public:
     void animate();
     void asyncUpdate();
 
-
 private:
     CanvasWidgetListener * listener;
 //    bool mustRefresh;
