@@ -103,6 +103,9 @@ Core::Core(QObject *parent)
       width_space(0),
       height_space(0)
 {
+    readerPriority.sched_priority = 2;
+    pthread_setschedparam(reader.native_handle(), SCHED_OTHER, &readerPriority);
+
     QList<ScalableDisplay*> displays = ScalableDisplay::parseDisplays();
 
     for (int i=0;i!=displays.size();++i) {

@@ -63,6 +63,8 @@ private:
 
     qint64 highlightPositionUntil;
 
+    sched_param readerPriority;
+
 };
 
 #endif // CORE_H

@@ -19,7 +19,7 @@ public:
     void setListener(CanvasWidgetListener *listener);
     void paintEvent(QPaintEvent *event);
     void animate();
-    void asyncUpdate();
+//    void asyncUpdate();
 
 private:
     CanvasWidgetListener * listener;

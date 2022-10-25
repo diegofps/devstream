@@ -14,7 +14,9 @@ Viewport::Viewport(ScalableDisplay *display)
 
       ui(new Ui::MainWindow),
       book(nullptr),
-      display(display)
+      display(display),
+      timer(this),
+      mustRepaint(true)
 {
     ui->setupUi(this);
     ui->canvas->setListener(this);
@@ -23,6 +25,9 @@ Viewport::Viewport(ScalableDisplay *display)
     positionWindow(display->screen);
 
     show();
+
+    connect(&timer, &QTimer::timeout, this, &Viewport::animate);
+    timer.start(17);
 }
 
 Viewport::~Viewport()
@@ -30,10 +35,18 @@ Viewport::~Viewport()
     delete ui;
 }
 
+void Viewport::animate() {
+    if (mustRepaint) {
+        mustRepaint = false;
+        ui->canvas->update();
+    }
+}
+
 void Viewport::setBook(Book *book)
 {
     this->book = book;
-    ui->canvas->update();
+//    ui->canvas->update();
+    mustRepaint = true;
 }
 
 
@@ -87,11 +100,13 @@ QRect Viewport::setHighlightPosition(int size, int x1, int y1) {
 
     book->currentPage()->setHighlightPosition(size, x1, y1);
 
-    QMetaObject::invokeMethod(this, "redraw", Qt::AutoConnection,
-                              Q_ARG(int, updateArea.left()),
-                              Q_ARG(int, updateArea.top()),
-                              Q_ARG(int, updateArea.width()),
-                              Q_ARG(int, updateArea.height()));
+    mustRepaint = true;
+
+//    QMetaObject::invokeMethod(this, "redraw", Qt::AutoConnection,
+//                              Q_ARG(int, updateArea.left()),
+//                              Q_ARG(int, updateArea.top()),
+//                              Q_ARG(int, updateArea.width()),
+//                              Q_ARG(int, updateArea.height()));
 
     return updateArea;
 }
@@ -119,7 +134,9 @@ QRect Viewport::draw(int x1, int y1, int x2, int y2, int size, QColor *color) {
 
     book->currentPage()->draw(x1, y1, x2, y2, size, color);
 
-    ui->canvas->update();
+    mustRepaint = true;
+
+//    ui->canvas->update();
 
 //    wup::print("updateArea:", updateArea.left(), updateArea.top(), updateArea.width(), updateArea.height());
 
@@ -161,7 +178,9 @@ QRect Viewport::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
 
 //    wup::print("updateArea:", updateArea.left(), updateArea.top(), updateArea.width(), updateArea.height());
 
-    ui->canvas->update();
+    mustRepaint = true;
+
+//    ui->canvas->update();
 
 //    QMetaObject::invokeMethod(this, "redraw", Qt::AutoConnection,
 //                              Q_ARG(int, updateArea.left()),
@@ -173,8 +192,11 @@ QRect Viewport::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
 }
 
 void Viewport::onPaint(QPainter & painter) {
-    if (book != nullptr)
+//    mustRepaint = false;
+    if (book != nullptr) {
+        wup::print("repainting");
         book->onPaint(painter, this->display->internalGeometry);
+    }
 }
 
 void Viewport::redraw(int left, int top, int width, int height)

@@ -27,6 +27,7 @@ public:
 
 public Q_SLOTS:
     void redraw(int left, int top, int width, int height);
+    void animate();
 
 private:
     void positionWindow(QScreen *screen);
@@ -36,6 +37,8 @@ private:
     Ui::MainWindow *ui;
     Book *book;
     ScalableDisplay *display;
+    QTimer timer;// animate
+    bool mustRepaint;
 
 };
 

@@ -117,6 +117,8 @@ void Page::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
 
     std::lock_guard<std::mutex> lock(drawing);
 
+    Clock c;
+
     // Convert from multidisplay coordinates to world coordinates
 
     x1 -= viewX;
@@ -175,6 +177,10 @@ void Page::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
 
     lastX = x2;
     lastY = y2;
+
+    c.stop();
+    auto time = c.ellapsed_milli();
+    print("time to draw:", time);
 }
 
 void Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
