@@ -14,6 +14,7 @@ DEFINES += WUP_NO_OPENCV WUP_NO_MPICH
 SOURCES += \
     book.cpp \
     canvaswidget.cpp \
+    cell.cpp \
     core.cpp \
     main.cpp \
     page.cpp \
@@ -23,6 +24,7 @@ SOURCES += \
 HEADERS += \
     book.h \
     canvaswidget.h \
+    cell.h \
     core.h \
     page.h \
     scalabledisplay.h \

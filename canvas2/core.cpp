@@ -46,9 +46,9 @@ readCommands(Core * c)
             }
 
             else if (cmd == "erase") {
-                int x1, y1, x2, y2;
-                if (ifs >> x1 >> y1 >> x2 >> y2)
-                     c->erase(x1,y1,x2,y2);
+                int x1, y1, x2, y2, x3, y3;
+                if (ifs >> x1 >> y1 >> x2 >> y2 >> x3 >> y3)
+                     c->erase(x1,y1,x2,y2,x3,y3);
             }
 
             else if (cmd == "move_page") {
@@ -61,12 +61,6 @@ readCommands(Core * c)
                 int size, x, y;
                 if (ifs >> size >> x >> y)
                     c->changeBrushSize(size, x, y);
-            }
-
-            else if (cmd == "change_eraser_size") {
-                int size;
-                if (ifs >> size)
-                    c->changeEraserSize(size);
             }
 
             else if (cmd == "set_page_mode") {
@@ -103,10 +97,8 @@ Core::Core(QObject *parent)
       opaqueBook(this, true),
       activeBook(&transparentBook),
       reader(readCommands, this),
-      size_brush_index(3), // 3
-      size_eraser_index(8), // 8
-      size_brush(pow(BRUSH_BASE, size_brush_index)),
-      size_eraser(pow(ERASER_BASE, size_eraser_index)),
+      size_pen_index(2), // 3
+      size_pen(pow(PEN_BASE, size_pen_index)),
       brush_color(QColor("#0000ff")),
       width_space(0),
       height_space(0)
@@ -123,32 +115,7 @@ Core::Core(QObject *parent)
 
         width_space  = std::max(g.right(), width_space);
         height_space = std::max(g.bottom(), height_space);
-
-        //////////////
-
-//        QSize  size   = display->screen->virtualSize();
-//        QSize  size2  = display->screen->availableVirtualSize();
-//        QSizeF size3  = display->screen->physicalSize();
-//        QRect  g2     = display->screen->availableVirtualGeometry();
-//        qreal  dots   = display->screen->logicalDotsPerInch();
-//        QSize  size4  = display->screen->availableSize();
-//        auto   serial = display->screen->serialNumber();
-
-//        print("Screen", i);
-//        print("  Geometry:", g.left(), g.top(), g.width(), g.height());
-//        print("  VirtualGeometry: ", g2.left(), g2.top(), g2.width(), g2.height());
-//        print("  VirtualSize: ", size.width(), size.height());
-//        print("  AvailableVirtualSize: ", size2.width(), size2.height());
-//        print("  PhysicalSize: ", size3.width(), size3.height());
-//        print("  AvailableSize: ", size4.width(), size4.height());
-//        print("  DotsPerInch: ", dots);
-//        print("  SerialNumber: ", serial);
-
-//        print();
     }
-
-//    wup::print("space", width_space, height_space);
-//    wup::print("sizes", size_brush, size_eraser);
 }
 
 void Core::onPageChanged(Book *book, Page *)
@@ -159,16 +126,16 @@ void Core::onPageChanged(Book *book, Page *)
 
 void Core::changeBrushSize(int size, int x, int y)
 {
-    size_brush_index += size;
-    size_brush_index = std::min(size_brush_index, MAX_BRUSH_INDEX);
-    size_brush_index = std::max(size_brush_index, MIN_BRUSH_INDEX);
-    size_brush       = int(pow(BRUSH_BASE, size_brush_index));
+    size_pen_index += size;
+    size_pen_index = std::min(size_pen_index, MAX_PEN_INDEX);
+    size_pen_index = std::max(size_pen_index, MIN_PEN_INDEX);
+    size_pen       = int(pow(PEN_BASE, size_pen_index));
 
     x = (x * width_space) / 32767;
     y = (y * height_space) / 32767;
 
     for (Viewport * viewport : viewports)
-        viewport->setHighlightPosition(size_brush, x, y);
+        viewport->setHighlightPosition(size_pen, x, y);
 
     highlightPositionUntil = QDateTime::currentMSecsSinceEpoch() + 3000;
     QTimer::singleShot(3000, this, &Core::endHighlight);
@@ -183,14 +150,6 @@ void Core::endHighlight()
         for (Viewport * viewport : viewports)
             viewport->setHighlightPosition(0,0,0);
     }
-}
-
-void Core::changeEraserSize(int size)
-{
-    size_eraser_index += size;
-    size_eraser_index = std::min(size_eraser_index, MAX_BRUSH_INDEX);
-    size_eraser_index = std::max(size_eraser_index, MIN_BRUSH_INDEX);
-    size_eraser       = int(pow(ERASER_BASE, size_eraser_index));
 }
 
 void Core::showPreviousPage()
@@ -242,7 +201,9 @@ void Core::movePage(int rx, int ry) {
 }
 
 void Core::draw(int x1, int y1, int x2, int y2) {
+
     // Convert from tablet abs coordinates to multidisplay coordinates
+
     x1 = (x1 * width_space) / 32767;
     x2 = (x2 * width_space) / 32767;
 
@@ -250,17 +211,21 @@ void Core::draw(int x1, int y1, int x2, int y2) {
     y2 = (y2 * height_space) / 32767;
 
     for (Viewport * viewport : viewports)
-        viewport->draw(x1, y1, x2, y2, size_brush, &brush_color);
+        viewport->draw(x1, y1, x2, y2, size_pen, &brush_color);
 }
 
-void Core::erase(int x1, int y1, int x2, int y2) {
+void Core::erase(int x1, int y1, int x2, int y2, int x3, int y3) {
+
     // Convert from tablet abs coordinates to multidisplay coordinates
+
     x1 = (x1 * width_space) / 32767;
     x2 = (x2 * width_space) / 32767;
+    x3 = (x3 * width_space) / 32767;
 
     y1 = (y1 * height_space) / 32767;
     y2 = (y2 * height_space) / 32767;
+    y3 = (y3 * height_space) / 32767;
 
     for (Viewport * viewport : viewports)
-        viewport->erase(x1, y1, x2, y2, size_eraser);
+        viewport->erase(x1, y1, x2, y2, x3, y3);
 }

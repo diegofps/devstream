@@ -385,9 +385,14 @@ class XPPEN_DecoPro_Base(Reflex):
             self.touch_y = y
         
         if self.erasing and distance(self.erase_x, self.erase_y, x, y) > 10:
-            canvas.send(f"erase {self.erase_x} {self.erase_y} {x} {y}")
-            # self.erase_x = x
-            # self.erase_y = y
+
+            self.erase_last_x = self.erase_x
+            self.erase_last_y = self.erase_y
+
+            self.erase_x = x
+            self.erase_y = y
+
+            canvas.send(f"erase {self.erase_start_x} {self.erase_start_y} {self.erase_last_x} {self.erase_last_y} {self.erase_x} {self.erase_y}")
         
         self.last_x = x
         self.last_y = y
@@ -414,9 +419,13 @@ class XPPEN_DecoPro_Base(Reflex):
         self.erasing = value != 0
 
         if self.erasing:
+            self.erase_start_x = x
+            self.erase_start_y = y
+
             self.erase_x = x
             self.erase_y = y
-            canvas.send(f"erase {x} {y} {x+1} {y+1}")
+
+            # canvas.send(f"erase {x} {y} {x+1} {y+1}")
         
     def on_pen_btn_high(self, value, x, y):
         log.debug("Deco pro key pen_btn_high", value)

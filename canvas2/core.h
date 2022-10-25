@@ -10,13 +10,9 @@
 #include <thread>
 #include <page.h>
 
-const int MAX_BRUSH_INDEX = 10;
-const int MIN_BRUSH_INDEX = 2;
-const double BRUSH_BASE = 1.5;
-
-const int MAX_ERASER_INDEX = 10;
-const int MIN_ERASER_INDEX = 2;
-const double ERASER_BASE = 1.5;
+const int    MAX_PEN_INDEX = 9;
+const int    MIN_PEN_INDEX = 1;
+const double PEN_BASE      = 2;
 
 
 enum PageMode {
@@ -40,13 +36,12 @@ signals:
 
 public slots:
     void changeBrushSize(int size, int x, int y);
-    void changeEraserSize(int size);
     void showPreviousPage();
     void showNextPage();
     void setPageMode(int pageMode);
     void movePage(int rx, int ry);
     void draw(int x1, int y1, int x2, int y2);
-    void erase(int x1, int y1, int x2, int y2);
+    void erase(int x1, int y1, int x2, int y2, int x3, int y3);
 
 private:
 
@@ -58,11 +53,8 @@ private:
     Book * activeBook;
     std::thread reader;
 
-    int size_brush_index;
-    int size_eraser_index;
-
-    int size_brush;
-    int size_eraser;
+    int size_pen_index;
+    int size_pen;
 
     QColor brush_color;
 

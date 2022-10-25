@@ -21,7 +21,7 @@ public:
 
     void setBook(Book * book);
     QRect draw(int x1, int y1, int x2, int y2, int size, QColor * color);
-    QRect erase(int x1, int y1, int x2, int y2, int size);
+    QRect erase(int x1, int y1, int x2, int y2, int x3, int y3);
     void onPaint(QPainter &painter);
     QRect setHighlightPosition(int size, int x, int y);
 
