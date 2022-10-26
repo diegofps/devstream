@@ -88,11 +88,11 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
     // Obtain indexes that may intersect the area
     int size_2 = size % 2 ? size / 2 + 1 : size;
 
-    int i1 = (min_y - CELL_SIZE - size_2) / CELL_SIZE;
-    int i2 = ceil((max_y + CELL_SIZE + size_2) / double(CELL_SIZE));
+    int i1 = (min_y - size_2) / CELL_SIZE;
+    int i2 = ceil((max_y + size_2) / double(CELL_SIZE));
 
-    int j1 = (min_x - CELL_SIZE - size_2) / CELL_SIZE;
-    int j2 = ceil((max_x + CELL_SIZE + size_2) / double(CELL_SIZE));
+    int j1 = (min_x - size_2) / CELL_SIZE;
+    int j2 = ceil((max_x + size_2) / double(CELL_SIZE));
 
     // Create the pen we will use to draw
 

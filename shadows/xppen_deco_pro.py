@@ -47,7 +47,7 @@ class Canvas(Thread):
         while True:
             if self.username is None or self.userdisplay is None:
                 log.warn("Deco Pro is waiting for user interface")
-                time.sleep(5)
+                time.sleep(2)
                 continue
             
             # This is where canvas2 will save its log. We touch it here as it will 
@@ -435,6 +435,10 @@ class XPPEN_DecoPro_Base(Reflex):
 
     def on_pen_btn_touch(self, value, x, y):
         log.debug("Deco pro key pen_btn_touch", value)
+
+        if self.erasing:
+            return
+        
         self.touching = value != 0
         
         if self.touching:
@@ -452,6 +456,8 @@ class XPPEN_DecoPro_Base(Reflex):
 
             self.erase_x = x
             self.erase_y = y
+
+            self.touching = False
 
             # canvas.send(f"erase {x} {y} {x+1} {y+1}")
         
