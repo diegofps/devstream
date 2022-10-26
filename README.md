@@ -135,17 +135,17 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 ### Disabled mode
 
-| Key | Action  |
-| --- | ------- |
-| E   |         |
-| F   |         |
-| G   |         |
-| H   |         |
-| I   |         |
-| J   |         |
-| K   |         |
-| L   |         |
-| M   |         |
+| Key | Action   |
+| --- | -------- |
+| E   | Planning |
+| F   | Planning |
+| G   | Planning |
+| H   | Planning |
+| I   | Planning |
+| J   | Planning |
+| K   | Planning |
+| L   | Planning |
+| M   | Planning |
 
 # Dependencies
 
