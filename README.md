@@ -106,6 +106,47 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | TOGGLE_N               | Toggle macro MACRO_N between two sets, MACRO_1 to MACRO_6 (left) or MACRO_7 to MACRO_12 (right) |
 | Yellow led             | Indicates a key is being pressed                                                                |
 
+
+## XPPEN Deco Pro
+
+![Buttons](images/keys_decopro.png)
+
+| Key | Mode                                 |
+| --- | ------------------------------------ |
+| A   | Transparent canvas                   |
+| B   | Opaque canvas                        |
+| C   | Transparent canvas with passthrough  |
+| D   | Disable entire canvas                |
+
+
+### Transparent/Opaque/Passthrough modes
+
+| Key | Action                   |
+| --- | ------------------------ |
+| E   | Previous page            |
+| F   | Next page                |
+| G   | Undo (Planned)           |
+| H   | Redo (Planned)           |
+| I   | Change brush size        |
+| J   | Move paper               |
+| K   | Touch the tablet to draw |
+| L   | Eraser mode              |
+| M   | Open Menu (Planned)      |
+
+### Disabled mode
+
+| Key | Action  |
+| --- | ------- |
+| E   |         |
+| F   |         |
+| G   |         |
+| H   |         |
+| I   |         |
+| J   |         |
+| K   |         |
+| L   |         |
+| M   |         |
+
 # Dependencies
 
 This daemon requires python3, pip, evdev, inotifywait, xclip and edid-decode. It has only been tested in Ubuntu 22.04 LTS, you can install its dependencies with the following commands.
