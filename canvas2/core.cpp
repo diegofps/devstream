@@ -75,8 +75,6 @@ runReader(Core * c)
                 continue;
             }
 
-//            print("Got cmd: ", cmd);
-
             if (cmd == "draw") {
                 int x1, y1, x2, y2;
                 if (ifs >> x1 >> y1 >> x2 >> y2)
@@ -141,42 +139,153 @@ void runWorker() {
                 tail = nullptr;
         }
 
-//        print("Got cmd", cmd->name,  "executing...");
         cmd->callback();
         delete cmd;
     }
 }
 
-Core::Core(QObject *parent)
-    : QObject{parent},
+Core::Core(QApplication *a)
+    : QObject{nullptr},
+
       pageMode(PageMode::MODE_TRANSPARENT),
       transparentBook(this, false),
       opaqueBook(this, true),
       activeBook(&transparentBook),
       reader(runReader, this),
       worker(runWorker),
-      size_pen_index(3  ), // 3
+      size_pen_index(3), // 3
       size_pen(pow(PEN_BASE, size_pen_index)),
       brush_color(QColor("#0000ff")),
       width_space(0),
       height_space(0)
 {
-    readerPriority.sched_priority = 2;
-    pthread_setschedparam(reader.native_handle(), SCHED_OTHER, &readerPriority);
+    // Configure thread priorities
 
-    QList<ScalableDisplay*> displays = ScalableDisplay::parseDisplays();
+    lowThreadPriority.sched_priority = 2;
+    pthread_setschedparam(reader.native_handle(), SCHED_OTHER, &lowThreadPriority);
+    pthread_setschedparam(worker.native_handle(), SCHED_OTHER, &lowThreadPriority);
 
-    for (int i=0;i!=displays.size();++i) {
-        auto display = displays[i];
-        auto g = display->internalGeometry;
+    // Configure Viewports for each display
+
+    refreshSpace();
+
+    // Add listeners to react to display changes
+
+    connect(a, &QGuiApplication::screenAdded, [this](QScreen *) {
+        refreshSpace();
+    });
+
+    connect(a, &QGuiApplication::screenRemoved, [this](QScreen *) {
+        refreshSpace();
+    });
+
+    for (QScreen *screen : QGuiApplication::screens()) {
+        connect(screen, &QScreen::geometryChanged, [this](const QRect &) {
+            refreshSpace();
+        });
+    }
+}
+
+void Core::refreshSpace() {
+
+    qDebug("Refreshing displays and viewports");
+
+    QList<ScalableDisplay*> displaysNow = ScalableDisplay::parseDisplays();
+    QSet<QString> preservedSerialNumbers;
+
+    QList<QPair<ScalableDisplay*,ScalableDisplay*>> displaysPreserved;
+    QList<ScalableDisplay*> displaysRemoved;
+    QList<ScalableDisplay*> displaysAdded;
+
+    for (ScalableDisplay * newDisplay : displaysNow) {
+        ScalableDisplay * oldDisplay = nullptr;
+
+        for (ScalableDisplay * x : displays) {
+            if (x->serialNumber == newDisplay->serialNumber) {
+                oldDisplay = x;
+                break;
+            }
+        }
+
+        if (oldDisplay == nullptr) {
+            displaysAdded.append(newDisplay);
+        } else {
+            displaysPreserved.append(QPair<ScalableDisplay*,ScalableDisplay*>(oldDisplay, newDisplay));
+            preservedSerialNumbers.insert(newDisplay->serialNumber);
+        }
+    }
+
+    for (ScalableDisplay * oldDisplay : displays)
+        if (!preservedSerialNumbers.contains(oldDisplay->serialNumber))
+            displaysRemoved.append(oldDisplay);
+
+    qDebug("DisplaysRemoved=%lld, DisplaysAdded=%lld, DisplaysPreserved=%lld",
+           displaysRemoved.size(),
+           displaysAdded.size(),
+           displaysPreserved.size());
+
+    displays.clear();
+
+    qDebug("Adding new displays");
+
+    for (ScalableDisplay * display : displaysAdded) {
+        displays.append(display);
 
         Viewport * viewport = new Viewport(display);
         viewport->setBook(activeBook);
         viewports.append(viewport);
+    }
 
+    qDebug("Refreshing preserved displays");
+
+    for (auto & pair : displaysPreserved) {
+        displays.append(pair.first);
+
+        ScalableDisplay * oldDisplay = pair.first;
+        ScalableDisplay * newDisplay = pair.second;
+
+        oldDisplay->displaySerialNumber = newDisplay->displaySerialNumber;
+        oldDisplay->displayProductName = newDisplay->displayProductName;
+        oldDisplay->externalGeometry = newDisplay->externalGeometry;
+        oldDisplay->internalGeometry = newDisplay->internalGeometry;
+        oldDisplay->scaleX = newDisplay->scaleX;
+        oldDisplay->scaleY = newDisplay->scaleY;
+        oldDisplay->normX = newDisplay->normX;
+        oldDisplay->normY = newDisplay->normY;
+        oldDisplay->port = newDisplay->port;
+
+        for (Viewport * viewport : viewports)
+            if (viewport->getDisplay()->serialNumber == oldDisplay->serialNumber)
+                viewport->setDisplay(oldDisplay);
+    }
+
+    qDebug("Deleting removed displays and viewports");
+
+    for (ScalableDisplay * display : displaysRemoved) {
+        for (Viewport * viewport : viewports) {
+            if (viewport->getDisplay()->serialNumber == display->serialNumber) {
+                viewport->close();
+                viewports.removeOne(viewport);
+                delete viewport;
+                break;
+            }
+        }
+
+        delete display;
+    }
+
+    qDebug("Updating width and height space");
+
+    width_space  = 0;
+    height_space = 0;
+
+    for (ScalableDisplay * display : displays) {
+        auto g = display->internalGeometry;
         width_space  = std::max(g.right(), width_space);
         height_space = std::max(g.bottom(), height_space);
     }
+
+    qDebug("Displays and viewports refreshed");
 }
 
 void Core::onPageChanged(Book *book, Page *)

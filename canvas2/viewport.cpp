@@ -22,9 +22,10 @@ Viewport::Viewport(ScalableDisplay *display)
     ui->canvas->setListener(this);
 
     configureWindowProperties();
-    positionWindow(display->screen);
-
+    positionWindow(display->screen->geometry());
     show();
+
+//    connect(display->screen, &QScreen::geometryChanged, this, &Viewport::positionWindow);
 
     connect(&timer, &QTimer::timeout, this, &Viewport::animate);
     timer.start(20);
@@ -49,15 +50,17 @@ void Viewport::setBook(Book *book)
 }
 
 
-void Viewport::positionWindow(QScreen *screen)
+void Viewport::positionWindow(const QRect & g)
 {
-    QRect g = screen->geometry();
+    qDebug("Positioning viewport at %d %d %d %d", g.left(), g.top(), g.width(), g.height());
 
     const int x = g.left();
     const int y = g.top();
 
     this->move(x, y);
     this->resize(g.size());
+
+    mustRepaint = true;
 }
 
 void Viewport::configureWindowProperties()
@@ -188,4 +191,15 @@ void Viewport::onPaint(QPainter & painter) {
 
 void Viewport::asyncUpdate() {
     mustRepaint = true;
+}
+
+ScalableDisplay *Viewport::getDisplay()
+{
+    return display;
+}
+
+void Viewport::setDisplay(ScalableDisplay * display)
+{
+    this->display = display;
+    positionWindow(display->screen->geometry());
 }

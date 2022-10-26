@@ -26,12 +26,14 @@ public:
     void onPaint(QPainter & painter);
     void highlightPosition(ChangePenSizeCommand cmd);
     void asyncUpdate();
+    ScalableDisplay * getDisplay();
+    void setDisplay(ScalableDisplay *display);
 
 public Q_SLOTS:
     void animate();
+    void positionWindow(const QRect & g);
 
 private:
-    void positionWindow(QScreen *screen);
     void configureWindowProperties();
 
 private:

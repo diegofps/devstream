@@ -1,5 +1,6 @@
 *.pyc
 *.log
+*.log.qt
 *.bin
 build*
 *.pro.user

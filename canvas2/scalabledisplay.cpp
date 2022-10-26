@@ -3,10 +3,6 @@
 #include <QApplication>
 #include <QRegularExpression>
 
-#include  "wup/wup.hpp"
-
-using wup::print;
-
 
 QString exec(QString cmd) {
     QByteArray ba = cmd.toLocal8Bit();
@@ -39,15 +35,23 @@ ScalableDisplay::ScalableDisplay(QString port, QRect internalRect) :
 
 }
 
+void ScalableDisplay::setExternalGeometry(const QRect & rect) {
+    qDebug("Updating externalGeometry for %s", qUtf8Printable(serialNumber));
+    this->externalGeometry = rect;
+}
+
 QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
 
     // We will start by using xrandr to identify the connected displays. At this
     // step we will collect width, height, offsets and scale.
-    QString stdout = exec("xrandr --props --verbose");
+    QString cmd = "xrandr --props --verbose";
+    QString stdout = exec(cmd);
     QStringList lines = stdout.split('\n');
     QList<ScalableDisplay*> displays;
     ScalableDisplay * display = nullptr;
     QRegularExpressionMatch match;
+
+    qDebug("xrandr's stdout for %s:\n%s", qUtf8Printable(cmd), qUtf8Printable(stdout));
 
     QRegularExpression connectedRegex("((?:DP|HDMI)-\\d+)\\s+connected\\s+(?:primary\\s+)?(\\d+).(\\d+).(\\d+).(\\d+).*");
     QRegularExpression disconnectedRegex("(DP|HDMI)-\\d+\\s+disconnected\\s+.*");
@@ -132,7 +136,9 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
     for (ScalableDisplay * display : displays) {
         QString cmd = "echo \"" + display->edidData.join("") + "\" | edid-decode";
         QString stdout = exec(cmd);
-        print(stdout);
+
+        qDebug("edid-decode's stdout for %s:\n%s", qUtf8Printable(cmd), qUtf8Printable(stdout));
+
         QStringList lines = stdout.split('\n');
 
         for (QString & line : lines) {
@@ -164,24 +170,27 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
         auto *display = displays[0];
         display->externalGeometry = screen->geometry();
         display->screen = screen;
+//        QEventLoop::connect(screen, &QScreen::geometryChanged, display, &ScalableDisplay::setExternalGeometry);
     }
 
     else {
         for (int i=0;i!=screens.size();++i) {
             auto screen = screens[i];
-            print("Looking for screen", screen->serialNumber());
+            qDebug("Looking for screen %s", qUtf8Printable(screen->serialNumber()));
 
             for (ScalableDisplay * display : displays) {
                 if (display->displaySerialNumber == "") {
                     if (screen->serialNumber().startsWith(display->serialNumber)) {
                         display->externalGeometry = screen->geometry();
                         display->screen = screen;
+//                        QEventLoop::connect(screen, &QScreen::geometryChanged, display, &ScalableDisplay::setExternalGeometry);
                         break;
                     }
                 } else {
                     if (screen->serialNumber().startsWith(display->displaySerialNumber)) {
                         display->externalGeometry = screen->geometry();
                         display->screen = screen;
+//                        QEventLoop::connect(screen, &QScreen::geometryChanged, display, &ScalableDisplay::setExternalGeometry);
                         break;
                     }
                 }
@@ -206,16 +215,20 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
     }
 
     // This is just an utility to check was was recognized
-    print("Found", displays.size(), "displays:");
+//    QMessageLogger("./qtmain.log", 0, 0).debug() << "Testng" << displays.size();
+
+    qDebug("Found %lld displays:", displays.size());
+
+//    print();
     for (ScalableDisplay * tmp : displays) {
-        print("  Port:", tmp->port);
-        print("  InternalGeometry:", tmp->internalGeometry.left(), tmp->internalGeometry.top(), tmp->internalGeometry.width(), tmp->internalGeometry.height());
-        print("  ExternalGeometry:", tmp->externalGeometry.left(), tmp->externalGeometry.top(), tmp->externalGeometry.width(), tmp->externalGeometry.height());
-        print("  Scale:", tmp->scaleX, tmp->scaleY);
-        print("  Serial Number:", tmp->serialNumber);
-        print("  Display Serial Number:", tmp->displaySerialNumber);
-        print("  Display Product Name:", tmp->displayProductName);
-        print();
+        qDebug("  Port: %s", qUtf8Printable(tmp->port));
+        qDebug("  InternalGeometry: %d %d %d %d", tmp->internalGeometry.left(), tmp->internalGeometry.top(), tmp->internalGeometry.width(), tmp->internalGeometry.height());
+        qDebug("  ExternalGeometry: %d %d %d %d", tmp->externalGeometry.left(), tmp->externalGeometry.top(), tmp->externalGeometry.width(), tmp->externalGeometry.height());
+        qDebug("  Scale: %F %F", tmp->scaleX, tmp->scaleY);
+        qDebug("  Serial Number: %s", qUtf8Printable(tmp->serialNumber));
+        qDebug("  Display Serial Number: %s", qUtf8Printable(tmp->displaySerialNumber));
+        qDebug("  Display Product Name: %s", qUtf8Printable(tmp->displayProductName));
+        qDebug();
     }
 
     return displays;

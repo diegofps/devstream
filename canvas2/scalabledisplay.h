@@ -7,7 +7,9 @@
 
 
 
-class ScalableDisplay {
+class ScalableDisplay: public QObject {
+    Q_OBJECT
+
 public:
 
     ScalableDisplay(QString port, QRect internalRect);
@@ -27,6 +29,9 @@ public:
 
 public:
     static QList<ScalableDisplay*> parseDisplays();
+
+public slots:
+    void setExternalGeometry(const QRect &rect);
 
 };
 

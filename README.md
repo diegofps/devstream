@@ -118,42 +118,18 @@ sudo pip3 install evdev
 
 # Install
 
-Build canvas2. This will allow you to draw on your screens using a XPPEN Deco Pro. You may skip this if you don't have it. It requires QT 6.4.0.
-
-```shell
-# Create a build folder for it
-mkdir -p ./build/canvas
-cd ./build/canvas
-
-# Generate the Makefile
-qmake CONFIG+=release -o Makefile ../../canvas2/canvas2.pro
-
-# Build the executable named canvas2
-make -j`nproc`
-
-# You should now have the executable file canvas2 in the build folder. However, if you run it now nothing will happen. It receives commands from the main service through a named pipe.
-
-# Return to your previous folder
-cd ../..
-```
-
 Install the python service and compiled programs
 
 ```shell
-# Open the shell as root
-sudo bash
 
-# Make sure you qmake is installed and accessible via PATH. 
-export PATH="/home/diego/Qt/6.4.0/gcc_64/bin/":$PATH
-
-# Install the service and python sources
-./install.sh
+# Make sure you qmake is installed and accessible via PATH. For instance, qt creator would install it around your home directory:
+sudo bash -c "PATH='/home/$USER/Qt/6.4.0/gcc_64/bin/':\$PATH ./install.sh"
 
 # Start the service in the system
-service devstream start
+sudo service devstream start
 
 # Activate autostart during system boot
-systemctl enable devstream
+sudo systemctl enable devstream
 ```
 
 # Uninstall

@@ -16,7 +16,7 @@ echo "Copying files..."
 mkdir -p /etc/devstream
 cp -r ./*.py shadows /etc/devstream/
 cp ./devstream /etc/init.d/devstream
-cp ./build/canvas2/canvas2 /etc/devstream/
+cp ./build/canvas2/canvas2 /etc/devstream/canvas2.release
 
 
 echo "Configuring service..."

@@ -19,7 +19,7 @@ class Canvas(Thread):
 
     def __init__(self):
         self.pipe_filepath = "/tmp/shadow_xppen_deco_pro"
-        self.process_filepath = ["./canvas2", "./build-canvas2-Desktop_Qt_6_4_0_GCC_64bit-Debug/canvas2"]
+        self.process_filepath = ["./canvas2.release", "./build-canvas2-Desktop_Qt_6_4_0_GCC_64bit-Debug/canvas2"]
         self.userdisplay = None
         self.username = None
         self.queue = Queue()
@@ -50,6 +50,13 @@ class Canvas(Thread):
                 time.sleep(5)
                 continue
             
+            # This is where canvas2 will save its log. We touch it here as it will 
+            # run as the user will not have access to this folder.
+            canvas_log_filepath = "./main.log.qt"
+            os.system(f"touch {canvas_log_filepath}")
+            os.system(f"chown {self.username}:{self.username} {canvas_log_filepath}")
+
+            # Now we try to execute canvas2 from one of the available paths
             try:
                 for filepath in self.process_filepath:
                     if os.path.exists(filepath):

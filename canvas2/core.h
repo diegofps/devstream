@@ -21,7 +21,7 @@ class Core : public QObject, public BookListener
 {
     Q_OBJECT
 public:
-    explicit Core(QObject *parent = nullptr);
+    explicit Core(QApplication *a);
 
     void onPageChanged(Book *book, Page * page);
 //    void endHighlight();
@@ -37,6 +37,7 @@ public slots:
     void movePage(MovePageCommand & cmd);
     void draw(DrawCommand & cmd);
     void erase(EraseCommand & cmd);
+    void refreshSpace();
 
 private:
 
@@ -59,7 +60,9 @@ private:
 
     qint64 highlightPositionUntil;
 
-    sched_param readerPriority;
+    sched_param lowThreadPriority;
+
+    QList<ScalableDisplay*> displays;
 
 };
 
