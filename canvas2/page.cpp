@@ -51,6 +51,8 @@ void Page::move(MovePageCommand & cmd) {
 void Page::highlightPosition(ChangePenSizeCommand & cmd) {
 //    print("setting highlight", cmd.size, cmd.x, cmd.y);
 
+    std::lock_guard<std::mutex> lock(drawing);
+
     highlightSize  = cmd.size;
     highlightStart = QDateTime::currentMSecsSinceEpoch();
     highlightEnd   = highlightStart + 2000;
@@ -345,6 +347,8 @@ void Page::undo(UndoCommand & cmd) {
 }
 
 void Page::savePresent() {
+
+    std::lock_guard<std::mutex> lock(drawing);
 
     destroyFuture();
 
