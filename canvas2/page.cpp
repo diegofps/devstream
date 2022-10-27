@@ -37,17 +37,16 @@ Page::Page(PageListener *listener) :
     eraserBrush.setColor(QColor(0,0,0));
 }
 
-void Page::move(MovePageCommand & cmd) {
-//    print("Moving viewport", rx, ry, viewX, viewY);
-
+void Page::move(MovePageCommand & cmd)
+{
     std::lock_guard<std::mutex> lock(drawing);
+
     viewX += cmd.point.x();
     viewY += cmd.point.y();
 }
 
-void Page::highlightPosition(ChangePenSizeCommand & cmd) {
-//    print("setting highlight", cmd.size, cmd.x, cmd.y);
-
+void Page::highlightPosition(ChangePenSizeCommand & cmd)
+{
     std::lock_guard<std::mutex> lock(drawing);
 
     highlightSize  = cmd.size;
@@ -57,8 +56,8 @@ void Page::highlightPosition(ChangePenSizeCommand & cmd) {
     highlightY     = cmd.y;
 }
 
-void Page::draw(DrawCommand & cmd, int size, QColor * color) {
-
+void Page::draw(DrawCommand & cmd, int size, QColor * color)
+{
     std::lock_guard<std::mutex> lock(drawing);
 
     // Convert from multidisplay coordinates to world coordinates
@@ -85,15 +84,13 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
 
     // Obtain indexes that may intersect the area
 
-    int size_2 = size % 2 ? size / 2 + 1 : size;
+    int size_2 = size % 2 ? size / 2 + 1 : size / 2;
 
-    int i1 = (min_y - size_2) / CELL_SIZE;
-    int i2 = ceil((max_y + size_2) / double(CELL_SIZE));
+    int i1 = floor((min_y - size_2) / double(CELL_SIZE));
+    int i2 = ceil ((max_y + size_2) / double(CELL_SIZE));
 
-    int j1 = (min_x - size_2) / CELL_SIZE;
-    int j2 = ceil((max_x + size_2) / double(CELL_SIZE));
-
-    qDebug("Drawing in cell range: i=%d->%d, j=%d->%d", i1, i2, j1, j2);
+    int j1 = floor((min_x - size_2) / double(CELL_SIZE));
+    int j2 = ceil ((max_x + size_2) / double(CELL_SIZE));
 
     // Create the pen we will use to draw
 
@@ -141,8 +138,8 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
     book->onPageEdited(this);
 }
 
-void Page::erase(EraseCommand & cmd) {
-
+void Page::erase(EraseCommand & cmd)
+{
     std::lock_guard<std::mutex> lock(drawing);
 
     // Convert from multidisplay coordinates to world coordinates
@@ -169,11 +166,11 @@ void Page::erase(EraseCommand & cmd) {
 
     // Obtain indexes that may intersect the area
 
-    int i1 = (min_y - CELL_SIZE) / CELL_SIZE;
-    int i2 = ceil((max_y + CELL_SIZE) / double(CELL_SIZE));
+    int i1 = floor((min_y - CELL_SIZE) / double(CELL_SIZE));
+    int i2 = ceil ((max_y + CELL_SIZE) / double(CELL_SIZE));
 
-    int j1 = (min_x - CELL_SIZE) / CELL_SIZE;
-    int j2 = ceil((max_x + CELL_SIZE) / double(CELL_SIZE));
+    int j1 = floor((min_x - CELL_SIZE) / double(CELL_SIZE));
+    int j2 = ceil ((max_x + CELL_SIZE) / double(CELL_SIZE));
 
     // Paint all cells in the indexes selected
 
@@ -217,8 +214,8 @@ void Page::erase(EraseCommand & cmd) {
     book->onPageEdited(this);
 }
 
-bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
-
+bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor)
+{
     std::lock_guard<std::mutex> lock(drawing);
 
     if (backgroundColor != nullptr)
@@ -231,11 +228,11 @@ bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
 
     // Obtain indexes that may intersect the area
 
-    int i1 = (y - CELL_SIZE) / CELL_SIZE;
-    int i2 = ceil((y + rect.height()) / double(CELL_SIZE));
+    int i1 = floor((y - CELL_SIZE) / double(CELL_SIZE));
+    int i2 = ceil ((y + rect.height()) / double(CELL_SIZE));
 
-    int j1 = (x - CELL_SIZE) / CELL_SIZE;
-    int j2 = ceil((x + rect.width()) / double(CELL_SIZE));
+    int j1 = floor((x - CELL_SIZE) / double(CELL_SIZE));
+    int j2 = ceil ((x + rect.width()) / double(CELL_SIZE));
 
     for (int i=i1;i<i2;++i) {
         for (int j=j1;j<j2;++j) {
@@ -290,8 +287,8 @@ bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
     return result;
 }
 
-Cell * Page::getCell(QPair<int,int> & key, bool createOnMiss) {
-
+Cell * Page::getCell(QPair<int,int> & key, bool createOnMiss)
+{
     // Debug mode
 
     if (false) {
@@ -321,7 +318,8 @@ Cell * Page::getCell(QPair<int,int> & key, bool createOnMiss) {
     }
 }
 
-void Page::undo(UndoCommand & cmd) {
+void Page::undo(UndoCommand & cmd)
+{
     if (cmd.offset == 0)
         return;
 
@@ -336,8 +334,8 @@ void Page::undo(UndoCommand & cmd) {
     }
 }
 
-void Page::savePresent() {
-
+void Page::savePresent()
+{
     std::lock_guard<std::mutex> lock(drawing);
 
     destroyFuture();
@@ -351,7 +349,8 @@ void Page::savePresent() {
     }
 }
 
-void Page::destroyFuture() {
+void Page::destroyFuture()
+{
     if (historyPosition==history.size())
         return;
 
@@ -365,7 +364,8 @@ void Page::destroyFuture() {
     historyPosition += 1;
 }
 
-void Page::previousHistoryPoint() {
+void Page::previousHistoryPoint()
+{
     if (historyPosition == 0)
         return;
 
@@ -383,7 +383,8 @@ void Page::previousHistoryPoint() {
     qDebug("Moving backward in time: %d/%lld", historyPosition, history.size());
 }
 
-void Page::nextHistoryPoint() {
+void Page::nextHistoryPoint()
+{
     if (historyPosition == history.size())
         return;
 
