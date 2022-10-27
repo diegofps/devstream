@@ -6,7 +6,6 @@
 #include <QScreen>
 #include <QShortcut>
 #include <QThread>
-#include <wup/wup.hpp>
 
 
 Viewport::Viewport(ScalableDisplay *display)
@@ -24,8 +23,6 @@ Viewport::Viewport(ScalableDisplay *display)
     configureWindowProperties();
     positionWindow(display->screen->geometry());
     show();
-
-//    connect(display->screen, &QScreen::geometryChanged, this, &Viewport::positionWindow);
 
     connect(&timer, &QTimer::timeout, this, &Viewport::animate);
     timer.start(20);
@@ -105,14 +102,8 @@ void Viewport::draw(DrawCommand cmd, int size, QColor *color) {
     QRect & g = this->display->internalGeometry;
     bool skip = true;
 
-//    wup::print("geometry is", g.left(), g.top(), g.width(), g.height());
-
     for (QPoint &p : cmd.points) {
-//        wup::print("checking", p.x(), p.y());
-
-        if (g.contains(p.x(), p.y())) {            
-//            wup::print("contained!");
-
+        if (g.contains(p.x(), p.y())) {
             skip = false;
             break;
         }
@@ -122,7 +113,6 @@ void Viewport::draw(DrawCommand cmd, int size, QColor *color) {
         return;
 
     // Normalize to global coordinates
-//    wup::print("Didn't skip");
 
     auto x = g.left();
     auto y = g.top();
@@ -142,21 +132,13 @@ void Viewport::draw(DrawCommand cmd, int size, QColor *color) {
 }
 
 void Viewport::erase(EraseCommand cmd) {
-//    QRect updateArea = this->draw(x1, y1, x2, y2, x3, y3, nullptr);
-
     // Check if this drawing is out of viewport
 
     QRect & g = this->display->internalGeometry;
     bool skip = true;
 
-//    wup::print("geometry is", g.left(), g.top(), g.width(), g.height());
-
     for (QPoint &p : cmd.points) {
-//        wup::print("checking", p.x(), p.y());
-
         if (g.contains(p.x(), p.y())) {
-//            wup::print("contained!");
-
             skip = false;
             break;
         }
@@ -166,7 +148,6 @@ void Viewport::erase(EraseCommand cmd) {
         return;
 
     // Normalize to global coordinates
-//    wup::print("Didn't skip");
 
     auto x = g.left();
     auto y = g.top();
@@ -181,11 +162,8 @@ void Viewport::erase(EraseCommand cmd) {
 }
 
 void Viewport::onPaint(QPainter & painter) {
-//    mustRepaint = false;
-    if (book != nullptr) {
-//        wup::print("repainting");
+    if (book != nullptr)
         mustRepaint = book->onPaint(painter, this->display->internalGeometry);
-    }
 }
 
 

@@ -15,9 +15,11 @@ SOURCES += \
     book.cpp \
     canvaswidget.cpp \
     cell.cpp \
+    cellchanges.cpp \
     core.cpp \
     main.cpp \
     page.cpp \
+    pagechanges.cpp \
     scalabledisplay.cpp \
     viewport.cpp
 
@@ -25,9 +27,11 @@ HEADERS += \
     book.h \
     canvaswidget.h \
     cell.h \
+    cellchanges.h \
     commands.h \
     core.h \
     page.h \
+    pagechanges.h \
     scalabledisplay.h \
     viewport.h
 

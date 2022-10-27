@@ -5,9 +5,6 @@
 #include <QBrush>
 #include <QImage>
 
-#include <wup/wup.hpp>
-
-using namespace wup;
 
 Page::Page(PageListener *listener) :
     book(listener),
@@ -63,7 +60,7 @@ void Page::highlightPosition(ChangePenSizeCommand & cmd) {
 void Page::draw(DrawCommand & cmd, int size, QColor * color) {
 
     std::lock_guard<std::mutex> lock(drawing);
-    Clock c;
+//    Clock c;
 
     // Convert from multidisplay coordinates to world coordinates
 
@@ -151,7 +148,7 @@ void Page::erase(EraseCommand & cmd) {
 
     std::lock_guard<std::mutex> lock(drawing);
 
-    Clock c;
+//    Clock c;
 
     // Convert from multidisplay coordinates to world coordinates
 

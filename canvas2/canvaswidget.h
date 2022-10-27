@@ -23,8 +23,6 @@ public:
 
 private:
     CanvasWidgetListener * listener;
-//    bool mustRefresh;
-//    QTimer timer;
     std::thread mythread;
 
 };

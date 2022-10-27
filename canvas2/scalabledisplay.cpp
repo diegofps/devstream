@@ -44,6 +44,7 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
 
     // We will start by using xrandr to identify the connected displays. At this
     // step we will collect width, height, offsets and scale.
+
     QString cmd = "xrandr --props --verbose";
     QString stdout = exec(cmd);
     QStringList lines = stdout.split('\n');
@@ -68,6 +69,7 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
         QString & line = lines[i];
 
         // Look for connected lines
+
         match = connectedRegex.match(line);
         if (match.hasMatch()) {
             display = new ScalableDisplay(
@@ -96,6 +98,7 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
             continue;
 
         // Look for scale lines
+
         match = scale1Regex.match(line);
         if (match.hasMatch()) {
             display->scaleX = match.captured(1).toDouble();
@@ -112,6 +115,7 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
         }
 
         // Look for edid
+
         match = edidStartRegex.match(line);
         if (match.hasMatch()) {
             ++i;
@@ -133,6 +137,7 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
     }
 
     // Now we will use edid-decode to decode the editData and read the serial numbers and product name
+
     for (ScalableDisplay * display : displays) {
         QString cmd = "echo \"" + display->edidData.join("") + "\" | edid-decode";
         QString stdout = exec(cmd);
@@ -163,6 +168,7 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
     }
 
     // Now we obtain the externalRect from the QScreens provided by QGuiApplication
+
     QList<QScreen*> screens = QGuiApplication::screens();
 
     if (screens.size() == 1 && displays.size() == 1) {
@@ -170,7 +176,6 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
         auto *display = displays[0];
         display->externalGeometry = screen->geometry();
         display->screen = screen;
-//        QEventLoop::connect(screen, &QScreen::geometryChanged, display, &ScalableDisplay::setExternalGeometry);
     }
 
     else {
@@ -183,14 +188,12 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
                     if (screen->serialNumber().startsWith(display->serialNumber)) {
                         display->externalGeometry = screen->geometry();
                         display->screen = screen;
-//                        QEventLoop::connect(screen, &QScreen::geometryChanged, display, &ScalableDisplay::setExternalGeometry);
                         break;
                     }
                 } else {
                     if (screen->serialNumber().startsWith(display->displaySerialNumber)) {
                         display->externalGeometry = screen->geometry();
                         display->screen = screen;
-//                        QEventLoop::connect(screen, &QScreen::geometryChanged, display, &ScalableDisplay::setExternalGeometry);
                         break;
                     }
                 }
@@ -199,6 +202,7 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
     }
 
     // Now we calculate normX and normY
+
     double normX=0;
     double normY=0;
 
@@ -214,12 +218,8 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
         display->normY = 1.0 / normY;
     }
 
-    // This is just an utility to check was was recognized
-//    QMessageLogger("./qtmain.log", 0, 0).debug() << "Testng" << displays.size();
-
     qDebug("Found %lld displays:", displays.size());
 
-//    print();
     for (ScalableDisplay * tmp : displays) {
         qDebug("  Port: %s", qUtf8Printable(tmp->port));
         qDebug("  InternalGeometry: %d %d %d %d", tmp->internalGeometry.left(), tmp->internalGeometry.top(), tmp->internalGeometry.width(), tmp->internalGeometry.height());

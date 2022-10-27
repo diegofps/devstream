@@ -2,7 +2,6 @@
 
 #include <QOpenGLFunctions>
 #include <QPainter>
-#include <wup/wup.hpp>
 
 
 CanvasWidget::CanvasWidget(QWidget * parent) :

@@ -1,5 +1,4 @@
 #include "book.h"
-#include <wup/wup.hpp>
 
 Book::Book(BookListener * listener, bool opaque) :
     core(listener),
@@ -29,7 +28,7 @@ void Book::savePresent(SavePresentCommand &)
 
 void Book::onPageEdited(Page *page) {
     if (page == extraPage) {
-        wup::print("extra page added");
+        qDebug("Extra page added");
         pages.append(extraPage);
         extraPage = new Page(this);
     }

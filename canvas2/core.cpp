@@ -7,22 +7,21 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
-#include <wup/wup.hpp>
 
 #include <QApplication>
 #include <QDateTime>
 #include <QRegularExpression>
+#include <QSemaphore>
 
 const char * named_pipe = "/tmp/shadow_xppen_deco_pro";
 
-using wup::print;
-
 #include "commands.h"
 
-wup::Semaphore semCommands;
+QSemaphore semCommands;
 std::mutex syncCommands;
 Command * head = nullptr;
 Command * tail = nullptr;
+
 
 #define PUSH_CMD(COMMAND_TYPE, CORE_METHOD, ...) \
 {\
@@ -69,7 +68,7 @@ runReader(Core * c)
         while (!restart)
         {
             if (!(ifs >> cmd)) {
-                print("Error during cmd read");
+                qWarning("Error during cmd read");
                 restart = true;
                 sleep(1);
                 continue;
@@ -126,7 +125,7 @@ runReader(Core * c)
             }
 
             else {
-                std::cout << "Unknown command:" << cmd << std::endl;
+                qWarning("Unknown command: %s", cmd.c_str());
             }
         }
 
@@ -346,22 +345,22 @@ void Core::setPageMode(SetPageModeCommand & cmd)
 
     switch (pageMode) {
     case MODE_TRANSPARENT:
-        print("transparent");
+        qDebug("Activating mode: transparent");
         activeBook = &transparentBook;
         activeBook->setVisible(true);
         break;
     case MODE_OPAQUE:
-        print("opaque");
+        qDebug("Activating mode: opaque");
         activeBook = &opaqueBook;
         activeBook->setVisible(true);
         break;
     case MODE_PASSTHROUGH:
-        print("passthrough");
+        qDebug("Activating mode: passthrough");
         activeBook = &transparentBook;
         activeBook->setVisible(true);
         break;
     case MODE_DISABLED:
-        print("disabled");
+        qDebug("Activating mode: disabled");
         activeBook = &transparentBook;
         activeBook->setVisible(false);
         break;

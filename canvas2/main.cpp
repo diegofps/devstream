@@ -1,14 +1,5 @@
 #include <QApplication>
-#include <wup/wup.hpp>
 #include <core.h>
-
-//#include <QtGlobal>
-//#include <stdio.h>
-//#include <stdlib.h>
-
-using namespace wup;
-
-WUP_STATICS;
 
 FILE * logFile = nullptr;
 
