@@ -149,17 +149,17 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 ### Disabled mode
 
-| Key | Action   |
-| --- | -------- |
-| E   | Planning |
-| F   | Planning |
-| G   | Planning |
-| H   | Planning |
-| I   | Planning |
-| J   | Planning |
-| K   | Planning |
-| L   | Planning |
-| M   | Planning |
+| Key | Action             |
+| --- | ------------------ |
+| E   | Planning           |
+| F   | Planning           |
+| G   | Planning           |
+| H   | Planning           |
+| I   | Planning           |
+| J   | Planning           |
+| K   | Left mouse click   |
+| L   | Middle mouse click |
+| M   | Right mouse click  |
 
 
 # Dependencies

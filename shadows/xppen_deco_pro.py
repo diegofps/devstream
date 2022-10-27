@@ -398,7 +398,7 @@ class XPPEN_DecoPro_Base(Reflex):
     
     def on_orb_rel(self, rel_x, rel_y):
         # log.debug("Deco pro key orb_rel", rel_x, rel_y)
-        canvas.send(f"move_page {rel_x} {rel_y}")
+        canvas.send(f"move_page {rel_x*2} {rel_y*2}")
 
     def on_orb_wheel(self, value):
         # log.debug("Deco pro key orb_wheel", value)

@@ -162,7 +162,7 @@ Core::Core(QApplication *a)
       activeBook(&transparentBook),
       reader(runReader, this),
       worker(runWorker),
-      size_pen_index(3), // 3
+      size_pen_index(5), // 3
       size_pen(pow(PEN_BASE, size_pen_index)),
       brush_color(QColor("#0000ff")),
       width_space(0),
