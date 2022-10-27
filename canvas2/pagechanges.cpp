@@ -18,7 +18,7 @@ bool PageChanges::hasChanges() {
     return !changes.isEmpty();
 }
 
-CellChanges *PageChanges::get(QPair<int, int> &key, QHash<QPair<int, int>, Cell *> &cells) {
+CellChanges * PageChanges::get(QPair<int, int> &key, QHash<QPair<int, int>, Cell *> & cells) {
     if (changes.contains(key))
         return changes[key];
 
@@ -26,7 +26,7 @@ CellChanges *PageChanges::get(QPair<int, int> &key, QHash<QPair<int, int>, Cell 
     auto it = cells.find(key);
 
     if (it != cells.end())
-        chp->setBefore((*it)->img);
+        chp->setBefore((*it)->image());
 
     changes[key] = chp;
 

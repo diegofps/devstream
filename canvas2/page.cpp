@@ -60,7 +60,6 @@ void Page::highlightPosition(ChangePenSizeCommand & cmd) {
 void Page::draw(DrawCommand & cmd, int size, QColor * color) {
 
     std::lock_guard<std::mutex> lock(drawing);
-//    Clock c;
 
     // Convert from multidisplay coordinates to world coordinates
 
@@ -85,6 +84,7 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
     }
 
     // Obtain indexes that may intersect the area
+
     int size_2 = size % 2 ? size / 2 + 1 : size;
 
     int i1 = (min_y - size_2) / CELL_SIZE;
@@ -92,6 +92,8 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
 
     int j1 = (min_x - size_2) / CELL_SIZE;
     int j2 = ceil((max_x + size_2) / double(CELL_SIZE));
+
+    qDebug("Drawing in cell range: i=%d->%d, j=%d->%d", i1, i2, j1, j2);
 
     // Create the pen we will use to draw
 
@@ -109,26 +111,27 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
 
             // Calculate the position relative to the cell coordinates
 
-            for (QPoint &p : cmd.points) {
-                p.setX(p.x() - cell->x);
-                p.setY(p.y() - cell->y);
+            for (QPoint & p : cmd.points) {
+                p.setX(p.x() - cell->x());
+                p.setY(p.y() - cell->y());
             }
 
             // Draw the line
 
-            QPainter painter(cell->img);
+            QPainter painter(cell->image());
             painter.setRenderHint(QPainter::Antialiasing, true);
             painter.setPen(inkPen);
-            painter.drawLines(cmd.points);
+            painter.drawPolyline(cmd.points);
 
             // Update the history point cache
 
-            chp->setAfter(cell->img);
+            chp->setAfter(cell->image());
 
             // Move p to its previous value, the next cell will move it correctly
-            for (QPoint &p : cmd.points) {
-                p.setX(p.x() + cell->x);
-                p.setY(p.y() + cell->y);
+
+            for (QPoint & p : cmd.points) {
+                p.setX(p.x() + cell->x());
+                p.setY(p.y() + cell->y());
             }
         }
     }
@@ -136,19 +139,11 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
     // Notify book that this page has changed
 
     book->onPageEdited(this);
-
-//    c.stop();
-//    auto time = c.ellapsed_milli();
-//    print("time to draw:", time);
-
 }
 
 void Page::erase(EraseCommand & cmd) {
-//    print("Page::eraser", x1, y1, x2, y2, x3, y3);
 
     std::lock_guard<std::mutex> lock(drawing);
-
-//    Clock c;
 
     // Convert from multidisplay coordinates to world coordinates
 
@@ -192,13 +187,13 @@ void Page::erase(EraseCommand & cmd) {
             // Calculate the position relative to the cell coordinates
 
             for (QPoint &p : cmd.points) {
-                p.setX(p.x() - cell->x);
-                p.setY(p.y() - cell->y);
+                p.setX(p.x() - cell->x());
+                p.setY(p.y() - cell->y());
             }
 
             // Erase the polygon area
 
-            QPainter painter(cell->img);
+            QPainter painter(cell->image());
             painter.setRenderHint(QPainter::Antialiasing, true);
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
             painter.setBrush(eraserBrush);
@@ -206,13 +201,13 @@ void Page::erase(EraseCommand & cmd) {
 
             // Update the history point cache
 
-            chp->setAfter(cell->img);
+            chp->setAfter(cell->image());
 
             // Move p to its previous value, the next cell will move it correctly
 
             for (QPoint &p : cmd.points) {
-                p.setX(p.x() + cell->x);
-                p.setY(p.y() + cell->y);
+                p.setX(p.x() + cell->x());
+                p.setY(p.y() + cell->y());
             }
         }
     }
@@ -220,10 +215,6 @@ void Page::erase(EraseCommand & cmd) {
     // Notify book that this page has changed
 
     book->onPageEdited(this);
-
-//    c.stop();
-//    auto time = c.ellapsed_milli();
-//    print("time to erase:", time);
 }
 
 bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
@@ -252,13 +243,15 @@ bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
             Cell * cell = getCell(key, false);
 
             if (cell != nullptr)
-                painter.drawImage(cell->x - x, cell->y - y, *cell->img);
+                painter.drawImage(cell->x() - x, cell->y() - y, *cell->image());
         }
     }
 
     auto now = QDateTime::currentMSecsSinceEpoch();
 
     bool result = false;
+
+    // Smooth animate and draw highlighted brush size
 
     if (now < highlightEnd)
     {
@@ -273,12 +266,12 @@ bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
 
         int size_2 = highlightSizeSmooth / 2;
 
-//        print("drawing ellipse", highlightX, highlightY, highlightSize, highlightSizeSmooth);
-
         painter.drawEllipse(
                     highlightX - size_2 - rect.left(), highlightY - size_2 - rect.top() - 20,
                     highlightSizeSmooth, highlightSizeSmooth);
     }
+
+    // Smooth animation when the page is moved
 
     if (viewX != viewXSmooth || viewY != viewYSmooth)
     {

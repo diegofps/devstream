@@ -3,11 +3,11 @@
 #include <QPainter>
 
 Cell::Cell(QPair<int, int> & key, bool empty) :
-    i(key.first),
-    j(key.second),
-    x(j * CELL_SIZE),
-    y(i * CELL_SIZE),
-    img(nullptr)
+    _i(key.first),
+    _j(key.second),
+    _x(_j * CELL_SIZE),
+    _y(_i * CELL_SIZE),
+    _img(nullptr)
 {
     QImage * img = new QImage(QSize(CELL_SIZE, CELL_SIZE), QImage::Format_ARGB32_Premultiplied);
 
@@ -17,17 +17,17 @@ Cell::Cell(QPair<int, int> & key, bool empty) :
     }
     else
     {
-        img->fill(QColor((i+j) % 2 ? "#22ff0000" : "#220000ff"));
+        img->fill(QColor((_i+_j) % 2 ? "#22ff0000" : "#220000ff"));
         QPainter painter(img);
-        QString msg = QString::asprintf("(%d, %d)", i, j);
+        QString msg = QString::asprintf("(%d, %d)", _i, _j);
         painter.drawText(0, 11, msg);
     }
 
-    this->img = img;
+    this->_img = img;
 }
 
 Cell::~Cell()
 {
-    if (img != nullptr)
-        delete img;
+    if (_img != nullptr)
+        delete _img;
 }

@@ -55,15 +55,15 @@ void CellChanges::apply(QImage *reference, QHash<QPair<int, int>, Cell *> &cells
         if (it == cells.end())
         {
             Cell * cell = new Cell(key, true);
-            QPainter painter(cell->img);
+            QPainter painter(cell->image());
             painter.drawImage(0,0,*reference);
             cells[key] = cell;
         }
         else
         {
             Cell *cell = *it;
-            cell->img->fill(QColor(0,0,0,0));
-            QPainter painter(cell->img);
+            cell->image()->fill(QColor(0,0,0,0));
+            QPainter painter(cell->image());
             painter.drawImage(0,0,*reference);
         }
     }
