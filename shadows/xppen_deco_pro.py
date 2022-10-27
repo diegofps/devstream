@@ -304,7 +304,7 @@ class XPPEN_DecoPro_Base(Reflex):
                 
                 elif self.saw_Z is not None:
                     self.on_key30(self.saw_Z)
-                elif self.saw_ALT is not None and self.saw_N is not None:
+                elif self.saw_N is not None:
                     self.on_key31(self.saw_N)
                 
                 # Orb
@@ -386,13 +386,13 @@ class XPPEN_DecoPro_Base(Reflex):
         
     def on_key30(self, value):
         log.debug("Deco pro key 30", value)
-        if value == 0:
+        if value != 1:
             canvas.send("undo -1")
         # UNDO
         
     def on_key31(self, value):
         log.debug("Deco pro key 31", value)
-        if value == 0:
+        if value != 1:
             canvas.send("undo +1")
         # REDO
     

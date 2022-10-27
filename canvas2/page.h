@@ -35,6 +35,7 @@ public:
         if (before == nullptr)
             before = new QImage(QSize(CELL_SIZE, CELL_SIZE), QImage::Format_ARGB32_Premultiplied);
 
+        before->fill(QColor(0,0,0,0));
         QPainter painter(before);
         painter.drawImage(0,0,*img);
     }
@@ -43,6 +44,7 @@ public:
         if (after == nullptr)
             after = new QImage(QSize(CELL_SIZE, CELL_SIZE), QImage::Format_ARGB32_Premultiplied);
 
+        after->fill(QColor(0,0,0,0));
         QPainter painter(after);
         painter.drawImage(0,0,*img);
     }
@@ -77,6 +79,7 @@ public:
             else
             {
                 Cell *cell = *it;
+                cell->img->fill(QColor(0,0,0,0));
                 QPainter painter(cell->img);
                 painter.drawImage(0,0,*reference);
             }
@@ -103,7 +106,7 @@ public:
 
     void redo(QHash<QPair<int,int>, Cell*> & cells) {
         for (auto it : qAsConst(changes))
-            it->undo(cells);
+            it->redo(cells);
     }
 
     bool hasChanges() {

@@ -358,26 +358,33 @@ void Page::savePresent() {
 }
 
 void Page::destroyFuture() {
-    if (historyPosition!=history.size())
-        qDebug("Destroying %lld future changes", history.size() - historyPosition);
+    if (historyPosition==history.size())
+        return;
+
+    qDebug("Destroying %lld future changes", history.size() - historyPosition);
 
     for (int i=historyPosition;i!=history.size();++i)
         delete history[i];
 
     history.resize(historyPosition);
-
-    if (history.isEmpty()) {
-        history.append(new PageChanges());
-        historyPosition = 1;
-    }
+    history.append(new PageChanges());
+    historyPosition += 1;
 }
 
 void Page::previousHistoryPoint() {
     if (historyPosition == 0)
         return;
 
-    history[historyPosition-1]->undo(cells);
-    historyPosition -= 1;
+    if (history[historyPosition-1]->hasChanges())
+    {
+        history[historyPosition-1]->undo(cells);
+        historyPosition -= 1;
+    }
+    else
+    {
+        history[historyPosition-2]->undo(cells);
+        historyPosition -= 2;
+    }
 
     qDebug("Moving backward in time: %d/%lld", historyPosition, history.size());
 }
@@ -388,6 +395,9 @@ void Page::nextHistoryPoint() {
 
     history[historyPosition]->redo(cells);
     historyPosition += 1;
+
+    if (historyPosition == history.size()-1)
+        historyPosition += 1;
 
     qDebug("Moving forward in time: %d/%lld", historyPosition, history.size());
 }
