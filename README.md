@@ -125,8 +125,8 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | --- | ------------------------ |
 | E   | Previous page            |
 | F   | Next page                |
-| G   | Undo (Planned)           |
-| H   | Redo (Planned)           |
+| G   | Undo                     |
+| H   | Redo                     |
 | I   | Change brush size        |
 | J   | Move paper               |
 | K   | Touch the tablet to draw |
