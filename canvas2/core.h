@@ -20,48 +20,37 @@ class DrawCommand;
 class Core : public QObject, public BookListener
 {
     Q_OBJECT
+
 public:
     explicit Core(QApplication *a);
-
     void onPageChanged(Book *book, Page * page);
-//    void endHighlight();
-
-signals:
 
 public slots:
     void changePenSize(ChangePenSizeCommand & cmd);
     void changePage(ChangePageCommand & cmd);
-//    void showPreviousPage();
-//    void showNextPage();
     void setPageMode(SetPageModeCommand & cmd);
     void movePage(MovePageCommand & cmd);
     void draw(DrawCommand & cmd);
     void erase(EraseCommand & cmd);
+    void undo(UndoCommand &cmd);
+    void savePresent(SavePresentCommand &cmd);
     void refreshSpace();
 
 private:
-
     QList<Viewport*> viewports;
-
     PageMode pageMode;
     Book transparentBook;
     Book opaqueBook;
     Book * activeBook;
     std::thread reader;
     std::thread worker;
-
     int size_pen_index;
     int size_pen;
-
     QColor brush_color;
-
     int width_space;
     int height_space;
-
     qint64 highlightPositionUntil;
-
     sched_param lowThreadPriority;
-
     QList<ScalableDisplay*> displays;
 
 };

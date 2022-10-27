@@ -117,4 +117,24 @@ public:
     int y;
 };
 
+class UndoCommand : public Command {
+public:
+
+    UndoCommand() :
+        Command("undo"),
+        offset(0) { }
+
+    void add(int offset) {
+        this->offset += offset;
+    }
+
+    int offset;
+};
+
+class SavePresentCommand : public Command {
+public:
+    SavePresentCommand() : Command("save_present") { }
+    void add() { }
+};
+
 #endif // COMMANDS_H

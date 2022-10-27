@@ -23,6 +23,8 @@ public:
     void setVisible(bool visible);
     void movePage(MovePageCommand & cmd);
     bool onPaint(QPainter &painter, QRect &screenRect);
+    void undo(UndoCommand &cmd);
+    void savePresent(SavePresentCommand &cmd);
 
 private:
     BookListener *core;

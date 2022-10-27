@@ -9,8 +9,6 @@
 
 using namespace wup;
 
-
-
 Page::Page(PageListener *listener) :
     book(listener),
     viewX(0),
@@ -22,8 +20,11 @@ Page::Page(PageListener *listener) :
     highlightStart(0),
     highlightEnd(0),
     highlightX(0),
-    highlightY(0)
+    highlightY(0),
+    historyPosition(1)
 {
+    history.append(new PageChanges());
+
     eraserPen.setCapStyle(Qt::PenCapStyle::RoundCap);
     eraserPen.setStyle(Qt::PenStyle::SolidLine);
     eraserPen.setJoinStyle(Qt::PenJoinStyle::RoundJoin);
@@ -37,7 +38,6 @@ Page::Page(PageListener *listener) :
 
     eraserBrush.setStyle(Qt::BrushStyle::SolidPattern);
     eraserBrush.setColor(QColor(0,0,0));
-
 }
 
 void Page::move(MovePageCommand & cmd) {
@@ -103,7 +103,10 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
 
     for (int i=i1;i<i2;++i) {
         for (int j=j1;j<j2;++j) {
-            Cell * cell = getCell(i, j, true);
+            QPair<int, int> key(i,j);
+            destroyFuture();
+            CellChanges * chp = history[historyPosition-1]->get(key, cells);
+            Cell * cell = getCell(key, true);
 
             // Calculate the position relative to the cell coordinates
 
@@ -119,6 +122,11 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color) {
             painter.setPen(inkPen);
             painter.drawLines(cmd.points);
 
+            // Update the history point cache
+
+            chp->setAfter(cell->img);
+
+            // Move p to its previous value, the next cell will move it correctly
             for (QPoint &p : cmd.points) {
                 p.setX(p.x() + cell->x);
                 p.setY(p.y() + cell->y);
@@ -177,7 +185,10 @@ void Page::erase(EraseCommand & cmd) {
 
     for (int i=i1;i<i2;++i) {
         for (int j=j1;j<j2;++j) {
-            Cell * cell = getCell(i, j, true);
+            QPair<int, int> key(i,j);
+            destroyFuture();
+            CellChanges * chp = history[historyPosition-1]->get(key, cells);
+            Cell * cell = getCell(key, true);
 
             // Calculate the position relative to the cell coordinates
 
@@ -192,9 +203,13 @@ void Page::erase(EraseCommand & cmd) {
             painter.setRenderHint(QPainter::Antialiasing, true);
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
             painter.setBrush(eraserBrush);
-//            painter.drawPolygon(&erasePolygon[0], 3);
-
             painter.drawPolygon(cmd.points.data(), cmd.points.size());
+
+            // Update the history point cache
+
+            chp->setAfter(cell->img);
+
+            // Move p to its previous value, the next cell will move it correctly
 
             for (QPoint &p : cmd.points) {
                 p.setX(p.x() + cell->x);
@@ -234,7 +249,9 @@ bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
 
     for (int i=i1;i<i2;++i) {
         for (int j=j1;j<j2;++j) {
-            Cell * cell = getCell(i, j, false);
+            QPair<int, int> key(i,j);
+            Cell * cell = getCell(key, false);
+
             if (cell != nullptr)
                 painter.drawImage(cell->x - x, cell->y - y, *cell->img);
         }
@@ -281,25 +298,23 @@ bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor) {
     return result;
 }
 
-Cell * Page::getCell(int i, int j, bool createOnMiss) {
+Cell * Page::getCell(QPair<int,int> & key, bool createOnMiss) {
 
     // Debug mode
 
     if (false) {
-        QPair<int, int> key(i,j);
 
         auto it = cells.find(key);
 
         if (it != cells.end())
             return *it;
 
-        Cell *cell = new Cell(i, j, false);
+        Cell *cell = new Cell(key, false);
         cells[key] = cell;
         return cell;
     }
 
     else {
-        QPair<int, int> key(i,j);
         auto it = cells.find(key);
 
         if (it != cells.end())
@@ -308,8 +323,71 @@ Cell * Page::getCell(int i, int j, bool createOnMiss) {
         if (!createOnMiss)
             return nullptr;
 
-        Cell *cell = new Cell(i, j, true);
+        Cell *cell = new Cell(key, true);
         cells[key] = cell;
         return cell;
     }
+}
+
+void Page::undo(UndoCommand & cmd) {
+    if (cmd.offset == 0)
+        return;
+
+    std::lock_guard<std::mutex> lock(drawing);
+
+    if (cmd.offset > 0 ) {
+        for (int i=0;i!= cmd.offset;++i)
+            nextHistoryPoint();
+    } else {
+        for (int i=0;i!=cmd.offset;--i)
+            previousHistoryPoint();
+    }
+}
+
+void Page::savePresent() {
+
+    destroyFuture();
+
+    if (history[historyPosition-1]->hasChanges()) {
+        history.append(new PageChanges());
+        historyPosition += 1;
+        qDebug("Saving present, historyPosition is now at %d/%lld", historyPosition, history.size());
+    } else {
+        qDebug("Skiping save present, nothing to save");
+    }
+}
+
+void Page::destroyFuture() {
+    if (historyPosition!=history.size())
+        qDebug("Destroying %lld future changes", history.size() - historyPosition);
+
+    for (int i=historyPosition;i!=history.size();++i)
+        delete history[i];
+
+    history.resize(historyPosition);
+
+    if (history.isEmpty()) {
+        history.append(new PageChanges());
+        historyPosition = 1;
+    }
+}
+
+void Page::previousHistoryPoint() {
+    if (historyPosition == 0)
+        return;
+
+    history[historyPosition-1]->undo(cells);
+    historyPosition -= 1;
+
+    qDebug("Moving backward in time: %d/%lld", historyPosition, history.size());
+}
+
+void Page::nextHistoryPoint() {
+    if (historyPosition == history.size())
+        return;
+
+    history[historyPosition]->redo(cells);
+    historyPosition += 1;
+
+    qDebug("Moving forward in time: %d/%lld", historyPosition, history.size());
 }

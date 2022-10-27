@@ -8,7 +8,9 @@ const int CELL_SIZE = 64;
 
 class Cell {
 public:
-    Cell(int i, int j, bool empty=false);
+    Cell(QPair<int, int> & key, bool empty=false);
+
+    ~Cell();
 
     int i;
     int j;

@@ -17,6 +17,16 @@ Page * Book::currentPage() {
     return page;
 }
 
+void Book::undo(UndoCommand & cmd)
+{
+    currentPage()->undo(cmd);
+}
+
+void Book::savePresent(SavePresentCommand &)
+{
+    currentPage()->savePresent();
+}
+
 void Book::onPageEdited(Page *page) {
     if (page == extraPage) {
         wup::print("extra page added");

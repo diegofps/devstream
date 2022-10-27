@@ -387,13 +387,13 @@ class XPPEN_DecoPro_Base(Reflex):
     def on_key30(self, value):
         log.debug("Deco pro key 30", value)
         if value == 0:
-            canvas.send("undo")
+            canvas.send("undo -1")
         # UNDO
         
     def on_key31(self, value):
         log.debug("Deco pro key 31", value)
         if value == 0:
-            canvas.send("redo")
+            canvas.send("undo +1")
         # REDO
     
     def on_orb_rel(self, rel_x, rel_y):
@@ -439,6 +439,9 @@ class XPPEN_DecoPro_Base(Reflex):
         if self.erasing:
             return
         
+        if self.touching and value == 0:
+            canvas.send(f"save_present")
+
         self.touching = value != 0
         
         if self.touching:
@@ -448,6 +451,10 @@ class XPPEN_DecoPro_Base(Reflex):
 
     def on_pen_btn_low(self, value, x, y):
         log.debug("Deco pro key pen_btn_low", value)
+        
+        if self.erasing and value == 0:
+            canvas.send(f"save_present")
+
         self.erasing = value != 0
 
         if self.erasing:
@@ -457,7 +464,9 @@ class XPPEN_DecoPro_Base(Reflex):
             self.erase_x = x
             self.erase_y = y
 
-            self.touching = False
+            if self.touching:
+                canvas.send(f"save_present")
+                self.touching = False
 
             # canvas.send(f"erase {x} {y} {x+1} {y+1}")
         

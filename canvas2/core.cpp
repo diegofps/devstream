@@ -111,6 +111,16 @@ runReader(Core * c)
                     PUSH_CMD(ChangePageCommand, changePage, offset);
             }
 
+            else if (cmd == "undo") {
+                int offset;
+                if (ifs >> offset)
+                    PUSH_CMD(UndoCommand, undo, offset);
+            }
+
+            else if (cmd == "save_present") {
+                PUSH_CMD(SavePresentCommand, savePresent);
+            }
+
             else if (cmd == "") {
                 sleep(1);
             }
@@ -312,6 +322,19 @@ void Core::changePenSize(ChangePenSizeCommand & cmd)
 void Core::changePage(ChangePageCommand & cmd)
 {
     activeBook->changePage(cmd);
+}
+
+void Core::undo(UndoCommand & cmd)
+{
+    activeBook->undo(cmd);
+
+    for (Viewport * viewport : viewports)
+        viewport->asyncUpdate();
+}
+
+void Core::savePresent(SavePresentCommand & cmd)
+{
+    activeBook->savePresent(cmd);
 }
 
 void Core::setPageMode(SetPageModeCommand & cmd)

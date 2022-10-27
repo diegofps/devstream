@@ -2,26 +2,32 @@
 
 #include <QPainter>
 
-Cell::Cell(int i, int j, bool empty) :
-    i(i),
-    j(j),
+Cell::Cell(QPair<int, int> & key, bool empty) :
+    i(key.first),
+    j(key.second),
     x(j * CELL_SIZE),
     y(i * CELL_SIZE),
     img(nullptr)
 {
-    QImage * cell = new QImage(QSize(CELL_SIZE, CELL_SIZE), QImage::Format_ARGB32_Premultiplied);
+    QImage * img = new QImage(QSize(CELL_SIZE, CELL_SIZE), QImage::Format_ARGB32_Premultiplied);
 
     if (empty)
     {
-        cell->fill(Qt::transparent);
+        img->fill(Qt::transparent);
     }
     else
     {
-        cell->fill(QColor((i+j) % 2 ? "#22ff0000" : "#220000ff"));
-        QPainter painter(cell);
+        img->fill(QColor((i+j) % 2 ? "#22ff0000" : "#220000ff"));
+        QPainter painter(img);
         QString msg = QString::asprintf("(%d, %d)", i, j);
         painter.drawText(0, 11, msg);
     }
 
-    this->img = cell;
+    this->img = img;
+}
+
+Cell::~Cell()
+{
+    if (img != nullptr)
+        delete img;
 }
