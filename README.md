@@ -1,12 +1,16 @@
+
 # What is this?
 
 These is a system service to enhance the compatibility of the Logitech Trackball Marble, Logitech MX Anywhere 2S, and other devices I may have with the Linux OS. It contains scripts that start during system boot and map the device inputs into special commands, like Back, Forward, Scrolling, Alt+Tab, macros, and so on. If a device is not present/detected it simply ignores the enhancements. It is also aware of the current focused window. For instance, "Switch Tabs" will map to different shortcuts deppending on your app.
 
+
 # Usage
+
 
 ## Logitech Trackball Marble
 
 ![Buttons](images/keys_marble.png)
+
 
 ### Normal Mode
 
@@ -18,6 +22,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | D        | Middle Click                        |
 | E        | Move Cursor                         |
 
+
 ### Holding B
 
 | Shortcut | Action                            |
@@ -26,6 +31,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | B + C    | Back                              |
 | B + D    | Forward                           |
 | B + E    | Vertical and Horizontal Scrolling |
+
 
 ### Holding C
 
@@ -36,6 +42,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | C + D    | New Tab or Document                                  |
 | C + E    | Change Volume (Vertical) or Undo / Redo (Horizontal) |
 
+
 ### Holding D
 
 | Shortcut | Action                                                |
@@ -45,9 +52,11 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | D + C    | Advanced Search: Tabs, Files, Content, Symbols, so on |
 | D + E    | Switch Tabs (Vertical) or Switch Windows (Horizontal) |
 
+
 ## Logitech MX Anywhere 2S
 
 ![Buttons](images/keys_mx2s.png)
+
 
 ### Normal Mode
 
@@ -63,6 +72,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | G        | Forward           |
 | G + H    | Show All Windows  |
 
+
 ### Browser Mode
 
 | Shortcut | Action            |
@@ -74,6 +84,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | H + E    | Switch Tabs       |
 | H + F    | Zoom Out          |
 
+
 ### System mode
 
 | Shortcut | Action        |
@@ -82,6 +93,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | G + B    | Close Window  |
 | G + C    | Redo          |
 | G + E    | Switch Window |
+
 
 ### Multimedia Mode
 
@@ -93,6 +105,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | G + H + D | Next Track       |
 | G + H + E | Volume Up / Down |
 | G + H + F | Previous Track   |
+
 
 ## Macro Keyboard
 
@@ -111,12 +124,12 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 ![Buttons](images/keys_decopro.png)
 
-| Key | Mode                                 |
-| --- | ------------------------------------ |
-| A   | Transparent canvas                   |
-| B   | Opaque canvas                        |
-| C   | Transparent canvas with passthrough  |
-| D   | Disable entire canvas                |
+| Key | Mode          | Can draw? | Show drawing | Background |
+| --- | ------------- | --------- | ------------ | ---------- |
+| A   | Transparent   | Yes       | Yes          | None       |
+| B   | Opaque        | Yes       | Yes          | Opaque     |
+| C   | Passthrough   | No        | Yes          | None       |
+| D   | Disabled      | No        | No           | None       |
 
 
 ### Transparent/Opaque/Passthrough modes
@@ -133,6 +146,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | L   | Eraser mode              |
 | M   | Open Menu (Planned)      |
 
+
 ### Disabled mode
 
 | Key | Action   |
@@ -147,6 +161,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | L   | Planning |
 | M   | Planning |
 
+
 # Dependencies
 
 This daemon requires python3, pip, evdev, inotifywait, xclip and edid-decode. It has only been tested in Ubuntu 22.04 LTS, you can install its dependencies with the following commands.
@@ -156,6 +171,7 @@ sudo apt update
 sudo apt install -yq libpython3-dev inotify-tools xclip edid-decode
 sudo pip3 install evdev
 ```
+
 
 # Install
 
@@ -172,6 +188,7 @@ sudo service devstream start
 # Activate autostart during system boot
 sudo systemctl enable devstream
 ```
+
 
 # Uninstall
 
