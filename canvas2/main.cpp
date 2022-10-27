@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QDateTime>
 #include <core.h>
 
 FILE * logFile = nullptr;
@@ -8,23 +9,24 @@ void logHandler(QtMsgType type, const QMessageLogContext &context, const QString
     if (logFile == nullptr)
         return;
 
+    QByteArray dateTime = QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toLocal8Bit();
     QByteArray localMsg = msg.toLocal8Bit();
 
     switch (type) {
     case QtDebugMsg:
-        fprintf(logFile, "\n\nDebug, %s:%u, %s\n%s", context.file, context.line, context.function, localMsg.constData());
+        fprintf(logFile, "%s Debug: %s\n", dateTime.constData(), localMsg.constData());
         break;
     case QtInfoMsg:
-        fprintf(logFile, "\n\nInfo, %s:%u, %s\n%s", context.file, context.line, context.function, localMsg.constData());
+        fprintf(logFile, "%s Info: %s\n", dateTime.constData(), localMsg.constData());
         break;
     case QtWarningMsg:
-        fprintf(logFile, "\n\nWarning, %s:%u, %s\n%s", context.file, context.line, context.function, localMsg.constData());
+        fprintf(logFile, "%s Warning: %s\n", dateTime.constData(), localMsg.constData());
         break;
     case QtCriticalMsg:
-        fprintf(logFile, "\n\nCritical, %s:%u, %s\n%s", context.file, context.line, context.function, localMsg.constData());
+        fprintf(logFile, "%s Critical: %s\n", dateTime.constData(), localMsg.constData());
         break;
     case QtFatalMsg:
-        fprintf(logFile, "\n\nFatal, %s:%u, %s\n%s", context.file, context.line, context.function, localMsg.constData());
+        fprintf(logFile, "%s Fatal: %s\n", dateTime.constData(), localMsg.constData());
         abort();
     }
 
