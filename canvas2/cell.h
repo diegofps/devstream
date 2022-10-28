@@ -3,7 +3,7 @@
 
 #include <QImage>
 
-const int CELL_SIZE = 256;
+const int CELL_SIZE = 512;
 
 
 class Cell {

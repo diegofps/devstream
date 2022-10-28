@@ -231,6 +231,7 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
         qDebug("  Port: %s", qUtf8Printable(tmp->port));
         qDebug("  InternalGeometry: %d %d %d %d", tmp->internalGeometry.left(), tmp->internalGeometry.top(), tmp->internalGeometry.width(), tmp->internalGeometry.height());
         qDebug("  ExternalGeometry: %d %d %d %d", tmp->externalGeometry.left(), tmp->externalGeometry.top(), tmp->externalGeometry.width(), tmp->externalGeometry.height());
+        qDebug("  VirtualGeometry: %d %d %d %d", tmp->screen->virtualGeometry().left(), tmp->screen->virtualGeometry().top(), tmp->screen->virtualGeometry().width(), tmp->screen->virtualGeometry().height());
         qDebug("  Scale: %F %F", tmp->scaleX, tmp->scaleY);
         qDebug("  Serial Number: %s", qUtf8Printable(tmp->serialNumber));
         qDebug("  Display Serial Number: %s", qUtf8Printable(tmp->displaySerialNumber));

@@ -10,8 +10,8 @@
 #include <thread>
 #include <page.h>
 
-const int    MAX_PEN_INDEX = 15;
-const int    MIN_PEN_INDEX = 1;
+const int    MAX_PEN_INDEX = 17;
+const int    MIN_PEN_INDEX = 2;
 const double PEN_BASE      = 1.5;
 
 

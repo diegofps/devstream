@@ -20,7 +20,7 @@ Viewport::Viewport(ScalableDisplay *display)
     ui->canvas->setListener(this);
 
     configureWindowProperties();
-    positionWindow(display->externalGeometry);
+    positionWindow(display->internalGeometry);
     show();
 
     connect(&timer, &QTimer::timeout, this, &Viewport::animate);
@@ -48,8 +48,6 @@ void Viewport::setBook(Book *book)
 
 void Viewport::positionWindow(const QRect & g)
 {
-    qDebug("Positioning viewport at %d %d %d %d", g.left(), g.top(), g.width(), g.height());
-
     const int x = g.left();
     const int y = g.top();
 
@@ -84,12 +82,6 @@ void Viewport::highlightPosition(ChangePenSizeCommand cmd) {
     if (!g.contains(cmd.x, cmd.y))
         return;
 
-    auto x = g.left();
-    auto y = g.top();
-
-    cmd.x = x + (cmd.x - x) * this->display->normX;
-    cmd.y = y + (cmd.y - y) * this->display->normY;
-
     book->currentPage()->highlightPosition(cmd);
     asyncUpdate();
 }
@@ -110,16 +102,6 @@ void Viewport::draw(DrawCommand cmd, int size, QColor *color) {
 
     if (skip)
         return;
-
-    // Normalize to global coordinates
-
-    auto x = g.left();
-    auto y = g.top();
-
-    for (QPoint &p : cmd.points) {
-        p.setX(x + (p.x() - x) * this->display->normX);
-        p.setY(y + (p.y() - y) * this->display->normY);
-    }
 
     // Ask the book to draw it
 
@@ -146,23 +128,13 @@ void Viewport::erase(EraseCommand cmd) {
     if (skip)
         return;
 
-    // Normalize to global coordinates
-
-    auto x = g.left();
-    auto y = g.top();
-
-    for (QPoint &p : cmd.points) {
-        p.setX(x + (p.x() - x) * this->display->normX);
-        p.setY(y + (p.y() - y) * this->display->normY);
-    }
-
     book->currentPage()->erase(cmd);
     asyncUpdate();
 }
 
 void Viewport::onPaint(QPainter & painter) {
     if (book != nullptr)
-        mustRepaint = book->onPaint(painter, this->display->internalGeometry);
+        mustRepaint = book->onPaint(painter, display->internalGeometry);
 }
 
 
@@ -178,5 +150,5 @@ ScalableDisplay *Viewport::getDisplay()
 void Viewport::setDisplay(ScalableDisplay * display)
 {
     this->display = display;
-    positionWindow(display->externalGeometry);
+    positionWindow(display->internalGeometry);
 }

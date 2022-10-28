@@ -31,10 +31,10 @@ Page::Page(PageListener *listener) :
     inkPen.setCapStyle(Qt::PenCapStyle::RoundCap);
 
     highlightBrush.setStyle(Qt::BrushStyle::SolidPattern);
-    highlightBrush.setColor(QColor(0,0,255, 128));
+    highlightBrush.setColor(QColor(0, 0, 255, 128));
 
     eraserBrush.setStyle(Qt::BrushStyle::SolidPattern);
-    eraserBrush.setColor(QColor(0,0,0));
+    eraserBrush.setColor(QColor(0, 0, 0));
 }
 
 void Page::move(MovePageCommand & cmd)
@@ -62,12 +62,9 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color)
 
     // Convert from multidisplay coordinates to world coordinates
 
-    qDebug("Drawing inside page:");
-
     for (QPoint &p : cmd.points) {
         p.setX(p.x() - viewX);
         p.setY(p.y() - viewY);
-        qDebug("    %d %d", p.x(), p.y());
     }
 
     int min_x=cmd.points[0].x(), min_y=cmd.points[0].y();
@@ -220,8 +217,6 @@ void Page::erase(EraseCommand & cmd)
 bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor)
 {
     std::lock_guard<std::mutex> lock(drawing);
-
-    qDebug("Repainting viewport, rect=%d,%d,%d,%d", rect.left(), rect.right(), rect.width(), rect.height());
 
     if (backgroundColor != nullptr)
         painter.fillRect(0, 0, rect.width(), rect.height(), * backgroundColor);

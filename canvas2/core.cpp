@@ -162,7 +162,7 @@ Core::Core(QApplication *a)
       activeBook(&transparentBook),
       reader(runReader, this),
       worker(runWorker),
-      size_pen_index(5), // 3
+      size_pen_index(6),
       size_pen(pow(PEN_BASE, size_pen_index)),
       brush_color(QColor("#0000ff")),
       width_space(0),
@@ -196,10 +196,6 @@ Core::Core(QApplication *a)
             refreshSpace();
         });
     }
-
-    // Force an update after 5 seconds, hopefully this will fix the boot problem
-
-//    QTimer::singleShot(5000, this, &Core::refreshSpace);
 }
 
 void Core::refreshSpace() {

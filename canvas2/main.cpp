@@ -35,6 +35,9 @@ void logHandler(QtMsgType type, const QMessageLogContext &context, const QString
 
 int main(int argc, char *argv[])
 {
+    putenv((char *)"QT_AUTO_SCREEN_SCALE_FACTOR=0");
+    putenv((char *)"QT_ENABLE_HIGHDPI_SCALING=0");
+
     logFile = fopen("./main.log.qt", "w");
     qInstallMessageHandler(logHandler); // Install the handler
 
