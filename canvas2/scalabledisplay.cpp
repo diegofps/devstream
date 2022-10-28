@@ -167,14 +167,36 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
         }
     }
 
-    // Now we obtain the externalRect from the QScreens provided by QGuiApplication
+    // Now we calculate normX and normY
+
+    double normX=0;
+    double normY=0;
+
+    for (ScalableDisplay * display : displays) {
+        if (display->scaleX > normX)
+            normX = display->scaleX;
+
+        if (display->scaleY > normY)
+            normY = display->scaleY;
+    }
+
+    for (ScalableDisplay * display : displays) {
+        display->normX = 1.0 / normX;
+        display->normY = 1.0 / normY;
+    }
+
+    // Now we obtain the externalGeometry from the QScreens provided by QGuiApplication
 
     QList<QScreen*> screens = QGuiApplication::screens();
 
     if (screens.size() == 1 && displays.size() == 1) {
-        auto screen = screens[0];
-        auto *display = displays[0];
-        display->externalGeometry = screen->geometry();
+        ScalableDisplay * display = displays[0];
+        QScreen * screen = screens[0];
+
+        display->externalGeometry = QRect(screen->geometry().left(),
+                                          screen->geometry().top(),
+                                          display->internalGeometry.width() * display->normX,
+                                          display->internalGeometry.height() * display->normY);
         display->screen = screen;
     }
 
@@ -185,37 +207,22 @@ QList<ScalableDisplay*> ScalableDisplay::parseDisplays() {
 
             for (ScalableDisplay * display : displays) {
                 if (display->displaySerialNumber == "") {
-                    if (screen->serialNumber().startsWith(display->serialNumber)) {
-                        display->externalGeometry = screen->geometry();
-                        display->screen = screen;
-                        break;
-                    }
+                    if (!screen->serialNumber().startsWith(display->serialNumber))
+                        continue;
                 } else {
-                    if (screen->serialNumber().startsWith(display->displaySerialNumber)) {
-                        display->externalGeometry = screen->geometry();
-                        display->screen = screen;
-                        break;
-                    }
+                    if (!screen->serialNumber().startsWith(display->displaySerialNumber))
+                        continue;
                 }
+
+                display->externalGeometry = QRect(screen->geometry().left(),
+                                                  screen->geometry().top(),
+                                                  display->internalGeometry.width() * display->normX,
+                                                  display->internalGeometry.height() * display->normY);
+                display->screen = screen;
+
+                break;
             }
         }
-    }
-
-    // Now we calculate normX and normY
-
-    double normX=0;
-    double normY=0;
-
-    for (ScalableDisplay * display : displays) {
-        if (display->scaleX > normX)
-            normX = display->scaleX;
-        if (display->scaleY > normY)
-            normY = display->scaleY;
-    }
-
-    for (ScalableDisplay * display : displays) {
-        display->normX = 1.0 / normX;
-        display->normY = 1.0 / normY;
     }
 
     qDebug("Found %lld displays:", displays.size());

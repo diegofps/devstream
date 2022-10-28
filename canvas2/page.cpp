@@ -62,9 +62,12 @@ void Page::draw(DrawCommand & cmd, int size, QColor * color)
 
     // Convert from multidisplay coordinates to world coordinates
 
+    qDebug("Drawing inside page:");
+
     for (QPoint &p : cmd.points) {
         p.setX(p.x() - viewX);
         p.setY(p.y() - viewY);
+        qDebug("    %d %d", p.x(), p.y());
     }
 
     int min_x=cmd.points[0].x(), min_y=cmd.points[0].y();
@@ -218,20 +221,22 @@ bool Page::onPaint(QPainter & painter, QRect & rect, QColor * backgroundColor)
 {
     std::lock_guard<std::mutex> lock(drawing);
 
+    qDebug("Repainting viewport, rect=%d,%d,%d,%d", rect.left(), rect.right(), rect.width(), rect.height());
+
     if (backgroundColor != nullptr)
-        painter.fillRect(0, 0, rect.width(), rect.height(), *backgroundColor);
+        painter.fillRect(0, 0, rect.width(), rect.height(), * backgroundColor);
 
     // Convert from multidisplay coordinates to world coordinates
 
     int x = rect.left() - viewXSmooth;
-    int y = rect.top() - viewYSmooth;
+    int y = rect.top()  - viewYSmooth;
 
     // Obtain indexes that may intersect the area
 
-    int i1 = floor((y - CELL_SIZE) / double(CELL_SIZE));
+    int i1 = floor((y - CELL_SIZE)     / double(CELL_SIZE));
     int i2 = ceil ((y + rect.height()) / double(CELL_SIZE));
 
-    int j1 = floor((x - CELL_SIZE) / double(CELL_SIZE));
+    int j1 = floor((x - CELL_SIZE)    / double(CELL_SIZE));
     int j2 = ceil ((x + rect.width()) / double(CELL_SIZE));
 
     for (int i=i1;i<i2;++i) {

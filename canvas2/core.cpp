@@ -181,18 +181,25 @@ Core::Core(QApplication *a)
     // Add listeners to react to display changes
 
     connect(a, &QGuiApplication::screenAdded, [this](QScreen *) {
+        qDebug("Screen added");
         refreshSpace();
     });
 
     connect(a, &QGuiApplication::screenRemoved, [this](QScreen *) {
+        qDebug("Screen removed");
         refreshSpace();
     });
 
     for (QScreen *screen : QGuiApplication::screens()) {
-        connect(screen, &QScreen::geometryChanged, [this](const QRect &) {
+        connect(screen, &QScreen::geometryChanged, [this, screen](const QRect &) {
+            qDebug("Screen changed: %s", qUtf8Printable(screen->serialNumber()));
             refreshSpace();
         });
     }
+
+    // Force an update after 5 seconds, hopefully this will fix the boot problem
+
+//    QTimer::singleShot(5000, this, &Core::refreshSpace);
 }
 
 void Core::refreshSpace() {

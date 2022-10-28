@@ -3,7 +3,6 @@
 
 #include <QDateTime>
 #include <QRect>
-#include <QScreen>
 #include <QShortcut>
 #include <QThread>
 
@@ -21,7 +20,7 @@ Viewport::Viewport(ScalableDisplay *display)
     ui->canvas->setListener(this);
 
     configureWindowProperties();
-    positionWindow(display->screen->geometry());
+    positionWindow(display->externalGeometry);
     show();
 
     connect(&timer, &QTimer::timeout, this, &Viewport::animate);
@@ -179,5 +178,5 @@ ScalableDisplay *Viewport::getDisplay()
 void Viewport::setDisplay(ScalableDisplay * display)
 {
     this->display = display;
-    positionWindow(display->screen->geometry());
+    positionWindow(display->externalGeometry);
 }
