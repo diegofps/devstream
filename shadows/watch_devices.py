@@ -28,7 +28,7 @@ class WatchDevices(Reflex):
 
         while not self.done:
             try:
-                cmd = shlex.split("inotifywait -m /dev/input/by-id/ -e CREATE -e DELETE")
+                cmd = shlex.split("inotifywait -m /dev/input/by-id/ -e MOVED_TO -e DELETE")
                 # debug("WatchDevices event, cmd:", cmd)
                 proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
                 
@@ -44,13 +44,18 @@ class WatchDevices(Reflex):
                     folderpath, event_name, filename = line.split(" ", 2)
                     deviceid_path = folderpath + filename
 
-                    if event_name == "CREATE":
+                    if event_name == "MOVED_TO":
+                        log.debug("Device disconnected:", deviceid_path)
                         device_path = self.follow_symlink(deviceid_path)
                         if device_path is not None:
+                            # log.error("Broadcasting event for creation of ", device_path)
                             self.devices[deviceid_path] = device_path
                             self.mind.emit(TOPIC_DEVICE_CONNECTED, [device_path])
+                        else:
+                            log.error("follow_symlink returned a None path")
                     
                     elif event_name == "DELETE":
+                        log.debug("Device connected:", deviceid_path)
                         if deviceid_path in self.devices:
                             device_path = self.devices[deviceid_path]
                             del self.devices[deviceid_path]

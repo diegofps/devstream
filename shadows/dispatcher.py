@@ -20,19 +20,20 @@ class Dispatcher(Reflex):
         self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
 
     def on_device_connected(self, topic_name, event):
-        # print("Device connected", topic_name, event)
+        # log.debug("Dispatcher received a device connected event", topic_name, event)
         for device_path in event:
+            # log.debug("Checking device at", device_path)
             try:
                 # log.info("Device connected:", device_path)
                 dev = InputDevice(device_path)
 
                 if dev.name in self.mind.required_devices:
-                    log.debug(f"{dev.name} is a device with interest, starting shadow ...")
+                    # log.debug(f"{dev.name} is a device with interest, starting shadow ...")
                     shadow = self.mind.add_shadow("device_reader", dev)
                     self.devices[device_path] = shadow
                     # log.debug("shadow started!")
-                # else:
-                #     log.debug("Device is not in required list, skipping", dev.name, dev.path)
+                else:
+                    log.debug("Device is not in required list, skipping", dev.name, dev.path)
             except Exception as e:
                 log.warn("Device reading failure:", e)
     
