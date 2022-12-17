@@ -28,10 +28,11 @@ class OutputEvent:
     SLEEP    = 8
     SEQUENCE = 9
 
-    def __init__(self, mind, topic=TOPIC_DEVICEWRITER_EVENT):
+    def __init__(self, mind, topic=TOPIC_DEVICEWRITER_EVENT, source=None):
         self.sequence = []
         self.topic = topic
         self.mind = mind
+        self.source = source
     
     def __enter__(self):
         return self
@@ -40,39 +41,39 @@ class OutputEvent:
         self.emit()
     
     def press(self, key_name):
-        event = (OutputEvent.PRESS, key_name)
+        event = (OutputEvent.PRESS, key_name, self.source)
         self.sequence.append(event)
 
     def release(self, key_name):
-        event = (OutputEvent.RELEASE, key_name)
+        event = (OutputEvent.RELEASE, key_name, self.source)
         self.sequence.append(event)
 
     def update(self, key_name, value):
-        event = (OutputEvent.UPDATE, key_name, value)
+        event = (OutputEvent.UPDATE, key_name, value, self.source)
         self.sequence.append(event)
 
     def update_h(self, key_name, value):
-        event = (OutputEvent.UPDATE_H, key_name, value)
+        event = (OutputEvent.UPDATE_H, key_name, value, self.source)
         self.sequence.append(event)
 
     def update_v(self, key_name, value):
-        event = (OutputEvent.UPDATE_V, key_name, value)
+        event = (OutputEvent.UPDATE_V, key_name, value, self.source)
         self.sequence.append(event)
 
     def unlock(self, key_name):
-        event = (OutputEvent.UNLOCK, key_name)
+        event = (OutputEvent.UNLOCK, key_name, self.source)
         self.sequence.append(event)
 
     def forward(self, type, code, value):
-        event = (OutputEvent.FORWARD, type, code, value)
+        event = (OutputEvent.FORWARD, type, code, value, self.source)
         self.sequence.append(event)
 
     def function(self, function_name, *args):
-        event = (OutputEvent.FUNCTION, function_name, *args)
+        event = (OutputEvent.FUNCTION, self.source, function_name, *args)
         self.sequence.append(event)
 
     def sleep(self, delay):
-        event = (OutputEvent.SLEEP, delay)
+        event = (OutputEvent.SLEEP, delay, self.source)
         self.sequence.append(event)
     
     def emit(self):
@@ -85,7 +86,7 @@ class OutputEvent:
             self.mind.emit(self.topic, self.sequence[0])
 
         else:
-            event = (OutputEvent.SEQUENCE, self.sequence)
+            event = (OutputEvent.SEQUENCE, self.sequence, self.source)
             self.mind.emit(self.topic, event)
 
 
@@ -246,8 +247,8 @@ class VirtualKeyboard(Reflex):
                 e.KEY_PLAYPAUSE, e.KEY_NEXTSONG, e.KEY_PREVIOUSSONG, e.KEY_STOPCD, 
                 e.KEY_MUTE, e.KEY_VOLUMEUP, e.KEY_VOLUMEDOWN, e.KEY_PRESENTATION, 
 
-                e.KEY_KP0, e.KEY_KP1, e.KEY_KP2, e.KEY_KP3, e.KEY_KP4, e.KEY_KP5, e.KEY_KP6, e.KEY_KP7, e.KEY_KP8, e.KEY_KP9,
-                e.KEY_KPMINUS, e.KEY_KPPLUS, e.KEY_KPENTER, e.KEY_KPDOT, e.KEY_KPSLASH, e.KEY_KPASTERISK, e.KEY_NUMLOCK,
+                # e.KEY_KP0, e.KEY_KP1, e.KEY_KP2, e.KEY_KP3, e.KEY_KP4, e.KEY_KP5, e.KEY_KP6, e.KEY_KP7, e.KEY_KP8, e.KEY_KP9,
+                # e.KEY_KPMINUS, e.KEY_KPPLUS, e.KEY_KPENTER, e.KEY_KPDOT, e.KEY_KPSLASH, e.KEY_KPASTERISK, e.KEY_NUMLOCK,
 
                 # e.BTN_TOOL_PEN, e.BTN_STYLUS, e.BTN_TOUCH,
 
@@ -337,52 +338,58 @@ class VirtualKeyboard(Reflex):
         
         elif event_type == OutputEvent.PRESS:
             key_name = event[1]
+
             if hasattr(self, key_name):
                 getattr(self, key_name).press()
         
         elif event_type == OutputEvent.RELEASE:
             key_name = event[1]
+
             if hasattr(self, key_name):
                 getattr(self, key_name).release()
         
         elif event_type == OutputEvent.UPDATE:
             key_name = event[1]
             value = event[2]
+
             if hasattr(self, key_name):
                 getattr(self, key_name).update(value)
         
         elif event_type == OutputEvent.UPDATE_H:
             key_name = event[1]
             value = event[2]
+
             if hasattr(self, key_name):
                 getattr(self, key_name).update_h(value)
         
         elif event_type == OutputEvent.UPDATE_V:
             key_name = event[1]
             value = event[2]
+
             if hasattr(self, key_name):
                 getattr(self, key_name).update_v(value)
         
         elif event_type == OutputEvent.UNLOCK:
             key_name = event[1]
+            
             if hasattr(self, key_name):
                 getattr(self, key_name).unlock()
         
         elif event_type == OutputEvent.FORWARD:
-            type = event[1]
-            code = event[2]
+            type  = event[1]
+            code  = event[2]
             value = event[3]
 
             if not code in self.acquired_keys:
-                log.error("Missing key", e.KEY[code])
+                log.info("VirtualKeyboard is ignoring key", e.KEY[code])
             
             self.vdev.write(type, code, value)
         
         elif event_type == OutputEvent.FUNCTION:
-            function_name = "function_" + event[1]
+            function_name = "function_" + event[2]
             
             if hasattr(self, function_name):
-                params = event[2:]
+                params = event[3:]
                 getattr(self, function_name)(*params)
         
         elif event_type == OutputEvent.SLEEP:

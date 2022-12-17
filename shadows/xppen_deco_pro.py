@@ -175,6 +175,10 @@ class XPPEN_DecoPro_Base(Reflex):
         self.erase_x = 0
         self.erase_y = 0
 
+        self.username = None
+        self.userdisplay = None
+        
+
     def on_event(self, topic_name, evt):
 
         if not evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:

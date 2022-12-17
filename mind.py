@@ -120,12 +120,16 @@ class Mind:
                 try:
                     callback(topic_name, event)
                 except Exception as e:
+                    import traceback
+                    traceback.print_exc()
                     log.error("Error during event processing for topic", topic_name, "- error:", e)
 
     def _emit_one(self, callback, topic_name, event):
         try:
             callback(topic_name, event)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             log.error("Error during event processing for topic", topic_name, "- error:", e)
 
     def start(self):
