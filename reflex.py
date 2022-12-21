@@ -26,6 +26,7 @@ class Reflex:
         log.info("Starting reflex", self.name, "...")
 
     def start(self):
+
         self.thread = Thread(target=self._call_run, name=self.name, daemon=True)
         self.thread.start()
     
@@ -40,9 +41,11 @@ class Reflex:
 
 
     def terminate(self):
+
         self.done = True
     
     def on_remove(self):
+
         log.info("Stopping reflex", self.name, "...")
         
         self.terminate()
@@ -53,6 +56,7 @@ class Reflex:
         self.listeners = []
     
     def add_listener(self, topic_names, callback):
+
         if not isinstance(topic_names, list):
             topic_names = [topic_names]
         
@@ -62,6 +66,7 @@ class Reflex:
             # log.debug(f"Added listener for", topic_name=topic_name, listener=self.name)
     
     def remove_listener(self, topic_names, callback):
+
         if not isinstance(topic_names, list):
             topic_names = [topic_names]
         
@@ -76,11 +81,13 @@ class Reflex:
                 pass
 
     def configure_states(self, state_topic, devices_events):
+
         self.devices_events = devices_events
         self.state_topic = state_topic
         self.add_listener(state_topic, self.on_state_changed)
     
     def on_state_changed(self, topic_name, event):
+
         clean = True
         
         if event[-1] == '*':
@@ -105,6 +112,7 @@ class Reflex:
                 self.on_activate()
 
     def on_event(self, topic_name, evt):
+        
         # if evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
         #     return 
         
@@ -112,7 +120,7 @@ class Reflex:
         type  = e.EV[evt.type]
         value = evt.value
 
-        log.debug(f"Processing event: type={type}, code={code:20}, value={value}")
+        log.debug(f"Processing event: type={type}, code={code}, value={value}")
         
         
     def on_activate(self):

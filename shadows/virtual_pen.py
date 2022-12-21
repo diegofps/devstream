@@ -113,10 +113,10 @@ class VirtualPen(Reflex):
             self.vdev.write(type, code, value)
         
         elif event_type == OutputEvent.FUNCTION:
-            function_name = "function_" + event[1]
+            function_name = "function_" + event[2]
             
             if hasattr(self, function_name):
-                params = event[2:]
+                params = event[3:]
                 getattr(self, function_name)(*params)
         
         elif event_type == OutputEvent.SLEEP:

@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from shadow import Shadow
 
 import importlib
+import traceback
 import evdev
 import time
 import log
@@ -73,6 +74,7 @@ class Mind:
             return
         
         # Register this listener in the corresponding topic
+
         if not topic_name in self.topics:
             topic = Topic(topic_name)
             topic.add(callback)
@@ -92,8 +94,9 @@ class Mind:
                 self._remove_listener(name, topic_name)
             return
 
-        # If there is a topic name with this name and the 
-        # listener is there remove it
+        # Remove it if there is a topic name with this name 
+        # and the listener is there.
+
         if topic_name in self.topics:
             topic = self.topics[topic_name]
             topic.remove(callback)
@@ -115,12 +118,13 @@ class Mind:
     def _emit_all(self, topic_name, event):
         if topic_name in self.topics:
             topic = self.topics[topic_name]
+
             # log.info("Calling listeners", str(topic.listeners))
+
             for callback in topic.listeners:
                 try:
                     callback(topic_name, event)
                 except Exception as e:
-                    import traceback
                     traceback.print_exc()
                     log.error("Error during event processing for topic", topic_name, "- error:", e)
 
@@ -138,6 +142,7 @@ class Mind:
             self.executor = executor
 
             # Shadows
+
             self.add_shadow("virtual_keyboard")
             self.add_shadow("virtual_pen")
 
@@ -154,6 +159,7 @@ class Mind:
             # self.add_shadow("watch_disks")
             
             # Infinity loop until KeyboardInterrupt is received or the system terminates
+
             try:
                 while True:
                     time.sleep(10000)
