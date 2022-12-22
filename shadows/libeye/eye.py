@@ -3,7 +3,7 @@
 from ctypes import CDLL, c_char_p, c_void_p, c_size_t, py_object, c_int
 
 
-flib = CDLL("./libeye.so")
+flib = CDLL("./shadows/libeye/libeye.so")
 
 _native_create = flib.Eye_create
 _native_create.argtypes = [c_char_p]
@@ -42,6 +42,11 @@ _native_exportAsBase64.argtypes = [c_void_p]
 _native_exportAsBase64.restype = py_object
 
 
+class EyeException(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
 class Eye:
 
 
@@ -61,12 +66,22 @@ class Eye:
     def request_region(self, title):
         self.assert_not_closed()
         eTitle = title.encode("utf-8")
-        return _native_requestRegion(self.ptr, eTitle)
+        target = _native_requestRegion(self.ptr, eTitle)
+
+        if target is None:
+            raise EyeException("User did not select a region")
+
+        return target
 
     def request_point(self, title):
         self.assert_not_closed()
         eTitle = title.encode("utf-8")
-        return _native_requestPoint(self.ptr, eTitle)
+        point = _native_requestPoint(self.ptr, eTitle)
+
+        if point is None:
+            raise EyeException("User did not select a point")
+
+        return point
 
     def learn(self, region):
         self.assert_not_closed()
