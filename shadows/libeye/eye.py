@@ -41,6 +41,10 @@ _native_exportAsBase64 = flib.Eye_exportAsBase64
 _native_exportAsBase64.argtypes = [c_void_p]
 _native_exportAsBase64.restype = py_object
 
+_native_screenSize = flib.Eye_screenSize
+_native_screenSize.argtypes = [c_void_p]
+_native_screenSize.restype = py_object
+
 
 class EyeException(Exception):
     def __init__(self, *args, **kwargs):
@@ -62,6 +66,10 @@ class Eye:
     def capture_screen(self):
         self.assert_not_closed()
         _native_captureScreen(self.ptr)
+
+    def screen_size(self):
+        self.assert_not_closed()
+        return _native_screenSize(self.ptr)
 
     def request_region(self, title):
         self.assert_not_closed()

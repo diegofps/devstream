@@ -1,4 +1,5 @@
 from shadows.virtual_keyboard import TOPIC_DEVICEWRITER_EVENT, OutputEvent
+from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
 from threading import Thread, Lock
 from evdev import ecodes as e
 from reflex import Reflex
@@ -138,7 +139,7 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP8,2):[("play","KI", 1)],
                 (e.KEY_KP9,2):[("play","KJ", 1)],
 
-                (e.KEY_KPDOT,1):[("interrupt,"), ("move", "state2")],
+                (e.KEY_KPDOT,1):[("interrupt"), ("move", "state2")],
             },
 
             # Record state. 
@@ -363,7 +364,7 @@ class MacroPlayer:
                     cmd_type = cmd[0]
                     cmd_args = cmd[1:]
 
-                    log.debug(f"  Playing task {cmd_type} {cmd_args}")
+                    log.debug(f"  Playing cmd {cmd_type} with args {cmd_args}")
 
                     if cmd_type == "press_key":
                         if not self.play_press_key(macro, *cmd_args):
@@ -426,30 +427,55 @@ class MacroPlayer:
         expires_at = time.time() + FIND_TIMEOUT
         target     = None
 
+        log.debug(1)
+        macro.eye.capture_screen()
+        log.debug(2)
+
         while time.time() < expires_at:
-            macro.eye.capture_screen()
             target = macro.eye.find(region1id)
+            log.debug(3)
 
             if not self.stop.locked():
                 self.stop.acquire()
                 return False
 
+            log.debug(4)
+
             if target is not None:
+                log.debug("Target found:", target)
                 break
 
+            log.debug(5)
+            macro.eye.capture_screen()
+            log.debug(6)
+
+        log.debug(7)
         if target is None:
+            log.debug("Target not found, returning")
             return False
 
-        x = target[0] + point1[0] - region1[0]
-        y = target[1] + point1[1] - region1[1]
+        log.debug(8)
+        screen_width, screen_height = macro.eye.screen_size()
+        log.debug(9)
 
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_X, x, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_Y, y, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
+        x = int((target[0] + point1[0] - region1[0]) * 32767 / screen_width)
+        y = int((target[1] + point1[1] - region1[1]) * 32767 / screen_height)
 
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_KEY, mouse_button, 1, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_KEY, mouse_button, 0, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
+        log.debug("Click coordinates:", x, y)
+        log.debug("  x ref:", target[0], point1[0], region1[0])
+        log.debug("  y ref:", target[1], point1[1], region1[1])
+
+        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_X, x, SOURCE_NAME))
+        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_Y, y, SOURCE_NAME))
+        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
+        time.sleep(0.1)
+
+        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_KEY, mouse_button, 1, SOURCE_NAME))
+        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_KEY, mouse_button, 0, SOURCE_NAME))
+        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
+        time.sleep(0.1)
+
+        log.debug("play_see_and_click finished")
 
         return True
 
