@@ -1,16 +1,20 @@
 from evdev import AbsInfo, UInput, ecodes as e
-from shadows.virtual_keyboard import OutputEvent
-from keys import Key, WheelKey, DirectKey
-from reflex import Reflex
+from keys import DirectKey
 
-import time
+from .virtual_device import VirtualDevice, VirtualDeviceEvent
+
 import log
 
 
 TOPIC_VIRTUALPEN_EVENT = "VirtualPen"
 
 
-class VirtualPen(Reflex):
+class VirtualPenEvent(VirtualDeviceEvent):
+    def __init__(self, mind, source):
+        super().__init__(mind, TOPIC_VIRTUALPEN_EVENT, source)
+
+
+class VirtualPen(VirtualDevice):
 
     def __init__(self, shadow):
         super().__init__(shadow)
@@ -61,71 +65,6 @@ class VirtualPen(Reflex):
             ("BTN_RIGHT", 90001), ("BTN_LEFT", 90004), ("BTN_MIDDLE", 90005), ("BTN_SIDE", 90004), ("BTN_EXTRA", 90005), 
         ])
 
-    def on_event(self, topic_name, event):
-        # log.debug("Processing VirtualPen event", event)
-        event_type = event[0]
-
-        if event_type == OutputEvent.SEQUENCE:
-            for event2 in event[1]:
-                self.on_event(topic_name, event2)
-        
-        elif event_type == OutputEvent.PRESS:
-            key_name = event[1]
-            if hasattr(self, key_name):
-                getattr(self, key_name).press()
-        
-        elif event_type == OutputEvent.RELEASE:
-            key_name = event[1]
-            if hasattr(self, key_name):
-                getattr(self, key_name).release()
-        
-        elif event_type == OutputEvent.UPDATE:
-            key_name = event[1]
-            value = event[2]
-            if hasattr(self, key_name):
-                getattr(self, key_name).update(value)
-        
-        elif event_type == OutputEvent.UPDATE_H:
-            key_name = event[1]
-            value = event[2]
-            if hasattr(self, key_name):
-                getattr(self, key_name).update_h(value)
-        
-        elif event_type == OutputEvent.UPDATE_V:
-            key_name = event[1]
-            value = event[2]
-            if hasattr(self, key_name):
-                getattr(self, key_name).update_v(value)
-        
-        elif event_type == OutputEvent.UNLOCK:
-            key_name = event[1]
-            if hasattr(self, key_name):
-                getattr(self, key_name).unlock()
-        
-        elif event_type == OutputEvent.FORWARD:
-            type = event[1]
-            code = event[2]
-            value = event[3]
-
-            if not code in self.acquired_keys:
-                log.error("Missing key", e.KEY[code])
-            
-            self.vdev.write(type, code, value)
-        
-        elif event_type == OutputEvent.FUNCTION:
-            function_name = "function_" + event[2]
-            
-            if hasattr(self, function_name):
-                params = event[3:]
-                getattr(self, function_name)(*params)
-        
-        elif event_type == OutputEvent.SLEEP:
-            delay = event[1]
-            time.sleep(delay)
-        
-        else:
-            log.error("Invalid event_type in VirtualPen event:", event_type)
-
     def function_ABS(self, x, y, pressure, tilt_x, tilt_y):
         self.vdev.write(e.EV_ABS, e.ABS_X, x)
         self.vdev.write(e.EV_ABS, e.ABS_Y, y)
@@ -133,22 +72,6 @@ class VirtualPen(Reflex):
         self.vdev.write(e.EV_ABS, e.ABS_TILT_X, tilt_x)
         self.vdev.write(e.EV_ABS, e.ABS_TILT_Y, tilt_y)
         self.vdev.write(e.EV_SYN, e.SYN_REPORT, 0)
-
-    def terminate(self):
-        if self.vdev is not None:
-            self.vdev.close()
-
-    def add_keys(self, names):
-        for name in names:
-            if isinstance(name, tuple):
-                name, scan_code = name
-            else:
-                scan_code = None
-            
-            name = name if name.startswith("KEY_") or name.startswith("BTN_") else "KEY_" + name
-            value = getattr(e, name)
-            key = Key(name, self.vdev, e.EV_KEY, value, scan_code)
-            setattr(self, name, key)
 
 
 def on_load(shadow):

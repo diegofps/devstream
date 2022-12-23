@@ -1,4 +1,5 @@
-from shadows.virtual_keyboard import OutputEvent
+from shadows.virtual_keyboard import VirtualKeyboardEvent
+
 from evdev import ecodes as e
 from reflex import Reflex
 
@@ -9,6 +10,7 @@ REQUIRED_DEVICES = [
     "AT Translated Set 2 keyboard", 
 ]
 
+SOURCE_VOSTRO_KEYBOARD = "Vostro Keyboard"
 
 class VostroKeyboard(Reflex):
 
@@ -29,7 +31,7 @@ class VostroKeyboard(Reflex):
             if mapping is not None:
                 event.code = mapping
         
-        with OutputEvent(self.mind) as eb:
+        with VirtualKeyboardEvent(self.mind, SOURCE_VOSTRO_KEYBOARD) as eb:
             eb.forward(event.type, event.code, event.value)
 
 

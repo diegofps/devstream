@@ -1,4 +1,5 @@
-from shadows.virtual_keyboard import OutputEvent
+from shadows.virtual_keyboard import VirtualKeyboardEvent
+
 from evdev import ecodes as e
 from reflex import Reflex
 
@@ -16,6 +17,8 @@ TARGET_DEVICES = [
     "HyperX HyperX Mars Gaming KeyBoard",
 ]
 
+SOURCE_BASIC_KEYBOARD = "Basic Keyboard"
+
 
 class BasicKeyboards(Reflex):
 
@@ -26,7 +29,7 @@ class BasicKeyboards(Reflex):
             self.add_listener("DeviceReader:" + device, self.on_event)
 
     def on_event(self, topic_name, event):
-        with OutputEvent(self.mind, source=topic_name) as eb:
+        with VirtualKeyboardEvent(self.mind, SOURCE_BASIC_KEYBOARD) as eb:
             eb.forward(event.type, event.code, event.value)
 
 

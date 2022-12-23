@@ -1,7 +1,9 @@
 
-from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
+# from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
-from shadows.virtual_keyboard import OutputEvent
+from shadows.virtual_keyboard import VirtualKeyboardEvent
+from shadows.virtual_pen import VirtualPenEvent
+
 from evdev import ecodes as e
 from reflex import Reflex
 
@@ -13,6 +15,8 @@ import math
 import log
 import sys
 import os
+
+SOURCE_XPPEN_DECO_PRO = "XPPen Deco Pro"
 
 # Configure PIPE
 class Canvas(Thread):
@@ -429,12 +433,12 @@ class XPPEN_DecoPro_Base(Reflex):
         self.last_x = x
         self.last_y = y
         
-        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.function("ABS", x, y, 0, 0, 0)
     
     def on_pen_btn_close(self, value):
         # log.debug("Deco pro key pen_btn_close", value)
-        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
 
     def on_pen_btn_touch(self, value, x, y):
@@ -550,27 +554,27 @@ class XPPEN_DecoPro_Passthrough(XPPEN_DecoPro_Base):
     
     def on_pen_abs(self, x, y, z, tx, ty):
         # log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure, tx, ty)
-        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.function("ABS", x, y, z, tx, ty)
     
     def on_pen_btn_close(self, value):
         # log.debug("Deco pro key pen_btn_close", value)
-        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
 
     def on_pen_btn_touch(self, value, x, y):
         # log.debug("Deco pro key pen_btn_touch", value)
-        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_TOUCH", self.saw_BTN_TOUCH)
 
     def on_pen_btn_low(self, value, x, y):
         # log.debug("Deco pro key pen_btn_low", value)
-        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_MIDDLE", self.saw_BTN_STYLUS)
 
     def on_pen_btn_high(self, value, x, y):
         # log.debug("Deco pro key pen_btn_high", value)
-        with OutputEvent(self.mind, TOPIC_VIRTUALPEN_EVENT) as eb:
+        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_RIGHT", self.saw_BTN_TOUCH)
 
     def on_activate(self):

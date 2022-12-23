@@ -1,5 +1,11 @@
-from shadows.virtual_keyboard import TOPIC_DEVICEWRITER_EVENT, OutputEvent
-from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
+
+# from shadows.virtual_keyboard import TOPIC_VIRTUALKEYBOARD_EVENT, OutputEvent
+# from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
+
+from shadows.virtual_device import VirtualDeviceEvent
+from shadows.virtual_keyboard import VirtualKeyboardEvent, TOPIC_VIRTUALKEYBOARD_EVENT
+from shadows.virtual_pen import VirtualPenEvent
+
 from threading import Thread, Lock
 from evdev import ecodes as e
 from reflex import Reflex
@@ -13,12 +19,12 @@ import sys
 import log
 
 
-SOURCE_NAME  = "MacroKeyboard"
+SOURCE_MACRO_KEYBOARD  = "Macro Keyboard"
 FIND_TIMEOUT = 30.0
 
 
 IGNORE_SOURCE = set([
-    "MacroKeyboard:RecordedEvent"
+    "Macro Keyboard"
 ])
 
 IGNORE_TYPE = set([
@@ -29,17 +35,17 @@ IGNORE_CODE = set([
     e.KEY_KP0, e.KEY_KP1, e.KEY_KP2, e.KEY_KP3, e.KEY_KP4, e.KEY_KP5, e.KEY_KP6, e.KEY_KP7, e.KEY_KP8, e.KEY_KP9, e.KEY_KPDOT
 ])
 
-IGNORE_SOURCE_AND_CODE = {
-    "DeviceReader:CORSAIR CORSAIR K63 Wireless Mechanical Gaming Keyboard": set([
-        e.KEY_KP0, e.KEY_KP1, e.KEY_KP2, e.KEY_KP3, e.KEY_KP4, e.KEY_KP5, e.KEY_KP6, e.KEY_KP7, e.KEY_KP8, e.KEY_KP9, e.KEY_KPDOT
-    ]),
-}
+# IGNORE_SOURCE_AND_CODE = {
+#     "DeviceReader:CORSAIR CORSAIR K63 Wireless Mechanical Gaming Keyboard": set([
+#         e.KEY_KP0, e.KEY_KP1, e.KEY_KP2, e.KEY_KP3, e.KEY_KP4, e.KEY_KP5, e.KEY_KP6, e.KEY_KP7, e.KEY_KP8, e.KEY_KP9, e.KEY_KPDOT
+#     ]),
+# }
 
-IGNORE_SOURCE_AND_TYPE = {
-    "DeviceReader:CORSAIR CORSAIR K63 Wireless Mechanical Gaming Keyboard": set([
-        e.EV_SYN, e.EV_MSC
-    ]),
-}
+# IGNORE_SOURCE_AND_TYPE = {
+#     "DeviceReader:CORSAIR CORSAIR K63 Wireless Mechanical Gaming Keyboard": set([
+#         e.EV_SYN, e.EV_MSC
+#     ]),
+# }
 
 
 MACRO_KEYBOARDS = {
@@ -401,7 +407,11 @@ class MacroPlayer:
 
     def play_press_key(self, macro:Macro, event):
         log.debug("Sending event to DeviceWriter:", event)
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, event)
+        
+        with VirtualKeyboardEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
+            eb.forward(event[1], event[2], event[3])
+        # self.mind.emit(TOPIC_VIRTUALKEYBOARD_EVENT, event)
+
         return True
     
     def play_see(self, macro:Macro, region1, region1id):
@@ -465,15 +475,26 @@ class MacroPlayer:
         log.debug("  x ref:", target[0], point1[0], region1[0])
         log.debug("  y ref:", target[1], point1[1], region1[1])
 
-        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_X, x, SOURCE_NAME))
-        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_Y, y, SOURCE_NAME))
-        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
-        time.sleep(0.1)
+        with VirtualPenEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
 
-        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_KEY, mouse_button, 1, SOURCE_NAME))
-        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_KEY, mouse_button, 0, SOURCE_NAME))
-        self.mind.emit(TOPIC_VIRTUALPEN_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
-        time.sleep(0.1)
+            # Move the mouse to the desired position
+
+            eb.forward(e.EV_ABS, e.ABS_X, x)
+            eb.forward(e.EV_ABS, e.ABS_Y, y)
+            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+            eb.sleep(0.1)
+
+            # Click the mouse
+
+            eb.forward(e.EV_KEY, mouse_button, 1)
+            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+            eb.sleep(0.1)
+
+            # Release the mouse
+
+            eb.forward(e.EV_KEY, mouse_button, 0)
+            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+            eb.sleep(0.1)
 
         log.debug("play_see_and_click finished")
 
@@ -527,31 +548,33 @@ class MacroPlayer:
         x2 = target2[0] + point2[0] - region2[0]
         y2 = target2[1] + point2[1] - region2[1]
 
-        # Move to first coordinate
+        with VirtualPenEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
 
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_X, x1, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_Y, y1, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
-        time.sleep(0.1)
+            # Move to first coordinate
 
-        # Simulate click
+            eb.forward(e.EV_ABS, e.ABS_X, x1)
+            eb.forward(e.EV_ABS, e.ABS_Y, y1)
+            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+            eb.sleep(0.1)
 
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_KEY, mouse_button, 1, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
-        time.sleep(0.1)
+            # Simulate click
 
-        # Move to second coordinate
+            eb.forward(e.EV_KEY, mouse_button, 1)
+            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+            eb.sleep(0.1)
 
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_X, x2, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_ABS, e.ABS_Y, y2, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
-        time.sleep(0.1)
+            # Move to second coordinate
 
-        # Simulate click release
+            eb.forward(e.EV_ABS, e.ABS_X, x2)
+            eb.forward(e.EV_ABS, e.ABS_Y, y2)
+            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+            eb.sleep(0.1)
 
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_KEY, mouse_button, 0, SOURCE_NAME))
-        self.mind.emit(TOPIC_DEVICEWRITER_EVENT, (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, SOURCE_NAME))
-        time.sleep(0.1)
+            # Simulate click release
+
+            eb.forward(e.EV_KEY, mouse_button, 0)
+            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+            eb.sleep(0.1)
 
         return True
 
@@ -595,7 +618,7 @@ class MacroKeyboard(Reflex):
 
         # Monitor output keys sent to virtual output device
 
-        self.add_listener(TOPIC_DEVICEWRITER_EVENT, self.on_output_event)
+        self.add_listener(TOPIC_VIRTUALKEYBOARD_EVENT, self.on_output_event)
 
         # Monitor macro keyboards keys
 
@@ -716,7 +739,7 @@ class MacroKeyboard(Reflex):
         
         eventClass = event[0]
 
-        if eventClass != OutputEvent.FORWARD:
+        if eventClass != VirtualDeviceEvent.FORWARD:
             return
         
         type   = event[1]
@@ -732,14 +755,14 @@ class MacroKeyboard(Reflex):
         if code in IGNORE_CODE:
             return
         
-        if source in IGNORE_SOURCE_AND_CODE and code in IGNORE_SOURCE_AND_CODE[source]:
-            return
+        # if source in IGNORE_SOURCE_AND_CODE and code in IGNORE_SOURCE_AND_CODE[source]:
+        #     return
 
         # Register the key in the macro's sequence
 
         log.debug(f"Saving event to macro '", self.macro.name, "', '", event, "'")
 
-        event2 = (OutputEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, source)
+        event2 = (VirtualDeviceEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, source)
         self.macro_player.push(("train_press_key", self.macro, event, event2))
     
     def export_macros(self):
