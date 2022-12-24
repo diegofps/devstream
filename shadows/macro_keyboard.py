@@ -1,9 +1,6 @@
 
-# from shadows.virtual_keyboard import TOPIC_VIRTUALKEYBOARD_EVENT, OutputEvent
-# from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
-
-from shadows.virtual_device import VirtualDeviceEvent
 from shadows.virtual_keyboard import VirtualKeyboardEvent, TOPIC_VIRTUALKEYBOARD_EVENT
+from shadows.virtual_device import VirtualDeviceEvent
 from shadows.virtual_pen import VirtualPenEvent
 
 from threading import Thread, Lock

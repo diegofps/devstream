@@ -1,5 +1,6 @@
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
+from shadows.smart_output import SmartOutputEvent
 
 from evdev import ecodes as e
 from reflex import Reflex
@@ -118,7 +119,7 @@ class Marble_B(BaseMarbleNode):
         if event.value == 0:
 
             if self.clean:
-                with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+                with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                     eb.function("go_to_declaration")
             
             self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
@@ -127,25 +128,25 @@ class Marble_B(BaseMarbleNode):
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("navigate_back")
 
     def on_right_click(self, event): # D
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("navigate_forward")
     
     def on_move_rel_x(self, event):
         self.clean = False
-        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             # eb.update("WHEEL_H", event.value * 20)
             eb.function("scroll_h", event.value)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             # eb.update("WHEEL_V", -event.value * 10)
             eb.function("scroll_v", event.value)
 
@@ -164,14 +165,14 @@ class Marble_C(BaseMarbleNode):
         self.clean = False
         
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("search_selection")
 
     def on_down_click(self, event): # B
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("reopen_tab")
     
     def on_up_click(self, event): # C
@@ -183,7 +184,7 @@ class Marble_C(BaseMarbleNode):
                     eb.press("BTN_RIGHT")
                     eb.release("BTN_RIGHT")
             
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.unlock("DUAL_UNDO_VOLUME")
             
             self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
@@ -192,17 +193,17 @@ class Marble_C(BaseMarbleNode):
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("new_tab")
     
     def on_move_rel_x(self, event):
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             eb.update_h("DUAL_UNDO_VOLUME", event.value * 5)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             eb.update_v("DUAL_UNDO_VOLUME", -event.value * 5)
 
 
@@ -216,28 +217,28 @@ class Marble_D(BaseMarbleNode):
         self.clean = True
     
     def on_deactivate(self):
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
-            eb.release("KEY_LEFTALT")
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            eb.function("select_window")
     
     def on_left_click(self, event): # A
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("close_tab")
     
     def on_down_click(self, event): # B
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("close_window")
     
     def on_up_click(self, event): # C
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("advanced_search")
     
         # if event.value == 0:
@@ -251,19 +252,19 @@ class Marble_D(BaseMarbleNode):
                     eb.press("BTN_MIDDLE")
                     eb.release("BTN_MIDDLE")
             
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.unlock("DUAL_WINDOWS_TABS")
 
             self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
     
     def on_move_rel_x(self, event):
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             eb.update_h("DUAL_WINDOWS_TABS", event.value * 5)
 
     def on_move_rel_y(self, event):
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             eb.update_v("DUAL_WINDOWS_TABS", -event.value * 5)
 
 

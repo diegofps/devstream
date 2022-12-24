@@ -88,7 +88,6 @@ class VirtualDevice(Reflex):
         self.vdev = None
 
     def on_event(self, topic_name, event):
-        # log.debug("Processing VirtualDevice event", event)
         event_type = event[0]
 
         if event_type == VirtualDeviceEvent.SEQUENCE:

@@ -141,11 +141,13 @@ class Mind:
         with ThreadPoolExecutor(max_workers=1) as executor:
             self.executor = executor
 
-            # Shadows
+            # Output shadows
 
             self.add_shadow("virtual_keyboard")
             self.add_shadow("virtual_mouse")
             self.add_shadow("virtual_pen")
+
+            # Input shadows
 
             self.add_shadow("logitech_marble")
             self.add_shadow("vostro_keyboard")
@@ -154,11 +156,17 @@ class Mind:
             self.add_shadow("logitech_mx2s")
             self.add_shadow("xppen_deco_pro")
 
+            # System shadows
+
             self.add_shadow("dispatcher")
             self.add_shadow("watch_login")
             self.add_shadow("watch_devices")
             # self.add_shadow("watch_disks")
             
+            # Logic shadows
+
+            self.add_shadow("smart_output")
+
             # Infinity loop until KeyboardInterrupt is received or the system terminates
 
             try:

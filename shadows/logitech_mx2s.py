@@ -1,5 +1,6 @@
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
+from shadows.smart_output import SmartOutputEvent
 
 from evdev import ecodes as e
 from reflex import Reflex
@@ -132,46 +133,33 @@ class MX2S_H(BaseMX2SNode): # Navigator
     def on_left_click(self, event): # A
         self.clean = False
 
-        if event.value == 1:
+        if event.value == 0:
             with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 eb.press("KEY_LEFTCTRL")
                 eb.press("BTN_LEFT")
 
-        else:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.release("BTN_LEFT")
-                eb.release("KEY_LEFTCTRL")
 
     def on_middle_click(self, event): # B
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_W")
-                eb.release("KEY_W")
-                eb.release("KEY_LEFTCTRL")
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("close_tab")
             
     def on_right_click(self, event): # C
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_LEFTSHIFT")
-                eb.press("KEY_T")
-                eb.release("KEY_T")
-                eb.release("KEY_LEFTSHIFT")
-                eb.release("KEY_LEFTCTRL")
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("reopen_tab")
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
             log.debug("Releasing H from MX2S_H, clean is", self.clean)
 
             if self.clean:
-                with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                    eb.press("BTN_EXTRA")
-                    eb.release("BTN_EXTRA")
+                with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                    eb.function("navigate_back")
             
             self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
     
@@ -182,34 +170,22 @@ class MX2S_H(BaseMX2SNode): # Navigator
     
     def on_scroll(self, event): # E
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.update("SCROLL_TABS", event.value)
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
 
-        if event.value != 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_EQUAL")
-
-        else:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.release("KEY_EQUAL")
-                eb.release("KEY_LEFTCTRL")
+        if event.value == 0:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("zoom_in")
     
     def on_scroll_right_click(self, event): # F
         self.clean = False
         
-        if event.value != 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_MINUS")
-        
-        else:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.release("KEY_MINUS")
-                eb.release("KEY_LEFTCTRL")
+        if event.value == 0:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("zoom_out")
     
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
@@ -227,46 +203,29 @@ class MX2S_G(BaseMX2SNode): # System
         self.clean = True
     
     def on_deactivate(self):
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-            eb.release("KEY_LEFTALT")
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+            eb.function("select_window")
     
     def on_left_click(self, event): # A
         self.clean = False
 
         if event.value == 1:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_Z")
-                eb.sleep(0.25)
-                eb.release("KEY_Z")
-                eb.release("KEY_LEFTCTRL")
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("undo")
 
     def on_middle_click(self, event): # B
         self.clean = False
 
-        if event.value == 1:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.press("KEY_LEFTALT")
-                eb.press("KEY_F4")
-        
-        elif event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.release("KEY_F4")
-                eb.release("KEY_LEFTALT")
+        if event.value == 0:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("close_window")
         
     def on_right_click(self, event): # C
         self.clean = False
         
         if event.value != 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("KEY_LEFTSHIFT")
-                eb.press("KEY_Z")
-        else:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.release("KEY_Z")
-                eb.release("KEY_LEFTSHIFT")
-                eb.release("KEY_LEFTCTRL")
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("redo")
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
@@ -278,15 +237,14 @@ class MX2S_G(BaseMX2SNode): # System
             log.debug("Releasing G from MX2S_G, clean is", self.clean)
 
             if self.clean:
-                with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                    eb.press("BTN_SIDE")
-                    eb.release("BTN_SIDE")
+                with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                    eb.function("navigate_back")
 
             self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
     
     def on_scroll(self, event): # E
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.update("SCROLL_WINDOWS", event.value)
     
     def on_scroll_left_click(self, event): # D
@@ -353,7 +311,7 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
     
     def on_scroll(self, event): # E
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.update("SCROLL_VOLUME", event.value)
     
     def on_scroll_left_click(self, event): # D
