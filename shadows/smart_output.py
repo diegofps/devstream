@@ -2,13 +2,14 @@
 from shadows.watch_windows import TOPIC_WINDOW_CHANGED
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
 
+from shadows.virtual_device import VirtualDeviceEvent, VirtualDevice
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
 from shadows.virtual_pen import VirtualPenEvent
 
-from subprocess import Popen, PIPE
-
 from keys import DelayedKey, LockableDelayedKey
+
+from subprocess import Popen, PIPE
 
 import shlex
 import time
@@ -22,47 +23,12 @@ TOPIC_SMARTOUTPUT_EVENT = "Smart Output"
 SOURCE_SMART_OUTPUT = "Smart Output"
 
 
-class SmartOutputEvent:
-    
-    SEQUENCE = 0
-    FUNCTION = 1
-    SLEEP    = 2
-
+class SmartOutputEvent(VirtualDeviceEvent):
     def __init__(self, mind, source):
-        self.topic    = TOPIC_SMARTOUTPUT_EVENT
-        self.source   = source
-        self.mind     = mind
-        self.sequence = []
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.emit()
-    
-    def function(self, function_name, *args):
-        event = (SmartOutputEvent.FUNCTION, self.source, function_name, *args)
-        self.sequence.append(event)
-
-    def sleep(self, delay):
-        event = (SmartOutputEvent.SLEEP, delay, self.source)
-        self.sequence.append(event)
-    
-    def emit(self):
-        sequenceLen = len(self.sequence)
-
-        if sequenceLen == 0:
-            return
-        
-        elif sequenceLen == 1:
-            self.mind.emit(self.topic, self.sequence[0])
-
-        else:
-            event = (SmartOutputEvent.SEQUENCE, self.sequence, self.source)
-            self.mind.emit(self.topic, event)
+        super().__init__(mind, TOPIC_SMARTOUTPUT_EVENT, source)
 
 
-class SmartOutput:
+class SmartOutput(VirtualDevice):
 
     def __init__(self, shadow):
         super().__init__(shadow)
@@ -72,10 +38,6 @@ class SmartOutput:
 
         self.init_keys()
 
-        self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
-        self.add_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
-        self.add_listener(TOPIC_SMARTOUTPUT_EVENT, self.on_event)
-        
         preferences = {
             "next_window": {
                 "default": [{
@@ -127,7 +89,7 @@ class SmartOutput:
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
 
-                ["Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5"]: [{
+                ("Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_PAGEUP", "-KEY_PAGEUP", "-KEY_LEFTCTRL"]}],
                 
@@ -144,7 +106,7 @@ class SmartOutput:
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTCTRL"]}],
 
-                ["Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5"]: [{
+                ("Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_PAGEDOWN", "-KEY_PAGEDOWN", "-KEY_LEFTCTRL"]}],
                 
@@ -161,7 +123,7 @@ class SmartOutput:
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_W", "-KEY_W", "-KEY_LEFTCTRL"]}],
 
-                ["Terminator", "Gnome-terminal"]: [{
+                ("Terminator", "Gnome-terminal"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_W", "-KEY_W", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
             },
@@ -172,7 +134,7 @@ class SmartOutput:
             },
             "navigate_back": {
                 "default": [{
-                    "type": "keyboard",
+                    "type": "mouse",
                     "sequence": ["+BTN_SIDE", "-BTN_SIDE"]}],
 
                 "Apache NetBeans IDE 12.5": [{
@@ -181,7 +143,7 @@ class SmartOutput:
             },
             "navigate_forward": {
                 "default": [{
-                    "type": "keyboard",
+                    "type": "mouse",
                     "sequence": ["+BTN_EXTRA", "-BTN_EXTRA"]}],
 
                 "Apache NetBeans IDE 12.5": [{
@@ -198,7 +160,7 @@ class SmartOutput:
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_T", "-KEY_T", "-KEY_LEFTCTRL"]}],
 
-                ["Code", "Apache NetBeans IDE 12.5", "Dia", "Inkscape", "QtCreator", "Joplin", "Treesheets"]: [{
+                ("Code", "Apache NetBeans IDE 12.5", "Dia", "Inkscape", "QtCreator", "Joplin", "Treesheets"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_N", "-KEY_N", "-KEY_LEFTCTRL"]}],
 
@@ -223,7 +185,7 @@ class SmartOutput:
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_F", "-KEY_F", "-KEY_LEFTCTRL"]}],
 
-                ["firefox", "firefox-beta", "QtCreator"]: [{
+                ("firefox", "firefox-beta", "QtCreator"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_K", "-KEY_K", "-KEY_LEFTCTRL"]}],
 
@@ -247,7 +209,7 @@ class SmartOutput:
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_A", "-KEY_A", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
 
-                ["Gnome-terminal", "Terminator"]: [{
+                ("Gnome-terminal", "Terminator"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_F", "-KEY_F", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
 
@@ -259,7 +221,7 @@ class SmartOutput:
             "search_selection": {
                 "default": self.search_selection_1,
 
-                ["firefox", "firefox-beta", "Google-chrome"]: [
+                ("firefox", "firefox-beta", "Google-chrome"): [
                     {"type": "keyboard",
                     "sequence": ["+KEY_LEFTALT"]},
 
@@ -271,12 +233,12 @@ class SmartOutput:
             },
             "scroll_h": {
                 "default": self.scroll_h_1,
-                ["Dia", "Inkscape"]: self.scroll_h_2,
+                ("Dia", "Inkscape"): self.scroll_h_2,
                 "Google-chrome": self.scroll_h_3,
             },
             "scroll_v": {
                 "default": self.scroll_v_1,
-                ["Dia", "Inkscape"]: self.scroll_v_2,
+                ("Dia", "Inkscape"): self.scroll_v_2,
                 "Google-chrome": self.scroll_v_3,
             },
         }
@@ -287,7 +249,7 @@ class SmartOutput:
         for function_name, options in preferences.items():
             self.preferences[function_name] = {}
             for app_name_or_list, events in options.items():
-                if isinstance(app_name_or_list, list):
+                if isinstance(app_name_or_list, tuple):
                     for app_name in app_name_or_list:
                         self.preferences[function_name][app_name] = events
                 else:
@@ -295,10 +257,21 @@ class SmartOutput:
         
         # Configure initial current functions as the default function
 
-        self.functions = {k: v["default"] for k, v in self.preferences.items()}
+        for k, v in self.preferences.items():
+            if "default" in v:
+                self.functions[k] = v["default"]
+            else:
+                log.error("No default function for", k)
 
+        # Configure listeners
+
+        self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
+        self.add_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
+        self.add_listener(TOPIC_SMARTOUTPUT_EVENT, self.on_event)
 
     def run(self, function_name, *args):
+        # log.info("inside run. Looking for", function_name)
+        
         if not function_name in self.functions:
             log.error("Unknown function: %s", function_name)
             return
@@ -306,7 +279,9 @@ class SmartOutput:
         function = self.functions[function_name]
 
         if isinstance(function, list):
+            log.info(f"Running function {function_name} as list of events")
             for f in function:
+                log.info(f["type"])
                 if f["type"] == "keyboard":
                     VirtualEvent = VirtualKeyboardEvent
                 elif f["type"] == "mouse":
@@ -317,6 +292,7 @@ class SmartOutput:
                 
                 with VirtualEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
                     for key in f["sequence"]:
+                        log.info("key:", key)
                         if isinstance(key, (int, float)):
                             eb.sleep(key)
                         elif key.startswith("+"):
@@ -326,7 +302,15 @@ class SmartOutput:
                         else:
                             eb.press(key)
                             eb.release(key)
+
+        elif isinstance(function, str):
+            if hasattr(self, function):
+                getattr(self, function)(*args)
+            else:
+                log.error(f"Unknown function: {function}")
+
         else:
+            log.info(f"Running function {function_name} as instance method")
             function(*args)
 
     def init_keys(self):
@@ -345,48 +329,28 @@ class SmartOutput:
         
         self.DUAL_UNDO_VOLUME  = LockableDelayedKey(
                 "DUAL_UNDO_VOLUME",  
-                lambda v: self.run("navigate_back") if v else self.run("navigate_forward"),
+                lambda v: self.run("redo") if v else self.run("undo"),
                 lambda v: self.run("volume_up") if v else self.run("volume_down"), 
                 500) # lockable2
     
-    def on_event(self, topic_name, event):
-        event_type = event[0]
-
-        if event_type == SmartOutputEvent.SEQUENCE:
-            for event2 in event[1]:
-                self.on_event(topic_name, event2)
-        
-        elif event_type == SmartOutputEvent.FUNCTION:
-            function_name = event[2]
-            params = event[3:]
-            self.run(function_name, *params)
-
-        elif event_type == SmartOutputEvent.SLEEP:
-            delay = event[1]
-            time.sleep(delay)
-        
-        else:
-            log.error(f"Invalid event_type in {self.__class__.__name__} event: {event_type}")
-
     def on_login_changed(self, topic_name, event):
-        if len(event) == 0:
-            self.username, self.userdisplay = None, None
-        else:
-            self.username, self.userdisplay = event[0]
+        self.username, self.userdisplay = (None, None) if len(event) == 0 else event[0]
         log.info("login changed received", self.username, self.userdisplay)
 
     def on_window_changed(self, topic_name, event):
         window_class, app_name, window_name = event
 
-        for intent_name in self.function_names:
-            preferred_intents = getattr(self, "preferred_" + intent_name)
+        for intent_name, options in self.preferences.items():
+            if app_name in options:
+                callback = options[app_name]
+                self.functions[intent_name] = callback
 
-            if app_name in preferred_intents:
-                callback = preferred_intents[app_name]
-                setattr(self, "function_" + intent_name, callback) 
+            elif "default" in options:
+                callback = options["default"]
+                self.functions[intent_name] = callback
+
             else:
-                callback = getattr(self, intent_name + "_1")
-                setattr(self, "function_" + intent_name, callback)
+                log.error("No default function for intent %s", intent_name)
     
     def search_selection_1(self):
         log.info("Running search selection 1")

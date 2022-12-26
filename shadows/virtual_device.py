@@ -85,6 +85,7 @@ class VirtualDevice(Reflex):
 
     def __init__(self, shadow):
         super().__init__(shadow)
+        self.functions = {}
         self.vdev = None
 
     def on_event(self, topic_name, event):
@@ -144,11 +145,7 @@ class VirtualDevice(Reflex):
             self.vdev.write(type, code, value)
         
         elif event_type == VirtualDeviceEvent.FUNCTION:
-            function_name = "function_" + event[2]
-            
-            if hasattr(self, function_name):
-                params = event[3:]
-                getattr(self, function_name)(*params)
+            self.run(event[2], *event[3:])
         
         elif event_type == VirtualDeviceEvent.SLEEP:
             delay = event[1]
@@ -156,6 +153,9 @@ class VirtualDevice(Reflex):
         
         else:
             log.error(f"Invalid event_type in {self.__class__.__name__} event: {event_type}")
+
+    def run(self, function_name, *args):
+        pass
 
     def terminate(self):
         if self.vdev is not None:
