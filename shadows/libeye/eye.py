@@ -53,7 +53,6 @@ class EyeException(Exception):
 
 class Eye:
 
-
     def __init__(self, configFilepath=None, base64data=None):
         if configFilepath is not None:
             encodedFilepath = configFilepath.encode("utf-8")
@@ -114,4 +113,4 @@ class Eye:
 
     def assert_not_closed(self):
         if self.ptr is None:
-            raise RuntimeError("This object is already closed")
+            raise EyeException("This object is already closed")

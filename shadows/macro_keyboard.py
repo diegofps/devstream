@@ -237,9 +237,7 @@ class MacroPlayer:
         self.thread.start()
 
     def push(self, task):
-
-        if not self.producer.locked():
-            self.producer.acquire()
+        if self.producer.acquire(blocking=False):
             self.task = task
             self.consumer.release()
 
@@ -285,6 +283,7 @@ class MacroPlayer:
             self.producer.release()
     
     def train_press_key(self, macro:Macro, event1, event2):
+
         cmd = ("press_key", event1)
         macro.sequence.append(cmd)
 
@@ -403,6 +402,7 @@ class MacroPlayer:
             log.error("MacroPlayer: cmd failed: ", cmd_type, cmd_args)
 
     def play_press_key(self, macro:Macro, event):
+        
         log.debug("Sending event to DeviceWriter:", event)
         
         with VirtualKeyboardEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
