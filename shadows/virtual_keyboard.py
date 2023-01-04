@@ -14,16 +14,13 @@ class VirtualKeyboardEvent(VirtualDeviceEvent):
 class VirtualKeyboard(VirtualDevice):
 
     def __init__(self, shadow):
-        super().__init__(shadow)
+        super().__init__(shadow, "devstream_keyboard")
         
-        self.init_virtual_device()
         self.init_keys()
-
         self.add_listener(TOPIC_VIRTUALKEYBOARD_EVENT, self.on_event)
 
-    def init_virtual_device(self):
-
-        cap = {
+    def get_capabilities(self):
+        return {
             e.EV_KEY : [
                 e.KEY_LEFTALT, e.KEY_LEFTCTRL, e.KEY_LEFTSHIFT, e.KEY_LEFTMETA, 
                 e.KEY_RIGHTALT, e.KEY_RIGHTCTRL, e.KEY_RIGHTSHIFT, e.KEY_RIGHTMETA, 
@@ -59,15 +56,12 @@ class VirtualKeyboard(VirtualDevice):
 
             e.EV_REL : [
                 
+            ],
+
+            e.EV_MSC : [
+                
             ]
         }
-
-        self.vdev = UInput(cap, name="devstream_keyboard", version=0x3)
-
-        self.acquired_keys = set()
-        self.acquired_keys.update(cap[1])
-        self.acquired_keys.update([x[0] for x in cap[2]])
-        self.acquired_keys.update([x[0] for x in cap[3]])
 
     def init_keys(self):
 

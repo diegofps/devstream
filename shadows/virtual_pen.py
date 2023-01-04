@@ -17,18 +17,20 @@ class VirtualPenEvent(VirtualDeviceEvent):
 class VirtualPen(VirtualDevice):
 
     def __init__(self, shadow):
-        super().__init__(shadow)
+        super().__init__(shadow, "devstream_pen")
         
-        self.init_virtual_device()
+        self.mouse_x = 32767 / 2
+        self.mouse_y = 32767 / 2
+
         self.init_keys()
         self.add_listener(TOPIC_VIRTUALPEN_EVENT, self.on_event)
 
-    def init_virtual_device(self):
+    def get_capabilities(self):
 
-        cap = {
+        return {
             e.EV_KEY : [
                 e.BTN_TOOL_PEN, e.BTN_TOUCH, e.BTN_STYLUS, 
-                e.BTN_TOOL_RUBBER, e.BTN_TOOL_MOUSE, e.BTN_STYLUS2,
+                e.BTN_TOOL_RUBBER, e.BTN_TOOL_MOUSE, e.BTN_STYLUS2, 
                 e.BTN_LEFT, e.BTN_RIGHT, e.BTN_MIDDLE, e.BTN_SIDE, e.BTN_EXTRA, 
             ],
 
@@ -40,17 +42,13 @@ class VirtualPen(VirtualDevice):
                 (e.ABS_TILT_Y, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=256)), 
             ],
 
+            e.EV_REL : [
+            ],
+
             e.EV_MSC : [
                 e.MSC_SCAN, 
             ]
         }
-
-        self.vdev = UInput(cap, name="devstream_pen", version=0x3, input_props=[e.INPUT_PROP_DIRECT])
-
-        self.acquired_keys = set()
-        self.acquired_keys.update(cap[e.EV_KEY])
-        self.acquired_keys.update([x[0] for x in cap[e.EV_ABS]])
-        self.acquired_keys.update(cap[e.EV_MSC])
 
     def init_keys(self):
 
@@ -72,6 +70,34 @@ class VirtualPen(VirtualDevice):
         self.vdev.write(e.EV_ABS, e.ABS_TILT_X, tilt_x)
         self.vdev.write(e.EV_ABS, e.ABS_TILT_Y, tilt_y)
         self.vdev.write(e.EV_SYN, e.SYN_REPORT, 0)
+
+    def on_event_forward(self, type, code, value):
+        log.debug("mouse::on_event_forward", type, code, value)
+        return super().on_event_forward(type, code, value)
+    
+    def on_event_update(self, key_name, value):
+        if key_name == "ABS_X":
+            self.mouse_x = value
+
+        elif key_name == "ABS_Y":
+            self.mouse_y = value
+
+        elif key_name == "REL_X":
+            self.mouse_x += value
+            self.mouse_x = max(0, min(self.mouse_x, 32767))
+
+            key_name = "ABS_X"
+            value = int(self.mouse_x)
+        
+        elif key_name == "REL_Y":
+            self.mouse_y += value
+            self.mouse_y = max(0, min(self.mouse_y, 32767))
+
+            key_name = "ABS_Y"
+            value = int(self.mouse_y)
+        
+        # log.debug("mouse::on_event_update", key_name, value)
+        return super().on_event_update(key_name, value)
 
 
 def on_load(shadow):

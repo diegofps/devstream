@@ -280,6 +280,7 @@ class SmartOutput(VirtualDevice):
 
         if isinstance(function, list):
             log.info(f"Running function {function_name} as list of events")
+            
             for f in function:
                 log.info(f["type"])
                 if f["type"] == "keyboard":

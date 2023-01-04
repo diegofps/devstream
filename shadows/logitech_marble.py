@@ -1,6 +1,8 @@
+
+from shadows.smart_output import SmartOutputEvent
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
-from shadows.smart_output import SmartOutputEvent
+from shadows.virtual_pen import VirtualPenEvent
 
 from evdev import ecodes as e
 from reflex import Reflex
@@ -83,12 +85,26 @@ class Marble_N(BaseMarbleNode): # N
             self.mind.emit(TOPIC_MARBLE_STATE, "Marble_D")
     
     def on_move_rel_x(self, event):
-        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
-            eb.update("REL_X", int(event.value * 1.5))
+        with VirtualPenEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            value = int(self.smooth(event.value, 20, 5))
+            eb.update("REL_X", value)
         
     def on_move_rel_y(self, event):
-        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
-            eb.update("REL_Y", int(event.value * 1.5))
+        with VirtualPenEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            value = int(self.smooth(event.value, 40, 5))
+            eb.update("REL_Y", value)
+    
+    def smooth(self, value, multiply, threshold):
+        abs_value = abs(value)
+
+        if abs_value < threshold:
+            return value * multiply / 3
+
+        elif abs_value < 2 * threshold:
+            return value * multiply / 2
+
+        else:
+            return value * multiply
 
 
 class Marble_B(BaseMarbleNode):

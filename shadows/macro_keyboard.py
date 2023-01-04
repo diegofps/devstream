@@ -479,7 +479,7 @@ class MacroPlayer:
             eb.forward(e.EV_ABS, e.ABS_X, x)
             eb.forward(e.EV_ABS, e.ABS_Y, y)
             eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.1)
+            eb.sleep(0.25)
 
             # Click the mouse
 
@@ -552,7 +552,7 @@ class MacroPlayer:
             eb.forward(e.EV_ABS, e.ABS_X, x1)
             eb.forward(e.EV_ABS, e.ABS_Y, y1)
             eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.1)
+            eb.sleep(0.25)
 
             # Simulate click
 

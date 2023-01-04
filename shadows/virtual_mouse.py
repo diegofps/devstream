@@ -18,15 +18,13 @@ class VirtualMouseEvent(VirtualDeviceEvent):
 class VirtualMouse(VirtualDevice):
 
     def __init__(self, shadow):
-        super().__init__(shadow)
+        super().__init__(shadow, "devstream_mouse")
         
-        self.init_virtual_device()
         self.init_keys()
         self.add_listener(TOPIC_VIRTUALMOUSE_EVENT, self.on_event)
 
-    def init_virtual_device(self):
-
-        cap = {
+    def get_capabilities(self):
+        return {
             e.EV_KEY : [
                 e.BTN_LEFT, e.BTN_RIGHT, e.BTN_MIDDLE, e.BTN_SIDE, e.BTN_EXTRA, 
             ],
@@ -50,13 +48,6 @@ class VirtualMouse(VirtualDevice):
             ]
         }
 
-        self.vdev = UInput(cap, name="devstream_mouse", version=0x3)
-
-        self.acquired_keys = set()
-        self.acquired_keys.update(cap[1])
-        self.acquired_keys.update([x[0] for x in cap[2]])
-        self.acquired_keys.update([x[0] for x in cap[3]])
-
     def init_keys(self):
 
         self.ABS_X   = DirectKey("ABS_X",   self.vdev, e.EV_ABS, e.ABS_X)
@@ -69,7 +60,7 @@ class VirtualMouse(VirtualDevice):
         self.add_keys([
             ("BTN_RIGHT", 90001), ("BTN_LEFT", 90004), ("BTN_MIDDLE", 90005), ("BTN_SIDE", 90004), ("BTN_EXTRA", 90005), 
         ])
-
+    
 
 def on_load(shadow):
     VirtualMouse(shadow)

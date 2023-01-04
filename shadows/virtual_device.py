@@ -1,3 +1,4 @@
+from evdev import AbsInfo, UInput, ecodes as e
 from evdev import ecodes as e
 from reflex import Reflex
 from keys import Key
@@ -20,10 +21,10 @@ class VirtualDeviceEvent:
     SEQUENCE = 9
 
     def __init__(self, mind, topic, source=None):
-        self.source   = source
-        self.topic    = topic
-        self.mind     = mind
-        self.sequence = []
+        self.source        = source
+        self.topic         = topic
+        self.mind          = mind
+        self.sequence      = []
     
     def __enter__(self):
         return self
@@ -83,10 +84,24 @@ class VirtualDeviceEvent:
 
 class VirtualDevice(Reflex):
 
-    def __init__(self, shadow):
+    def __init__(self, shadow, devname=None):
         super().__init__(shadow)
         self.functions = {}
-        self.vdev = None
+
+        cap = self.get_capabilities()
+
+        if devname is not None:
+            self.vdev = UInput(cap, name=devname, version=0x3)
+        else:
+            self.vdev = None
+
+        self.acquired_keys = set()
+        self.acquired_keys.update(cap[1])
+        self.acquired_keys.update([x[0] for x in cap[2]])
+        self.acquired_keys.update([x[0] for x in cap[3]])
+
+    def get_capabilities(self):
+        return { e.EV_KEY : [], e.EV_ABS: [], e.EV_REL : [], e.EV_MSC : [] }
 
     def on_event(self, topic_name, event):
         event_type = event[0]
@@ -96,64 +111,68 @@ class VirtualDevice(Reflex):
                 self.on_event(topic_name, event2)
         
         elif event_type == VirtualDeviceEvent.PRESS:
-            key_name = event[1]
-
-            if hasattr(self, key_name):
-                getattr(self, key_name).press()
+            self.on_event_press(event[1])
         
         elif event_type == VirtualDeviceEvent.RELEASE:
-            key_name = event[1]
-
-            if hasattr(self, key_name):
-                getattr(self, key_name).release()
-        
+            self.on_event_release(event[1])
+            
         elif event_type == VirtualDeviceEvent.UPDATE:
-            key_name = event[1]
-            value = event[2]
-
-            if hasattr(self, key_name):
-                getattr(self, key_name).update(value)
+            self.on_event_update(event[1], event[2])
         
         elif event_type == VirtualDeviceEvent.UPDATE_H:
-            key_name = event[1]
-            value = event[2]
-
-            if hasattr(self, key_name):
-                getattr(self, key_name).update_h(value)
+            self.on_event_update_h(event[1], event[2])
         
         elif event_type == VirtualDeviceEvent.UPDATE_V:
-            key_name = event[1]
-            value = event[2]
-
-            if hasattr(self, key_name):
-                getattr(self, key_name).update_v(value)
+            self.on_event_update_v(event[1], event[2])
         
         elif event_type == VirtualDeviceEvent.UNLOCK:
-            key_name = event[1]
+            self.on_event_unlock(event[1])
             
-            if hasattr(self, key_name):
-                getattr(self, key_name).unlock()
-        
         elif event_type == VirtualDeviceEvent.FORWARD:
-            type  = event[1]
-            code  = event[2]
-            value = event[3]
-
-            if not code in self.acquired_keys:
-                log.info(f"{self.__class__.__name__} is ignoring key {e.KEY[code]}")
-            
-            self.vdev.write(type, code, value)
+            self.on_event_forward(event[1], event[2], event[3])
         
         elif event_type == VirtualDeviceEvent.FUNCTION:
             self.run(event[2], *event[3:])
         
         elif event_type == VirtualDeviceEvent.SLEEP:
-            delay = event[1]
-            time.sleep(delay)
+            self.on_event_sleep(event[1])
         
         else:
             log.error(f"Invalid event_type in {self.__class__.__name__} event: {event_type}")
 
+    def on_event_press(self, key_name):
+        if hasattr(self, key_name):
+            getattr(self, key_name).press()
+    
+    def on_event_release(self, key_name):
+        if hasattr(self, key_name):
+            getattr(self, key_name).release()
+    
+    def on_event_update(self, key_name, value):
+        if hasattr(self, key_name):
+            getattr(self, key_name).update(value)
+    
+    def on_event_update_h(self, key_name, value):
+        if hasattr(self, key_name):
+            getattr(self, key_name).update_h(value)
+    
+    def on_event_update_v(self, key_name, value):
+        if hasattr(self, key_name):
+            getattr(self, key_name).update_v(value)
+    
+    def on_event_unlock(self, key_name):
+        if hasattr(self, key_name):
+            getattr(self, key_name).unlock()
+    
+    def on_event_forward(self, type, code, value):
+        if not code in self.acquired_keys:
+            log.info(f"{self.__class__.__name__} is ignoring key {e.KEY[code]}")
+        
+        self.vdev.write(type, code, value)
+
+    def on_event_sleep(self, delay):
+        time.sleep(delay)
+        
     def run(self, function_name, *args):
         pass
 

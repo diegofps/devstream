@@ -42,7 +42,10 @@ class DirectKey:
     
     def update(self, value):
         if self.scan is not None:
-            self.device.write(e.EV_MSC, e.MSC_SCAN, self.scan)
+            if isinstance(self.scan, tuple):
+                self.device.write(*self.scan)
+            else:
+                self.device.write(e.EV_MSC, e.MSC_SCAN, self.scan)
         
         self.device.write(self.type, self.code, value)
         self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
