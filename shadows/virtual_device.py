@@ -173,8 +173,8 @@ class VirtualDevice(Reflex):
     def on_event_sleep(self, delay):
         time.sleep(delay)
         
-    def run(self, function_name, *args):
-        pass
+    def run(self, name, *args):
+        getattr(self, 'function_' + name)(*args)
 
     def terminate(self):
         if self.vdev is not None:

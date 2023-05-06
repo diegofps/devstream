@@ -185,11 +185,13 @@ class XPPEN_DecoPro_Base(Reflex):
 
     def on_event(self, topic_name, evt):
 
+        # log.debug("name:", topic_name, "evt:", evt)
+
         if not evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
             super().on_event(topic_name, evt) 
 
         if evt.type == e.EV_ABS:
-
+            
             if evt.code == e.ABS_X:
                 self.saw_ABS_X = evt.value
             elif evt.code == e.ABS_Y:
@@ -420,6 +422,8 @@ class XPPEN_DecoPro_Base(Reflex):
             self.touch_x = x
             self.touch_y = y
         
+        # log.debug("Checking erase")
+
         if self.erasing and distance(self.erase_x, self.erase_y, x, y) > 10:
 
             self.erase_last_x = self.erase_x
@@ -433,6 +437,7 @@ class XPPEN_DecoPro_Base(Reflex):
         self.last_x = x
         self.last_y = y
         
+        # log.debug("Dispatching update")
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.function("ABS", x, y, 0, 0, 0)
     

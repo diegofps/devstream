@@ -2,7 +2,6 @@
 from shadows.smart_output import SmartOutputEvent
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
-from shadows.virtual_pen import VirtualPenEvent
 
 from evdev import ecodes as e
 from reflex import Reflex
@@ -85,26 +84,30 @@ class Marble_N(BaseMarbleNode): # N
             self.mind.emit(TOPIC_MARBLE_STATE, "Marble_D")
     
     def on_move_rel_x(self, event):
-        with VirtualPenEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
-            value = int(self.smooth(event.value, 20, 5))
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            value = self.smooth(event.value, 1.0, 2.0, 1, 20)
             eb.update("REL_X", value)
         
     def on_move_rel_y(self, event):
-        with VirtualPenEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
-            value = int(self.smooth(event.value, 40, 5))
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
+            value = self.smooth(event.value, 1.0, 2.0, 1, 20)
             eb.update("REL_Y", value)
     
-    def smooth(self, value, multiply, threshold):
+    def smooth(self, value, multiply1, multiply2, threshold1, threshold2):
+        
         abs_value = abs(value)
 
-        if abs_value < threshold:
-            return value * multiply / 3
+        if abs_value < threshold1:
+            return int(value * multiply1)
 
-        elif abs_value < 2 * threshold:
-            return value * multiply / 2
+        elif abs_value > threshold2:
+            return int(value * multiply2)
+
+        elif threshold1 == threshold2:
+            return value * (multiply1 + multiply2) / 2
 
         else:
-            return value * multiply
+            return int(value * ((abs_value - threshold1) / (threshold2 - threshold1) * (multiply2 - multiply1) + multiply1))
 
 
 class Marble_B(BaseMarbleNode):

@@ -18,12 +18,14 @@ class VirtualMouseEvent(VirtualDeviceEvent):
 class VirtualMouse(VirtualDevice):
 
     def __init__(self, shadow):
+        
         super().__init__(shadow, "devstream_mouse")
         
         self.init_keys()
         self.add_listener(TOPIC_VIRTUALMOUSE_EVENT, self.on_event)
 
     def get_capabilities(self):
+
         return {
             e.EV_KEY : [
                 e.BTN_LEFT, e.BTN_RIGHT, e.BTN_MIDDLE, e.BTN_SIDE, e.BTN_EXTRA, 

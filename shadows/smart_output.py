@@ -279,7 +279,7 @@ class SmartOutput(VirtualDevice):
         function = self.functions[function_name]
 
         if isinstance(function, list):
-            log.info(f"Running function {function_name} as list of events")
+            # log.info(f"Running function {function_name} as list of events")
             
             for f in function:
                 log.info(f["type"])
@@ -311,7 +311,7 @@ class SmartOutput(VirtualDevice):
                 log.error(f"Unknown function: {function}")
 
         else:
-            log.info(f"Running function {function_name} as instance method")
+            # log.info(f"Running function {function_name} as instance method")
             function(*args)
 
     def init_keys(self):
@@ -355,6 +355,7 @@ class SmartOutput(VirtualDevice):
     
     def search_selection_1(self):
         log.info("Running search selection 1")
+        
         if self.username is None:
             log.error("Could not find a user session to open this search")
         

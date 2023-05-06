@@ -17,6 +17,7 @@ class VirtualPenEvent(VirtualDeviceEvent):
 class VirtualPen(VirtualDevice):
 
     def __init__(self, shadow):
+
         super().__init__(shadow, "devstream_pen")
         
         self.mouse_x = 32767 / 2
@@ -64,6 +65,9 @@ class VirtualPen(VirtualDevice):
         ])
 
     def function_ABS(self, x, y, pressure, tilt_x, tilt_y):
+
+        # log.debug("VirtualPen received an ABS event")
+
         self.vdev.write(e.EV_ABS, e.ABS_X, x)
         self.vdev.write(e.EV_ABS, e.ABS_Y, y)
         self.vdev.write(e.EV_ABS, e.ABS_PRESSURE, pressure)
@@ -71,11 +75,13 @@ class VirtualPen(VirtualDevice):
         self.vdev.write(e.EV_ABS, e.ABS_TILT_Y, tilt_y)
         self.vdev.write(e.EV_SYN, e.SYN_REPORT, 0)
 
-    def on_event_forward(self, type, code, value):
-        log.debug("mouse::on_event_forward", type, code, value)
-        return super().on_event_forward(type, code, value)
+    # def on_event_forward(self, type, code, value):
+
+    #     log.debug("VirtualPen::on_event_forward", type, code, value)
+    #     return super().on_event_forward(type, code, value)
     
     def on_event_update(self, key_name, value):
+
         if key_name == "ABS_X":
             self.mouse_x = value
 
@@ -96,7 +102,6 @@ class VirtualPen(VirtualDevice):
             key_name = "ABS_Y"
             value = int(self.mouse_y)
         
-        # log.debug("mouse::on_event_update", key_name, value)
         return super().on_event_update(key_name, value)
 
 
