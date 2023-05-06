@@ -194,12 +194,12 @@ class Macro:
     def __init__(self, name=None, importFrom=None):
 
         if importFrom is not None:
-            self.eye = Eye(base64data=importFrom["eye"])
+            # self.eye = Eye(base64data=importFrom["eye"])
             self.name = importFrom["name"]
             self.sequence = importFrom["sequence"]
 
         elif name is not None:
-            self.eye = Eye("./shadows/libeye/configs.json")
+            # self.eye = Eye("./shadows/libeye/configs.json")
             self.sequence = []
             self.name = name
         
@@ -213,7 +213,7 @@ class Macro:
     def exportAsDict(self):
         return {
             "name": self.name,
-            "eye": self.eye.exportAsBase64(),
+            # "eye": self.eye.exportAsBase64(),
             "sequence": self.sequence,
         }
 

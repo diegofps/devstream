@@ -3,7 +3,10 @@
 from ctypes import CDLL, c_char_p, c_void_p, c_size_t, py_object, c_int
 
 
-flib = CDLL("./shadows/libeye/libeye.so")
+try:
+    flib = CDLL("./shadows/libeye/libeye.so")
+except OSError:
+    flib = CDLL("./libeye.so")
 
 _native_create = flib.Eye_create
 _native_create.argtypes = [c_char_p]
@@ -55,10 +58,12 @@ class Eye:
 
     def __init__(self, configFilepath=None, base64data=None):
         if configFilepath is not None:
+            print("Loading from config file")
             encodedFilepath = configFilepath.encode("utf-8")
             self.ptr = _native_create(encodedFilepath)
 
         elif base64data is not None:
+            print("Loading from base64 data")
             eBase64data = base64data.encode("utf-8")
             self.ptr = _native_importFromBase64(eBase64data, len(eBase64data))
 

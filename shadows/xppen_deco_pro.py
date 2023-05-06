@@ -295,7 +295,6 @@ class XPPEN_DecoPro_Base(Reflex):
                         self.last_ABS_TILT_Y,
                     )
                 
-
                 # Keys
                 if self.saw_B is not None:
                     self.on_key00(self.saw_B)

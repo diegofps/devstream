@@ -179,7 +179,7 @@ Install the python service and compiled programs
 
 ```shell
 
-# Make sure you qmake is installed and accessible via PATH. For instance, qt creator would install it around your home directory:
+# Make sure your qmake is installed and accessible via PATH. For instance, qt creator would install it around your home directory:
 sudo bash -c "PATH='/home/$USER/Qt/6.4.0/gcc_64/bin/':\$PATH ./install.sh"
 
 # Start the service in the system
