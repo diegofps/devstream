@@ -4,7 +4,7 @@
 
 FILE * logFile = nullptr;
 
-void logHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+void logHandler(QtMsgType type, const QMessageLogContext &, const QString &msg)
 {
     if (logFile == nullptr)
         return;

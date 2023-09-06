@@ -7,7 +7,7 @@ from threading import Thread, Lock
 from evdev import ecodes as e
 from reflex import Reflex
 
-from .libeye.eye import Eye, EyeException
+# from .libeye.eye import Eye, EyeException
 
 import traceback
 import pickle
@@ -258,14 +258,14 @@ class MacroPlayer:
                 if task_type == "play":
                     self.play(*task_args)
 
-                elif task_type == "train_see":
-                    self.train_see(*task_args)
+                # elif task_type == "train_see":
+                #     self.train_see(*task_args)
 
-                elif task_type == "train_see_and_click":
-                    self.train_see_and_click(*task_args)
+                # elif task_type == "train_see_and_click":
+                #     self.train_see_and_click(*task_args)
 
-                elif task_type == "train_see_and_drag":
-                    self.train_see_and_drag(*task_args)
+                # elif task_type == "train_see_and_drag":
+                #     self.train_see_and_drag(*task_args)
                 
                 elif task_type == "train_wait":
                     self.train_wait(*task_args)
@@ -297,57 +297,57 @@ class MacroPlayer:
         cmd = ("wait", duration)
         macro.sequence.append(cmd)
     
-    def train_see(self, macro:Macro):
+    # def train_see(self, macro:Macro):
 
-        try:
-            macro.eye.capture_screen()
+    #     try:
+    #         macro.eye.capture_screen()
 
-            region1   = macro.eye.request_region("Select the reference region to search for")
-            region1id = macro.eye.learn(region1)
+    #         region1   = macro.eye.request_region("Select the reference region to search for")
+    #         region1id = macro.eye.learn(region1)
 
-            cmd       = ("see", region1, region1id)
+    #         cmd       = ("see", region1, region1id)
 
-            macro.sequence.append(cmd)
+    #         macro.sequence.append(cmd)
 
-        except EyeException as e:
-            log.info("Interrupted see - ", e)
+    #     except EyeException as e:
+    #         log.info("Interrupted see - ", e)
     
-    def train_see_and_click(self, macro:Macro, button):
+    # def train_see_and_click(self, macro:Macro, button):
 
-        try:
-            macro.eye.capture_screen()
+    #     try:
+    #         macro.eye.capture_screen()
 
-            region1   = macro.eye.request_region("Select the reference region to search for")
-            point1    = macro.eye.request_point("Select coordinate to click")
-            region1id = macro.eye.learn(region1)
+    #         region1   = macro.eye.request_region("Select the reference region to search for")
+    #         point1    = macro.eye.request_point("Select coordinate to click")
+    #         region1id = macro.eye.learn(region1)
 
-            cmd       = ("see_and_click", region1, point1, region1id, button)
+    #         cmd       = ("see_and_click", region1, point1, region1id, button)
             
-            macro.sequence.append(cmd)
+    #         macro.sequence.append(cmd)
 
-        except EyeException as e:
-            log.info("Interrupted see_and_click - ", e)
+    #     except EyeException as e:
+    #         log.info("Interrupted see_and_click - ", e)
     
-    def train_see_and_drag(self, macro:Macro, button):
+    # def train_see_and_drag(self, macro:Macro, button):
         
-        try:
-            macro.eye.capture_screen()
+    #     try:
+    #         macro.eye.capture_screen()
 
-            region1   = macro.eye.request_region("Select the first reference region to search for")
-            point1    = macro.eye.request_point("Select coordinate to click")
+    #         region1   = macro.eye.request_region("Select the first reference region to search for")
+    #         point1    = macro.eye.request_point("Select coordinate to click")
 
-            region2   = macro.eye.request_region("Select the second reference region to search for")
-            point2    = macro.eye.request_point("Select coordinate to release the click")
+    #         region2   = macro.eye.request_region("Select the second reference region to search for")
+    #         point2    = macro.eye.request_point("Select coordinate to release the click")
 
-            region1id = macro.eye.learn(region1)
-            region2id = macro.eye.learn(region2)
+    #         region1id = macro.eye.learn(region1)
+    #         region2id = macro.eye.learn(region2)
 
-            cmd       = ("see_and_drag", region1, region2, point1, point2, region1id, region2id, button)
+    #         cmd       = ("see_and_drag", region1, region2, point1, point2, region1id, region2id, button)
 
-            macro.sequence.append(cmd)
+    #         macro.sequence.append(cmd)
 
-        except EyeException as e:
-            log.info("Interrupted see_and_drag - ", e)
+    #     except EyeException as e:
+    #         log.info("Interrupted see_and_drag - ", e)
 
     def play(self, macro:Macro, repeat):
         
@@ -372,24 +372,24 @@ class MacroPlayer:
                         if not self.play_press_key(macro, *cmd_args):
                             break
 
-                    elif cmd_type == "see":
-                        if not self.play_see(macro, *cmd_args):
-                            break
+                    # elif cmd_type == "see":
+                    #     if not self.play_see(macro, *cmd_args):
+                    #         break
 
-                    elif cmd_type == "see_and_click":
-                        if not self.play_see_and_click(macro, *cmd_args):
-                            break
+                    # elif cmd_type == "see_and_click":
+                    #     if not self.play_see_and_click(macro, *cmd_args):
+                    #         break
 
-                    elif cmd_type == "see_and_drag":
-                        if not self.play_see_and_drag(macro, *cmd_args):
-                            break
+                    # elif cmd_type == "see_and_drag":
+                    #     if not self.play_see_and_drag(macro, *cmd_args):
+                    #         break
 
                     elif cmd_type == "wait":
                         if not self.play_wait(macro, *cmd_args):
                             break
                     
                     else:
-                        log.debug("Invalid cmd type: ", cmd_type)
+                        log.debug("Invalid macro cmd: ", cmd_type)
                     
                 else:
                     # TODO: Required to pause between each playback?
@@ -411,169 +411,169 @@ class MacroPlayer:
 
         return True
     
-    def play_see(self, macro:Macro, region1, region1id):
+    # def play_see(self, macro:Macro, region1, region1id):
 
-        expires_at = time.time() + FIND_TIMEOUT
-        target     = None
+    #     expires_at = time.time() + FIND_TIMEOUT
+    #     target     = None
 
-        while time.time() < expires_at:
-            macro.eye.capture_screen()
-            target = macro.eye.find(region1id)
+    #     while time.time() < expires_at:
+    #         macro.eye.capture_screen()
+    #         target = macro.eye.find(region1id)
 
-            if not self.stop.locked():
-                self.stop.acquire()
-                return False
+    #         if not self.stop.locked():
+    #             self.stop.acquire()
+    #             return False
 
-            if target is not None:
-                return True
+    #         if target is not None:
+    #             return True
 
-        return False
+    #     return False
 
-    def play_see_and_click(self, macro:Macro, region1, point1, region1id, mouse_button):
+    # def play_see_and_click(self, macro:Macro, region1, point1, region1id, mouse_button):
         
-        expires_at = time.time() + FIND_TIMEOUT
-        target     = None
+    #     expires_at = time.time() + FIND_TIMEOUT
+    #     target     = None
 
-        log.debug(1)
-        macro.eye.capture_screen()
-        log.debug(2)
+    #     log.debug(1)
+    #     macro.eye.capture_screen()
+    #     log.debug(2)
 
-        while time.time() < expires_at:
-            target = macro.eye.find(region1id)
-            log.debug(3)
+    #     while time.time() < expires_at:
+    #         target = macro.eye.find(region1id)
+    #         log.debug(3)
 
-            if not self.stop.locked():
-                self.stop.acquire()
-                return False
+    #         if not self.stop.locked():
+    #             self.stop.acquire()
+    #             return False
 
-            log.debug(4)
+    #         log.debug(4)
 
-            if target is not None:
-                log.debug("Target found:", target)
-                break
+    #         if target is not None:
+    #             log.debug("Target found:", target)
+    #             break
 
-            log.debug(5)
-            macro.eye.capture_screen()
-            log.debug(6)
+    #         log.debug(5)
+    #         macro.eye.capture_screen()
+    #         log.debug(6)
 
-        log.debug(7)
-        if target is None:
-            log.debug("Target not found, returning")
-            return False
+    #     log.debug(7)
+    #     if target is None:
+    #         log.debug("Target not found, returning")
+    #         return False
 
-        log.debug(8)
-        screen_width, screen_height = macro.eye.screen_size()
-        log.debug(9)
+    #     log.debug(8)
+    #     screen_width, screen_height = macro.eye.screen_size()
+    #     log.debug(9)
 
-        x = int((target[0] + point1[0] - region1[0]) * 32767 / screen_width)
-        y = int((target[1] + point1[1] - region1[1]) * 32767 / screen_height)
+    #     x = int((target[0] + point1[0] - region1[0]) * 32767 / screen_width)
+    #     y = int((target[1] + point1[1] - region1[1]) * 32767 / screen_height)
 
-        log.debug("Click coordinates:", x, y)
-        log.debug("  x ref:", target[0], point1[0], region1[0])
-        log.debug("  y ref:", target[1], point1[1], region1[1])
+    #     log.debug("Click coordinates:", x, y)
+    #     log.debug("  x ref:", target[0], point1[0], region1[0])
+    #     log.debug("  y ref:", target[1], point1[1], region1[1])
 
-        with VirtualPenEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
+    #     with VirtualPenEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
 
-            # Move the mouse to the desired position
+    #         # Move the mouse to the desired position
 
-            eb.forward(e.EV_ABS, e.ABS_X, x)
-            eb.forward(e.EV_ABS, e.ABS_Y, y)
-            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.25)
+    #         eb.forward(e.EV_ABS, e.ABS_X, x)
+    #         eb.forward(e.EV_ABS, e.ABS_Y, y)
+    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+    #         eb.sleep(0.25)
 
-            # Click the mouse
+    #         # Click the mouse
 
-            eb.forward(e.EV_KEY, mouse_button, 1)
-            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.1)
+    #         eb.forward(e.EV_KEY, mouse_button, 1)
+    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+    #         eb.sleep(0.1)
 
-            # Release the mouse
+    #         # Release the mouse
 
-            eb.forward(e.EV_KEY, mouse_button, 0)
-            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.1)
+    #         eb.forward(e.EV_KEY, mouse_button, 0)
+    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+    #         eb.sleep(0.1)
 
-        log.debug("play_see_and_click finished")
+    #     log.debug("play_see_and_click finished")
 
-        return True
+    #     return True
 
-    def play_see_and_drag(self, macro:Macro, region1, region2, point1, point2, region1id, region2id, mouse_button):
+    # def play_see_and_drag(self, macro:Macro, region1, region2, point1, point2, region1id, region2id, mouse_button):
         
-        # Look for first region
+    #     # Look for first region
 
-        expire1 = time.time() + FIND_TIMEOUT
-        target1 = None
+    #     expire1 = time.time() + FIND_TIMEOUT
+    #     target1 = None
 
-        while time.time() < expire1:
-            macro.eye.capture_screen()
-            target = macro.eye.find(region1id)
+    #     while time.time() < expire1:
+    #         macro.eye.capture_screen()
+    #         target = macro.eye.find(region1id)
 
-            if not self.stop.locked():
-                self.stop.acquire()
-                return False
+    #         if not self.stop.locked():
+    #             self.stop.acquire()
+    #             return False
 
-            if target is not None:
-                break
+    #         if target is not None:
+    #             break
 
-        if target is None:
-            return False
+    #     if target is None:
+    #         return False
 
-        # Look for second region
+    #     # Look for second region
 
-        expire2 = time.time() + FIND_TIMEOUT
-        target2 = None
+    #     expire2 = time.time() + FIND_TIMEOUT
+    #     target2 = None
 
-        while time.time() < expire2:
-            macro.eye.capture_screen()
-            target2 = macro.eye.find(region2id)
+    #     while time.time() < expire2:
+    #         macro.eye.capture_screen()
+    #         target2 = macro.eye.find(region2id)
 
-            if not self.stop.locked():
-                self.stop.acquire()
-                return False
+    #         if not self.stop.locked():
+    #             self.stop.acquire()
+    #             return False
 
-            if target2 is not None:
-                break
+    #         if target2 is not None:
+    #             break
 
-        if target2 is None:
-            return False
+    #     if target2 is None:
+    #         return False
 
-        # Coordinates of the click and drag points
+    #     # Coordinates of the click and drag points
 
-        x1 = target1[0] + point1[0] - region1[0]
-        y1 = target1[1] + point1[1] - region1[1]
+    #     x1 = target1[0] + point1[0] - region1[0]
+    #     y1 = target1[1] + point1[1] - region1[1]
 
-        x2 = target2[0] + point2[0] - region2[0]
-        y2 = target2[1] + point2[1] - region2[1]
+    #     x2 = target2[0] + point2[0] - region2[0]
+    #     y2 = target2[1] + point2[1] - region2[1]
 
-        with VirtualPenEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
+    #     with VirtualPenEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
 
-            # Move to first coordinate
+    #         # Move to first coordinate
 
-            eb.forward(e.EV_ABS, e.ABS_X, x1)
-            eb.forward(e.EV_ABS, e.ABS_Y, y1)
-            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.25)
+    #         eb.forward(e.EV_ABS, e.ABS_X, x1)
+    #         eb.forward(e.EV_ABS, e.ABS_Y, y1)
+    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+    #         eb.sleep(0.25)
 
-            # Simulate click
+    #         # Simulate click
 
-            eb.forward(e.EV_KEY, mouse_button, 1)
-            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.1)
+    #         eb.forward(e.EV_KEY, mouse_button, 1)
+    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+    #         eb.sleep(0.1)
 
-            # Move to second coordinate
+    #         # Move to second coordinate
 
-            eb.forward(e.EV_ABS, e.ABS_X, x2)
-            eb.forward(e.EV_ABS, e.ABS_Y, y2)
-            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.1)
+    #         eb.forward(e.EV_ABS, e.ABS_X, x2)
+    #         eb.forward(e.EV_ABS, e.ABS_Y, y2)
+    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+    #         eb.sleep(0.1)
 
-            # Simulate click release
+    #         # Simulate click release
 
-            eb.forward(e.EV_KEY, mouse_button, 0)
-            eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-            eb.sleep(0.1)
+    #         eb.forward(e.EV_KEY, mouse_button, 0)
+    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
+    #         eb.sleep(0.1)
 
-        return True
+    #     return True
 
     def play_wait(self, macro:Macro, seconds):
         
@@ -661,14 +661,14 @@ class MacroKeyboard(Reflex):
                 elif action[0] == "interrupt":
                     self.interrupt_macro()
 
-                elif action[0] == "see":
-                    self.see()
+                # elif action[0] == "see":
+                #     self.see()
 
-                elif action[0] == "see_and_click":
-                    self.see_and_click(action[1])
+                # elif action[0] == "see_and_click":
+                #     self.see_and_click(action[1])
                 
-                elif action[0] == "see_and_drag":
-                    self.see_and_drag(action[1])
+                # elif action[0] == "see_and_drag":
+                #     self.see_and_drag(action[1])
                 
                 elif action[0] == "wait":
                     self.wait(action[1])
@@ -681,17 +681,17 @@ class MacroKeyboard(Reflex):
 
         self.macro_player.interrupt()
     
-    def see(self):
-        if self.macro is not None:
-            self.macro_player.push(("train_see", self.macro))
+    # def see(self):
+    #     if self.macro is not None:
+    #         self.macro_player.push(("train_see", self.macro))
 
-    def see_and_click(self, button):
-        if self.macro is not None:
-            self.macro_player.push(("train_see_and_click", self.macro, button))
+    # def see_and_click(self, button):
+    #     if self.macro is not None:
+    #         self.macro_player.push(("train_see_and_click", self.macro, button))
 
-    def see_and_drag(self, button):
-        if self.macro is not None:
-            self.macro_player.push(("train_see_and_click", self.macro, button))
+    # def see_and_drag(self, button):
+    #     if self.macro is not None:
+    #         self.macro_player.push(("train_see_and_click", self.macro, button))
     
     def wait(self, duration):
         if self.macro is not None:

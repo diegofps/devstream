@@ -100,6 +100,10 @@ class SmartOutput(VirtualDevice):
                 "Treesheets": [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTALT", "+KEY_V", "-KEY_V", "-KEY_LEFTALT", "+KEY_P", "-KEY_P"]}],
+
+                "jetbrains-studio": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTALT", "+KEY_LEFT", "-KEY_LEFT", "-KEY_LEFTALT"]}],
             },
             "previous_tab": {
                 "default": [{
@@ -117,6 +121,10 @@ class SmartOutput(VirtualDevice):
                 "Treesheets": [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTALT", "+KEY_V", "-KEY_V", "-KEY_LEFTALT", "+KEY_N", "-KEY_N"]}],
+
+                "jetbrains-studio": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTALT", "+KEY_RIGHT", "-KEY_RIGHT", "-KEY_LEFTALT"]}],
             },
             "close_tab": {
                 "default": [{
@@ -126,6 +134,10 @@ class SmartOutput(VirtualDevice):
                 ("Terminator", "Gnome-terminal"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_W", "-KEY_W", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
+                
+                "jetbrains-studio": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_F4", "-KEY_F4", "-KEY_LEFTCTRL"]}],
             },
             "close_window": {
                 "default": [{
