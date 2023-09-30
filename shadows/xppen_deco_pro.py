@@ -184,11 +184,12 @@ class XPPEN_DecoPro_Base(Reflex):
         
 
     def on_event(self, topic_name, evt):
+        # super().on_event(topic_name, evt)
 
         # log.debug("name:", topic_name, "evt:", evt)
 
-        if not evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
-            super().on_event(topic_name, evt) 
+        # if not evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
+        #     super().on_event(topic_name, evt) 
 
         if evt.type == e.EV_ABS:
             
@@ -202,6 +203,10 @@ class XPPEN_DecoPro_Base(Reflex):
                 self.saw_ABS_TILT_Y = evt.value
             elif evt.code == e.ABS_PRESSURE:
                 self.saw_ABS_PRESSURE = evt.value
+                if evt.value == 8191:
+                    self.saw_ABS_PRESSURE_8191 = True
+                if evt.value == 0:
+                    self.saw_ABS_PRESSURE_0 = True
 
         if evt.type == e.EV_KEY:
 
@@ -240,6 +245,8 @@ class XPPEN_DecoPro_Base(Reflex):
             if evt.code == e.MSC_SCAN:
                 if evt.value == 852034:
                     self.saw_MSC_SCAN_852034 = evt.value
+                elif evt.value == 852036:
+                    self.saw_MSC_SCAN_852036 = evt.value
                 elif evt.value == 852037:
                     self.saw_MSC_SCAN_852037 = evt.value
 
@@ -256,6 +263,24 @@ class XPPEN_DecoPro_Base(Reflex):
 
             if evt.code == e.SYN_REPORT:
 
+                # Fix unexpected transformations that happen in the upper button appearing as 
+                # the lower button with strange pressure values (0 and 8191).
+                if self.saw_ABS_PRESSURE_8191 is not None and self.saw_MSC_SCAN_852036 is not None and self.saw_BTN_STYLUS is not None:
+                    self.saw_MSC_SCAN_852037 = self.saw_MSC_SCAN_852036
+                    self.saw_BTN_TOUCH = self.saw_BTN_STYLUS
+
+                    self.saw_ABS_PRESSURE_8191 = None
+                    self.saw_MSC_SCAN_852036 = None
+                    self.saw_BTN_STYLUS = None
+                
+                if self.saw_ABS_PRESSURE_0 is not None and self.saw_MSC_SCAN_852036 is not None and self.saw_BTN_STYLUS is not None:
+                    self.saw_MSC_SCAN_852037 = self.saw_MSC_SCAN_852036
+                    self.saw_BTN_TOUCH = self.saw_BTN_STYLUS
+
+                    self.saw_ABS_PRESSURE_0 = None
+                    self.saw_MSC_SCAN_852036 = None
+                    self.saw_BTN_STYLUS = None
+                
                 # Pen
                 if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN_852034 is not None:
                     self.on_pen_btn_touch(self.saw_BTN_TOUCH, self.last_ABS_X, self.last_ABS_Y)
@@ -281,7 +306,7 @@ class XPPEN_DecoPro_Base(Reflex):
                     if self.saw_ABS_Y is not None:
                         self.last_ABS_Y = self.saw_ABS_Y
                     if self.saw_ABS_PRESSURE is not None:
-                        self.last_ABS_PRESSURE  = self.saw_ABS_PRESSURE
+                        self.last_ABS_PRESSURE = self.saw_ABS_PRESSURE
                     if self.saw_ABS_TILT_X is not None:
                         self.last_ABS_TILT_X = self.saw_ABS_TILT_X
                     if self.saw_ABS_TILT_Y is not None:
@@ -348,12 +373,15 @@ class XPPEN_DecoPro_Base(Reflex):
         self.saw_ABS_X = None
         self.saw_ABS_Y = None
         self.saw_ABS_PRESSURE = None
+        self.saw_ABS_PRESSURE_8191 = None
+        self.saw_ABS_PRESSURE_0 = None
         self.saw_ABS_TILT_X = None
         self.saw_ABS_TILT_Y = None
         self.saw_BTN_TOUCH = None
         self.saw_BTN_STYLUS = None
         self.saw_BTN_TOOL_PEN = None
         self.saw_MSC_SCAN_852034 = None
+        self.saw_MSC_SCAN_852036 = None
         self.saw_MSC_SCAN_852037 = None
 
     def on_activate(self):

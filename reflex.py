@@ -113,15 +113,14 @@ class Reflex:
 
     def on_event(self, topic_name, evt):
         
-        # if evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
+        # if evt.type != e.SYN and evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y]: #, e.ABS_PRESSURE
         #     return 
-        
+
         code  = e.bytype[evt.type][evt.code]
         type  = e.EV[evt.type]
         value = evt.value
 
         log.debug(f"Processing event: type={type}, code={code}, value={value}")
-        
         
     def on_activate(self):
         pass
