@@ -7,7 +7,7 @@ set -e
 echo "Building canvas2..."
 mkdir -p ./build/canvas2
 cd ./build/canvas2
-qmake CONFIG+=release -o Makefile ../../canvas2/canvas2.pro
+qmake6 CONFIG+=release -o Makefile ../../canvas2/canvas2.pro
 make -j`nproc`
 cd ../..
 

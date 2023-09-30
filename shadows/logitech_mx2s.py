@@ -125,7 +125,7 @@ class MX2S_N(BaseMX2SNode): # Normal
             eb.update("REL_Y", event.value)
 
 
-class MX2S_H(BaseMX2SNode): # Navigator
+class MX2S_H(BaseMX2SNode): # Navigator (H:side-up)
 
     def __init__(self, shadow):
         super().__init__(shadow)
@@ -134,10 +134,8 @@ class MX2S_H(BaseMX2SNode): # Navigator
         self.clean = False
 
         if event.value == 0:
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.press("KEY_LEFTCTRL")
-                eb.press("BTN_LEFT")
-
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("go_to_declaration")
 
     def on_middle_click(self, event): # B
         self.clean = False
@@ -159,7 +157,7 @@ class MX2S_H(BaseMX2SNode): # Navigator
 
             if self.clean:
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                    eb.function("navigate_back")
+                    eb.function("navigate_forward")
             
             self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
     
@@ -196,7 +194,7 @@ class MX2S_H(BaseMX2SNode): # Navigator
             eb.update("REL_Y", event.value)
 
 
-class MX2S_G(BaseMX2SNode): # System
+class MX2S_G(BaseMX2SNode): # System (G:side-down)
 
     def __init__(self, shadow):
         super().__init__(shadow)

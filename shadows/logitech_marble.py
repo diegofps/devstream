@@ -66,13 +66,17 @@ class Marble_N(BaseMarbleNode): # N
 
     def __init__(self, shadow):
         super().__init__(shadow)
+        self.counter = 0
     
     def on_left_click(self, event): # A
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             eb.update("BTN_LEFT", event.value)
         
     def on_down_click(self, event): # B
+        log.debug("N: on_down_click " + str(event.value))
         if event.value == 1: # +B
+            log.debug("\n\n\nN: Entering state B " + str(self.counter))
+            self.counter += 1
             self.mind.emit(TOPIC_MARBLE_STATE, "Marble_B")
     
     def on_up_click(self, event): # C
@@ -135,11 +139,15 @@ class Marble_B(BaseMarbleNode):
                 eb.release("KEY_LEFTMETA")
 
     def on_down_click(self, event): # B
+        log.debug("B: on_down_click " + str(event.value))
         if event.value == 0:
 
             if self.clean:
+                log.debug("Ended state B and emitting go_to_declaration, clean = true")
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                     eb.function("go_to_declaration")
+            else:
+                log.debug("Ended state B with clean = false")
             
             self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
     
@@ -159,6 +167,8 @@ class Marble_B(BaseMarbleNode):
     
     def on_move_rel_x(self, event):
         self.clean = False
+
+        # log.debug("Moving x in state B " + str(event.value))
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             eb.function("scroll_h", event.value)
 

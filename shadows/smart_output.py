@@ -138,6 +138,10 @@ class SmartOutput(VirtualDevice):
                 "jetbrains-studio": [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_F4", "-KEY_F4", "-KEY_LEFTCTRL"]}],
+                
+                "Inkscape": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTALT", "+KEY_F4", "-KEY_F4", "-KEY_LEFTALT"]}],
             },
             "close_window": {
                 "default": [{
