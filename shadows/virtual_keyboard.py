@@ -42,7 +42,7 @@ class VirtualKeyboard(VirtualDevice):
 
                 e.KEY_PLAYPAUSE, e.KEY_NEXTSONG, e.KEY_PREVIOUSSONG, e.KEY_STOPCD, 
                 e.KEY_MUTE, e.KEY_VOLUMEUP, e.KEY_VOLUMEDOWN, e.KEY_PRESENTATION, 
-                e.KEY_RESERVED, 
+                e.KEY_RESERVED, e.KEY_COMPOSE
                 # e.KEY_BRIGHTNESSDOWN, e.KEY_BRIGHTNESSUP, e.KEY_DISPLAYTOGGLE,
 
                 # e.KEY_KP0, e.KEY_KP1, e.KEY_KP2, e.KEY_KP3, e.KEY_KP4, e.KEY_KP5, e.KEY_KP6, e.KEY_KP7, e.KEY_KP8, e.KEY_KP9,
@@ -67,7 +67,7 @@ class VirtualKeyboard(VirtualDevice):
 
         self.add_keys([
             "LEFTALT", "LEFTCTRL", "LEFTMETA", "LEFTSHIFT", "RIGHTALT", "RIGHTCTRL", "RIGHTMETA", "RIGHTSHIFT", 
-            "PLAYPAUSE", "NEXTSONG", "PREVIOUSSONG", "STOPCD", "MUTE", "VOLUMEUP", "VOLUMEDOWN", 
+            "PLAYPAUSE", "NEXTSONG", "PREVIOUSSONG", "STOPCD", "MUTE", "VOLUMEUP", "VOLUMEDOWN", "COMPOSE",
 
             "TAB", "PAGEDOWN", "PAGEUP", "EQUAL", "MINUS", "ESC",
             "PRINT", "HOME", "END", "COMMA", "SLASH", "DOT", 
