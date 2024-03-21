@@ -2,6 +2,7 @@
 # from shadows.virtual_pen import TOPIC_VIRTUALPEN_EVENT
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
 from shadows.virtual_keyboard import VirtualKeyboardEvent
+from shadows.virtual_mouse import VirtualMouseEvent
 from shadows.virtual_pen import VirtualPenEvent
 
 from evdev import ecodes as e
@@ -50,7 +51,7 @@ class Canvas(Thread):
     def process_main(self):
         while True:
             if self.username is None or self.userdisplay is None:
-                log.warn("Deco Pro is waiting for user interface")
+                log.warn("DecoPro.Process: Deco Pro is waiting for user interface")
                 time.sleep(2)
                 continue
             
@@ -64,18 +65,19 @@ class Canvas(Thread):
             try:
                 for filepath in self.process_filepath:
                     if os.path.exists(filepath):
+                        log.info("DecoPro.Process: Starting Deco Pro Canvas")
                         cmd = "su %s -c 'DISPLAY=%s %s'" % (self.username, self.userdisplay, filepath)
                         status = os.system(cmd)
 
                         if status == 2:
-                            log.warn("Canvas exited with exit status 2, exiting")
+                            log.warn("DecoPro.Process: Canvas exited with exit status 2, exiting")
                             os._exit(os.EX_OK)
                         else:
-                            log.error("Canvas process finished unexpectedly", status)
+                            log.error("DecoPro.Process: Canvas process finished unexpectedly", status)
                 
-                log.warn("Failed to start canvas process for xppen deco pro")
+                log.warn("DecoPro.Process: Failed to start canvas process for xppen deco pro")
             except Exception as e:
-                log.error("Failed to start or execute the canvas process, retrying in 5s...", 
+                log.error("DecoPro.Process: Failed to start or execute the canvas process, retrying in 5s...", 
                     exception_class=e.__class__.__name__,
                     description=e, 
                 )
@@ -105,7 +107,7 @@ class Canvas(Thread):
                                 # log.debug("message sent")
                                 break
                             except Exception as e:
-                                log.error("Failed to send message to canvas.", 
+                                log.error("DecoPro.Pipe: Failed to send message to canvas.", 
                                     attempt=f"{i+1}/{self.tries}", 
                                     msg=msg, 
                                     exception_class=e.__class__.__name__, 
@@ -113,7 +115,7 @@ class Canvas(Thread):
                                 )
                                 time.sleep(1)
             except Exception as e:
-                log.error("Failed to connect to pipe.", 
+                log.error("DecoPro.Pipe: Failed to connect to pipe.", 
                     attempt=f"{i+1}/{self.tries}", 
                     msg=msg, 
                     exception_class=e.__class__.__name__,
@@ -142,6 +144,8 @@ MODE_DISABLED    = 4
 
 REQUIRED_DEVICES = [
     "11 inch PenTablet Mouse",
+    "11 inch PenTablet Pad",
+    "11 inch PenTablet Pen",
     "11 inch PenTablet Keyboard",
     "11 inch PenTablet",
 ]
@@ -188,8 +192,8 @@ class XPPEN_DecoPro_Base(Reflex):
 
         # log.debug("name:", topic_name, "evt:", evt)
 
-        # if not evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
-        #     super().on_event(topic_name, evt) 
+        if not evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y, e.ABS_PRESSURE]:
+            super().on_event(topic_name, evt) 
 
         if evt.type == e.EV_ABS:
             
@@ -203,10 +207,10 @@ class XPPEN_DecoPro_Base(Reflex):
                 self.saw_ABS_TILT_Y = evt.value
             elif evt.code == e.ABS_PRESSURE:
                 self.saw_ABS_PRESSURE = evt.value
-                if evt.value == 8191:
-                    self.saw_ABS_PRESSURE_8191 = True
-                if evt.value == 0:
-                    self.saw_ABS_PRESSURE_0 = True
+                # if evt.value == 8191:
+                #     self.saw_ABS_PRESSURE_8191 = True
+                # if evt.value == 0:
+                #     self.saw_ABS_PRESSURE_0 = True
 
         if evt.type == e.EV_KEY:
 
@@ -216,39 +220,44 @@ class XPPEN_DecoPro_Base(Reflex):
             elif evt.code == e.BTN_STYLUS:
                 self.saw_BTN_STYLUS = evt.value
 
+            elif evt.code == e.BTN_STYLUS2:
+                self.saw_BTN_STYLUS2 = evt.value
+
             elif evt.code == e.BTN_TOOL_PEN:
                 self.saw_BTN_TOOL_PEN = evt.value
 
 
-            if evt.code == e.KEY_B:
-                self.saw_B = evt.value
-            elif evt.code == e.KEY_E:
-                self.saw_E = evt.value
+            if isinstance(evt.code, list):
+                if e.BTN_0 in evt.code:
+                    self.saw_BTN_0 = evt.value
+            else:
+                if evt.code == e.BTN_0:
+                    self.saw_BTN_0 = evt.value
+                elif evt.code == e.BTN_1:
+                    self.saw_BTN_1 = evt.value
+                elif evt.code == e.BTN_2:
+                    self.saw_BTN_2 = evt.value
+                elif evt.code == e.BTN_3:
+                    self.saw_BTN_3 = evt.value
+                elif evt.code == e.BTN_4:
+                    self.saw_BTN_4 = evt.value
+                elif evt.code == e.BTN_5:
+                    self.saw_BTN_5 = evt.value
+                elif evt.code == e.BTN_6:
+                    self.saw_BTN_6 = evt.value
+                elif evt.code == e.BTN_7:
+                    self.saw_BTN_7 = evt.value
 
-            elif evt.code == e.KEY_LEFTALT:
-                self.saw_ALT = evt.value
-            elif evt.code == e.KEY_SPACE:
-                self.saw_SPACE = evt.value
-
-            elif evt.code == e.KEY_V:
-                self.saw_V = evt.value
-            elif evt.code == e.KEY_S:
-                self.saw_S = evt.value
-
-            elif evt.code == e.KEY_Z:
-                self.saw_Z = evt.value
-            elif evt.code == e.KEY_N:
-                self.saw_N = evt.value
-            
         if evt.type == e.EV_MSC:
 
             if evt.code == e.MSC_SCAN:
-                if evt.value == 852034:
-                    self.saw_MSC_SCAN_852034 = evt.value
-                elif evt.value == 852036:
-                    self.saw_MSC_SCAN_852036 = evt.value
-                elif evt.value == 852037:
-                    self.saw_MSC_SCAN_852037 = evt.value
+                self.saw_MSC_SCAN = evt.value
+                # if evt.value == 852034:
+                #     self.saw_MSC_SCAN_852034 = evt.value
+                # elif evt.value == 852036:
+                #     self.saw_MSC_SCAN_852036 = evt.value
+                # elif evt.value == 852037:
+                #     self.saw_MSC_SCAN_852037 = evt.value
 
         if evt.type == e.EV_REL:
 
@@ -263,34 +272,16 @@ class XPPEN_DecoPro_Base(Reflex):
 
             if evt.code == e.SYN_REPORT:
 
-                # Fix unexpected transformations that happen in the upper button appearing as 
-                # the lower button with strange pressure values (0 and 8191).
-                if self.saw_ABS_PRESSURE_8191 is not None and self.saw_MSC_SCAN_852036 is not None and self.saw_BTN_STYLUS is not None:
-                    self.saw_MSC_SCAN_852037 = self.saw_MSC_SCAN_852036
-                    self.saw_BTN_TOUCH = self.saw_BTN_STYLUS
-
-                    self.saw_ABS_PRESSURE_8191 = None
-                    self.saw_MSC_SCAN_852036 = None
-                    self.saw_BTN_STYLUS = None
-                
-                if self.saw_ABS_PRESSURE_0 is not None and self.saw_MSC_SCAN_852036 is not None and self.saw_BTN_STYLUS is not None:
-                    self.saw_MSC_SCAN_852037 = self.saw_MSC_SCAN_852036
-                    self.saw_BTN_TOUCH = self.saw_BTN_STYLUS
-
-                    self.saw_ABS_PRESSURE_0 = None
-                    self.saw_MSC_SCAN_852036 = None
-                    self.saw_BTN_STYLUS = None
-                
                 # Pen
-                if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN_852034 is not None:
+                if self.saw_BTN_TOUCH is not None:
                     self.on_pen_btn_touch(self.saw_BTN_TOUCH, self.last_ABS_X, self.last_ABS_Y)
                 
-                if self.saw_BTN_TOUCH is not None and self.saw_MSC_SCAN_852037 is not None:
-                    self.on_pen_btn_high(self.saw_BTN_TOUCH, self.last_ABS_X, self.last_ABS_Y)
-                    
                 if self.saw_BTN_STYLUS is not None:
                     self.on_pen_btn_low(self.saw_BTN_STYLUS, self.last_ABS_X, self.last_ABS_Y)
                 
+                if self.saw_BTN_STYLUS2 is not None:
+                    self.on_pen_btn_high(self.saw_BTN_STYLUS2, self.last_ABS_X, self.last_ABS_Y)
+                    
                 if self.saw_BTN_TOOL_PEN is not None:
                     self.on_pen_btn_close(self.saw_BTN_TOOL_PEN)
 
@@ -302,9 +293,9 @@ class XPPEN_DecoPro_Base(Reflex):
                     self.saw_ABS_TILT_Y is not None
                 ):
                     if self.saw_ABS_X is not None:
-                        self.last_ABS_X = self.saw_ABS_X
+                        self.last_ABS_X = int(self.saw_ABS_X) # int(self.saw_ABS_X / 55798 * 32767)
                     if self.saw_ABS_Y is not None:
-                        self.last_ABS_Y = self.saw_ABS_Y
+                        self.last_ABS_Y = int(self.saw_ABS_Y) # int(self.saw_ABS_Y / 31399 * 32767)
                     if self.saw_ABS_PRESSURE is not None:
                         self.last_ABS_PRESSURE = self.saw_ABS_PRESSURE
                     if self.saw_ABS_TILT_X is not None:
@@ -312,6 +303,10 @@ class XPPEN_DecoPro_Base(Reflex):
                     if self.saw_ABS_TILT_Y is not None:
                         self.last_ABS_TILT_Y = self.saw_ABS_TILT_Y
                     
+                    # log.debug("Calling on_pen_abs")
+                    # MAX_X = 55798 # 32767
+                    # MAX_Y = 31399 # 32767
+
                     self.on_pen_abs(
                         self.last_ABS_X, 
                         self.last_ABS_Y, 
@@ -321,25 +316,25 @@ class XPPEN_DecoPro_Base(Reflex):
                     )
                 
                 # Keys
-                if self.saw_B is not None:
-                    self.on_key00(self.saw_B)
-                elif self.saw_E is not None:
-                    self.on_key01(self.saw_E)
+                if self.saw_BTN_0 is not None:
+                    self.on_key00(self.saw_BTN_0)
+                elif self.saw_BTN_1 is not None:
+                    self.on_key01(self.saw_BTN_1)
                 
-                elif self.saw_ALT is not None and self.saw_N is None:
-                    self.on_key10(self.saw_ALT)
-                elif self.saw_SPACE is not None:
-                    self.on_key11(self.saw_SPACE)
+                elif self.saw_BTN_2 is not None:
+                    self.on_key10(self.saw_BTN_2)
+                elif self.saw_BTN_3 is not None:
+                    self.on_key11(self.saw_BTN_3)
                 
-                elif self.saw_V is not None:
-                    self.on_key20(self.saw_V)
-                elif self.saw_S is not None:
-                    self.on_key21(self.saw_S)
+                elif self.saw_BTN_4 is not None:
+                    self.on_key20(self.saw_BTN_4)
+                elif self.saw_BTN_5 is not None:
+                    self.on_key21(self.saw_BTN_5)
                 
-                elif self.saw_Z is not None:
-                    self.on_key30(self.saw_Z)
-                elif self.saw_N is not None:
-                    self.on_key31(self.saw_N)
+                elif self.saw_BTN_6 is not None:
+                    self.on_key30(self.saw_BTN_6)
+                elif self.saw_BTN_7 is not None:
+                    self.on_key31(self.saw_BTN_7)
                 
                 # Orb
                 if self.saw_REL_WHEEL is not None:
@@ -356,51 +351,58 @@ class XPPEN_DecoPro_Base(Reflex):
             canvas.username, canvas.userdisplay = None, None
         else:
             canvas.username, canvas.userdisplay = event[0]
-        log.info("login changed received", self.username, self.userdisplay)
+        log.info("Login changed received", self.username, self.userdisplay)
 
     def clear(self):
-        self.saw_B = None
-        self.saw_E = None
-        self.saw_ALT = None
-        self.saw_SPACE = None
-        self.saw_V = None
-        self.saw_S = None
-        self.saw_Z = None
-        self.saw_N = None
+
+        # Buttons
+        self.saw_BTN_0 = None
+        self.saw_BTN_1 = None
+        self.saw_BTN_2 = None
+        self.saw_BTN_3 = None
+        self.saw_BTN_4 = None
+        self.saw_BTN_5 = None
+        self.saw_BTN_6 = None
+        self.saw_BTN_7 = None
+
+        # Touchpad
         self.saw_REL_X = None
         self.saw_REL_Y = None
+
+        # Dial
         self.saw_REL_WHEEL = None
+
+        # Pen
         self.saw_ABS_X = None
         self.saw_ABS_Y = None
         self.saw_ABS_PRESSURE = None
-        self.saw_ABS_PRESSURE_8191 = None
-        self.saw_ABS_PRESSURE_0 = None
         self.saw_ABS_TILT_X = None
         self.saw_ABS_TILT_Y = None
-        self.saw_BTN_TOUCH = None
-        self.saw_BTN_STYLUS = None
-        self.saw_BTN_TOOL_PEN = None
-        self.saw_MSC_SCAN_852034 = None
-        self.saw_MSC_SCAN_852036 = None
-        self.saw_MSC_SCAN_852037 = None
+
+        self.saw_BTN_TOUCH = None    # Touching the tablet
+        self.saw_BTN_STYLUS = None   # Lower pen button
+        self.saw_BTN_STYLUS2 = None  # Upper pen button
+        self.saw_BTN_TOOL_PEN = None # Pen is close to tablet
+
+        # Extra codes
+        self.saw_MSC_SCAN = None
 
     def on_activate(self):
         self.clear()
 
     
     def on_key00(self, value):
-        # log.debug("Deco pro key 00", value)
+        log.debug("Deco pro key 00", value)
         if value == 0:
             self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
         
     def on_key01(self, value):
-        # log.debug("Deco pro key 01", value)
+        log.debug("Deco pro key 01", value)
         if value == 0:
             self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Opaque")
 
     def on_key10(self, value):
-        # log.debug("Deco pro key 10", value)
-        # Pass-through mode on hold
+        log.debug("Deco pro key 10", value)
         if value == 0:
             self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Passthrough")
         
@@ -442,7 +444,7 @@ class XPPEN_DecoPro_Base(Reflex):
         canvas.send(f"change_brush_size {value} {self.last_ABS_X} {self.last_ABS_Y}")
 
     def on_pen_abs(self, x, y, z, tx, ty):
-        # log.debug("Deco pro key pen_abs", x, y, z, tx, ty)
+        # log.debug("Base: Deco pro key on_pen_abs", x, y, z, tx, ty, self.touching)
 
         if self.touching and distance(self.touch_x, self.touch_y, x, y) > 10:
             canvas.send(f"draw {self.touch_x} {self.touch_y} {x} {y}")
@@ -469,12 +471,12 @@ class XPPEN_DecoPro_Base(Reflex):
             eb.function("ABS", x, y, 0, 0, 0)
     
     def on_pen_btn_close(self, value):
-        # log.debug("Deco pro key pen_btn_close", value)
+        log.debug("Base: Deco pro key pen_btn_close", value)
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
-            eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
+            eb.update("BTN_TOOL_PEN", value)
 
     def on_pen_btn_touch(self, value, x, y):
-        log.debug("Deco pro key pen_btn_touch", value)
+        log.debug("Base: Deco pro key pen_btn_touch", value)
 
         if self.erasing:
             return
@@ -490,7 +492,7 @@ class XPPEN_DecoPro_Base(Reflex):
             canvas.send(f"draw {x} {y} {x+1} {y+1}")
 
     def on_pen_btn_low(self, value, x, y):
-        log.debug("Deco pro key pen_btn_low", value)
+        log.debug("Base: Deco pro key pen_btn_low", value)
         
         if self.erasing and value == 0:
             canvas.send(f"save_present")
@@ -511,8 +513,8 @@ class XPPEN_DecoPro_Base(Reflex):
             # canvas.send(f"erase {x} {y} {x+1} {y+1}")
         
     def on_pen_btn_high(self, value, x, y):
-        log.debug("Deco pro key pen_btn_high", value)
-        canvas.send(f"toggle_menu")
+        log.debug("Base: Deco pro key pen_btn_high", value)
+        # canvas.send(f"toggle_menu")
 
 
 class XPPEN_DecoPro_Transparent(XPPEN_DecoPro_Base): # N
@@ -522,7 +524,7 @@ class XPPEN_DecoPro_Transparent(XPPEN_DecoPro_Base): # N
 
     def on_activate(self):
         super().on_activate()
-        log.info("mode transparent")
+        log.info("Transparent: on_activate")
         canvas.send(f"set_page_mode {MODE_TRANSPARENT}")
 
 
@@ -535,7 +537,7 @@ class XPPEN_DecoPro_Opaque(XPPEN_DecoPro_Base): # N
     
     def on_activate(self):
         super().on_activate()
-        log.info("mode opaque")
+        log.info("Opaque: on_activate")
         canvas.send(f"set_page_mode {MODE_OPAQUE}")
 
 
@@ -573,45 +575,50 @@ class XPPEN_DecoPro_Passthrough(XPPEN_DecoPro_Base):
     #     log.debug("Deco pro key 21", value)
         
     def on_key30(self, value):
-        log.debug("Deco pro key 30", value)
+        log.debug("Passthrough: Deco pro key 30", value)
         
     def on_key31(self, value):
-        log.debug("Deco pro key 31", value)
+        log.debug("Passthrough: Deco pro key 31", value)
     
     def on_orb_rel(self, rel_x, rel_y):
-        log.debug("Deco pro key orb_rel", rel_x, rel_y)
+        log.debug("Passthrough: Deco pro key orb_rel", rel_x, rel_y)
     
     def on_orb_wheel(self, value):
-        log.debug("Deco pro key orb_wheel", value)
+        log.debug("Passthrough: Deco pro key orb_wheel", value)
     
     def on_pen_abs(self, x, y, z, tx, ty):
-        # log.debug("Deco pro key pen_abs", abs_x, abs_y, pressure, tx, ty)
+        # log.debug("Passthrough: Deco pro key on_pen_abs", x, y, z, tx, ty)
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.function("ABS", x, y, z, tx, ty)
     
     def on_pen_btn_close(self, value):
-        # log.debug("Deco pro key pen_btn_close", value)
+        log.debug("Passthrough: Deco pro key pen_btn_close", value)
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
-            eb.update("BTN_TOOL_PEN", self.saw_BTN_TOOL_PEN)
+            eb.update("BTN_TOOL_PEN", value)
 
     def on_pen_btn_touch(self, value, x, y):
-        # log.debug("Deco pro key pen_btn_touch", value)
+        log.debug("Passthrough: Deco pro key pen_btn_touch", value)
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
-            eb.update("BTN_TOUCH", self.saw_BTN_TOUCH)
+            eb.update("BTN_TOUCH", value)
 
     def on_pen_btn_low(self, value, x, y):
-        # log.debug("Deco pro key pen_btn_low", value)
-        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
-            eb.update("BTN_MIDDLE", self.saw_BTN_STYLUS)
+        log.debug("Passthrough: Deco pro key pen_btn_low", value)
+        with VirtualMouseEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
+            eb.update("ABS_X", x)
+            eb.update("ABS_Y", y)
+            eb.update("BTN_MIDDLE", value)
 
     def on_pen_btn_high(self, value, x, y):
-        # log.debug("Deco pro key pen_btn_high", value)
-        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
-            eb.update("BTN_RIGHT", self.saw_BTN_TOUCH)
+        log.debug("Passthrough: Deco pro key pen_btn_high", value)
+        
+        with VirtualMouseEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
+            eb.update("REL_X", 0)
+            eb.update("REL_Y", 0)
+            eb.update("BTN_RIGHT", value)
 
     def on_activate(self):
         super().on_activate()
-        log.info("mode passthrough")
+        log.info("Passthrough: on_activate")
         canvas.send(f"set_page_mode {MODE_PASSTHROUGH}")
 
 

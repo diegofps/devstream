@@ -8,6 +8,9 @@ import log
 
 TOPIC_VIRTUALPEN_EVENT = "VirtualPen"
 
+MAX_X = 32767
+MAX_Y = 32767
+
 
 class VirtualPenEvent(VirtualDeviceEvent):
     def __init__(self, mind, source):
@@ -18,10 +21,10 @@ class VirtualPen(VirtualDevice):
 
     def __init__(self, shadow):
 
-        super().__init__(shadow, "devstream_pen")
+        super().__init__(shadow, name="devstream_pen") # , vendor=0x28bd, product=0x904, version=0x100, input_props=[1], bustype=0x11
         
-        self.mouse_x = 32767 / 2
-        self.mouse_y = 32767 / 2
+        self.mouse_x = MAX_X / 2
+        self.mouse_y = MAX_Y / 2
 
         self.init_keys()
         self.add_listener(TOPIC_VIRTUALPEN_EVENT, self.on_event)
@@ -31,13 +34,13 @@ class VirtualPen(VirtualDevice):
         return {
             e.EV_KEY : [
                 e.BTN_TOOL_PEN, e.BTN_TOUCH, e.BTN_STYLUS, 
-                e.BTN_TOOL_RUBBER, e.BTN_TOOL_MOUSE, e.BTN_STYLUS2, 
-                e.BTN_LEFT, e.BTN_RIGHT, e.BTN_MIDDLE, e.BTN_SIDE, e.BTN_EXTRA, 
+                # e.BTN_TOOL_RUBBER, e.BTN_TOOL_MOUSE, e.BTN_STYLUS2, 
+                # e.BTN_LEFT, e.BTN_RIGHT, e.BTN_MIDDLE, e.BTN_SIDE, e.BTN_EXTRA, 
             ],
 
             e.EV_ABS: [
-                (e.ABS_X, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=280)), 
-                (e.ABS_Y, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=158)), 
+                (e.ABS_X, AbsInfo(value=0, min=0, max=+MAX_X, fuzz=0, flat=0, resolution=200)), 
+                (e.ABS_Y, AbsInfo(value=0, min=0, max=+MAX_Y, fuzz=0, flat=0, resolution=200)), 
                 (e.ABS_PRESSURE, AbsInfo(value=0, min=0, max=+8191, fuzz=0, flat=0, resolution=1024)), 
                 (e.ABS_TILT_X, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=256)), 
                 (e.ABS_TILT_Y, AbsInfo(value=0, min=-127, max=+127, fuzz=0, flat=0, resolution=256)), 
@@ -61,7 +64,7 @@ class VirtualPen(VirtualDevice):
         
         self.add_keys([
             "BTN_TOOL_PEN", "BTN_STYLUS", "BTN_TOUCH",
-            ("BTN_RIGHT", 90001), ("BTN_LEFT", 90004), ("BTN_MIDDLE", 90005), ("BTN_SIDE", 90004), ("BTN_EXTRA", 90005), 
+            # ("BTN_RIGHT", 90001), ("BTN_LEFT", 90004), ("BTN_MIDDLE", 90005), ("BTN_SIDE", 90004), ("BTN_EXTRA", 90005), 
         ])
 
     def function_ABS(self, x, y, pressure, tilt_x, tilt_y):

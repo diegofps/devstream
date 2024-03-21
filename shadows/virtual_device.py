@@ -64,8 +64,8 @@ class VirtualDeviceEvent:
         event = (VirtualDeviceEvent.FUNCTION, self.source, function_name, *args)
         self.sequence.append(event)
 
-    def sleep(self, delay):
-        event = (VirtualDeviceEvent.SLEEP, delay, self.source)
+    def sleep(self, delay_in_seconds):
+        event = (VirtualDeviceEvent.SLEEP, delay_in_seconds, self.source)
         self.sequence.append(event)
     
     def emit(self):
@@ -84,14 +84,14 @@ class VirtualDeviceEvent:
 
 class VirtualDevice(Reflex):
 
-    def __init__(self, shadow, devname=None):
+    def __init__(self, shadow, name=None, version=0x3, product=0x1, vendor=0x1, input_props=None, bustype=0x3):
         super().__init__(shadow)
         self.functions = {}
 
         cap = self.get_capabilities()
 
-        if devname is not None:
-            self.vdev = UInput(cap, name=devname, version=0x3)
+        if name is not None:
+            self.vdev = UInput(cap, name=name, version=version, product=product, vendor=vendor, input_props=input_props, bustype=bustype)
         else:
             self.vdev = None
 

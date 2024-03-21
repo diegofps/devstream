@@ -19,7 +19,7 @@ class VirtualMouse(VirtualDevice):
 
     def __init__(self, shadow):
         
-        super().__init__(shadow, "devstream_mouse")
+        super().__init__(shadow, "devstream_mouse", vendor=0x951, product=0x16c6, version=0x111, bustype=0x11)
         
         self.init_keys()
         self.add_listener(TOPIC_VIRTUALMOUSE_EVENT, self.on_event)
@@ -32,8 +32,8 @@ class VirtualMouse(VirtualDevice):
             ],
 
             e.EV_ABS: [
-                (e.ABS_X, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=0)), 
-                (e.ABS_Y, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=0)), 
+                # (e.ABS_X, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=0)), 
+                # (e.ABS_Y, AbsInfo(value=0, min=0, max=+32767, fuzz=0, flat=0, resolution=0)), 
             ],
 
             e.EV_REL : [
@@ -52,8 +52,8 @@ class VirtualMouse(VirtualDevice):
 
     def init_keys(self):
 
-        self.ABS_X   = DirectKey("ABS_X",   self.vdev, e.EV_ABS, e.ABS_X)
-        self.ABS_Y   = DirectKey("ABS_Y",   self.vdev, e.EV_ABS, e.ABS_Y)
+        # self.ABS_X   = DirectKey("ABS_X",   self.vdev, e.EV_ABS, e.ABS_X)
+        # self.ABS_Y   = DirectKey("ABS_Y",   self.vdev, e.EV_ABS, e.ABS_Y)
         self.REL_X   = DirectKey("REL_X",   self.vdev, e.EV_REL, e.REL_X)
         self.REL_Y   = DirectKey("REL_Y",   self.vdev, e.EV_REL, e.REL_Y)
         self.WHEEL_H = WheelKey ("WHEEL_H", self.vdev, e.EV_REL, e.REL_HWHEEL, e.REL_HWHEEL_HI_RES, 120)
