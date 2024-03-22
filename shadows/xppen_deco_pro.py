@@ -139,6 +139,67 @@ MODE_OPAQUE      = 2
 MODE_PASSTHROUGH = 3
 MODE_DISABLED    = 4
 
+#####################################################################
+
+BIT_BTN_TOUCH_0    = 1 << 0
+BIT_BTN_TOUCH_1    = 1 << 1
+BIT_BTN_STYLUS_0   = 1 << 2
+BIT_BTN_STYLUS_1   = 1 << 3
+BIT_BTN_TOOL_PEN_0 = 1 << 4
+BIT_BTN_TOOL_PEN_1 = 1 << 5
+
+BIT_KEY_SPACE_0 = 1 << 6
+BIT_KEY_SPACE_1 = 1 << 7
+BIT_KEY_LEFTALT_0 = 1 << 8
+BIT_KEY_LEFTALT_1 = 1 << 9
+BIT_KEY_LEFTCTRL_0 = 1 << 10
+BIT_KEY_LEFTCTRL_1 = 1 << 11
+BIT_KEY_E_0 = 1 << 12
+BIT_KEY_E_1 = 1 << 13
+BIT_KEY_B_0 = 1 << 14
+BIT_KEY_B_1 = 1 << 15
+BIT_KEY_V_0 = 1 << 16
+BIT_KEY_V_1 = 1 << 17
+BIT_KEY_S_0 = 1 << 18
+BIT_KEY_S_1 = 1 << 19
+BIT_KEY_Z_0 = 1 << 20
+BIT_KEY_Z_1 = 1 << 21
+BIT_KEY_N_0 = 1 << 22
+BIT_KEY_N_1 = 1 << 23
+
+BIT_BTN_0_0 = 1 << 24
+BIT_BTN_0_1 = 1 << 25
+BIT_BTN_1_0 = 1 << 26
+BIT_BTN_1_1 = 1 << 27
+BIT_BTN_2_0 = 1 << 28
+BIT_BTN_2_1 = 1 << 29
+BIT_BTN_3_0 = 1 << 30
+BIT_BTN_3_1 = 1 << 31
+BIT_BTN_4_0 = 1 << 32
+BIT_BTN_4_1 = 1 << 33
+BIT_BTN_5_0 = 1 << 34
+BIT_BTN_5_1 = 1 << 35
+BIT_BTN_6_0 = 1 << 36
+BIT_BTN_6_1 = 1 << 37
+BIT_BTN_7_0 = 1 << 38
+BIT_BTN_7_1 = 1 << 39
+
+BIT_MSC_SCAN_700e0 = 1 << 40
+BIT_MSC_SCAN_700e2 = 1 << 41
+BIT_MSC_SCAN_70011 = 1 << 42
+BIT_MSC_SCAN_70016 = 1 << 43
+BIT_MSC_SCAN_70019 = 1 << 44
+BIT_MSC_SCAN_70005 = 1 << 45
+BIT_MSC_SCAN_70008 = 1 << 46
+BIT_MSC_SCAN_d0042 = 1 << 47
+BIT_MSC_SCAN_d0044 = 1 << 48
+
+BIT_BTN_STYLUS2_0   = 1 << 49
+BIT_BTN_STYLUS2_1   = 1 << 50
+
+BIT_MSC_SCAN_d0045 = 1 << 51
+BIT_BTN_TOOL_RUBBER_0 = 1 << 52
+BIT_BTN_TOOL_RUBBER_1 = 1 << 53
 
 #####################################################################
 
@@ -185,6 +246,55 @@ class XPPEN_DecoPro_Base(Reflex):
 
         self.username = None
         self.userdisplay = None
+
+        self.pattern_match_pos = {
+
+            140737488355330:(self.on_pen_btn_touch, 1),
+            140737488355329:(self.on_pen_btn_touch, 0),
+
+            281474976710696:(self.on_pen_btn_low, 1),
+            281474976710664:(self.on_pen_btn_low, 1),
+            281474976710660:(self.on_pen_btn_low, 0),
+
+            422212465065994:(self.on_pen_btn_high, 1),
+            11258999068426242:(self.on_pen_btn_high, 1),
+            422212465065989:(self.on_pen_btn_high, 0),
+            2251799813685249:(self.on_pen_btn_high, 0),
+            140737488355345:(self.on_pen_btn_high, 0),
+            2533274790395913:(self.on_pen_btn_high, 0),
+            4503599627370496:(None, 1), # This is a second release event for the upper button (using the rubber button)
+        }
+
+        self.pattern_match = {
+
+            # 32:(self.on_pen_btn_close, 1),
+            # 16:(self.on_pen_btn_close, 0),
+
+            # Keys
+            35184372121600:(self.on_key00, 1),
+            35184372105216:(self.on_key00, 0),
+
+            70368744185856:(self.on_key01, 1),
+            70368744181760:(self.on_key01, 0),
+            
+            2199023256064:(self.on_key10, 1),
+            2199023255808:(self.on_key10, 0),
+            
+            128:(self.on_key11, 1),
+            64:(self.on_key11, 0),
+            
+            17592186175488:(self.on_key20, 1),
+            17592186109952:(self.on_key20, 0),
+            
+            9895605176320:(self.on_key21, 1),
+            9895604913152:(self.on_key21, 0),
+            
+            1099513726976:(self.on_key30, 1),
+            1099512677376:(self.on_key30, 0),
+            
+            7696589785600:(self.on_key31, 1),
+            7696585590016:(self.on_key31, 0),
+        }
         
 
     def on_event(self, topic_name, evt):
@@ -207,57 +317,86 @@ class XPPEN_DecoPro_Base(Reflex):
                 self.saw_ABS_TILT_Y = evt.value
             elif evt.code == e.ABS_PRESSURE:
                 self.saw_ABS_PRESSURE = evt.value
-                # if evt.value == 8191:
-                #     self.saw_ABS_PRESSURE_8191 = True
-                # if evt.value == 0:
-                #     self.saw_ABS_PRESSURE_0 = True
 
         if evt.type == e.EV_KEY:
 
             if evt.code == e.BTN_TOUCH:
-                self.saw_BTN_TOUCH = evt.value
-
+                self.saw_pattern |=  BIT_BTN_TOUCH_1 if evt.value else BIT_BTN_TOUCH_0
             elif evt.code == e.BTN_STYLUS:
-                self.saw_BTN_STYLUS = evt.value
-
+                self.saw_pattern |=  BIT_BTN_STYLUS_1 if evt.value else BIT_BTN_STYLUS_0
             elif evt.code == e.BTN_STYLUS2:
-                self.saw_BTN_STYLUS2 = evt.value
-
+                self.saw_pattern |=  BIT_BTN_STYLUS2_1 if evt.value else BIT_BTN_STYLUS2_0
             elif evt.code == e.BTN_TOOL_PEN:
                 self.saw_BTN_TOOL_PEN = evt.value
+                self.saw_pattern |=  BIT_BTN_TOOL_PEN_1 if evt.value else BIT_BTN_TOOL_PEN_0
+            elif evt.code == e.BTN_TOOL_RUBBER:
+                self.saw_pattern |=  BIT_BTN_TOOL_RUBBER_1 if evt.value else BIT_BTN_TOOL_RUBBER_0
 
-
-            if isinstance(evt.code, list):
+            elif evt.code == e.BTN_0:
+                self.saw_pattern |=  BIT_BTN_0_1 if evt.value else BIT_BTN_0_0
+            elif evt.code == e.BTN_1:
+                self.saw_pattern |=  BIT_BTN_1_1 if evt.value else BIT_BTN_1_0
+            elif evt.code == e.BTN_2:
+                self.saw_pattern |=  BIT_BTN_2_1 if evt.value else BIT_BTN_2_0
+            elif evt.code == e.BTN_3:
+                self.saw_pattern |=  BIT_BTN_3_1 if evt.value else BIT_BTN_3_0
+            elif evt.code == e.BTN_4:
+                self.saw_pattern |=  BIT_BTN_4_1 if evt.value else BIT_BTN_4_0
+            elif evt.code == e.BTN_5:
+                self.saw_pattern |=  BIT_BTN_5_1 if evt.value else BIT_BTN_5_0
+            elif evt.code == e.BTN_6:
+                self.saw_pattern |=  BIT_BTN_6_1 if evt.value else BIT_BTN_6_0
+            elif evt.code == e.BTN_7:
+                self.saw_pattern |=  BIT_BTN_7_1 if evt.value else BIT_BTN_7_0
+            
+            elif evt.code == e.KEY_SPACE:
+                self.saw_pattern |=  BIT_KEY_SPACE_1 if evt.value else BIT_KEY_SPACE_0
+            elif evt.code == e.KEY_LEFTALT:
+                self.saw_pattern |=  BIT_KEY_LEFTALT_1 if evt.value else BIT_KEY_LEFTALT_0
+            elif evt.code == e.KEY_LEFTCTRL:
+                self.saw_pattern |=  BIT_KEY_LEFTCTRL_1 if evt.value else BIT_KEY_LEFTCTRL_0
+            elif evt.code == e.KEY_E:
+                self.saw_pattern |=  BIT_KEY_E_1 if evt.value else BIT_KEY_E_0
+            elif evt.code == e.KEY_B:
+                self.saw_pattern |=  BIT_KEY_B_1 if evt.value else BIT_KEY_B_0
+            elif evt.code == e.KEY_V:
+                self.saw_pattern |=  BIT_KEY_V_1 if evt.value else BIT_KEY_V_0
+            elif evt.code == e.KEY_S:
+                self.saw_pattern |=  BIT_KEY_S_1 if evt.value else BIT_KEY_S_0
+            elif evt.code == e.KEY_Z:
+                self.saw_pattern |=  BIT_KEY_Z_1 if evt.value else BIT_KEY_Z_0
+            elif evt.code == e.KEY_N:
+                self.saw_pattern |=  BIT_KEY_N_1 if evt.value else BIT_KEY_N_0
+            
+            elif isinstance(evt.code, list):
                 if e.BTN_0 in evt.code:
-                    self.saw_BTN_0 = evt.value
-            else:
-                if evt.code == e.BTN_0:
-                    self.saw_BTN_0 = evt.value
-                elif evt.code == e.BTN_1:
-                    self.saw_BTN_1 = evt.value
-                elif evt.code == e.BTN_2:
-                    self.saw_BTN_2 = evt.value
-                elif evt.code == e.BTN_3:
-                    self.saw_BTN_3 = evt.value
-                elif evt.code == e.BTN_4:
-                    self.saw_BTN_4 = evt.value
-                elif evt.code == e.BTN_5:
-                    self.saw_BTN_5 = evt.value
-                elif evt.code == e.BTN_6:
-                    self.saw_BTN_6 = evt.value
-                elif evt.code == e.BTN_7:
-                    self.saw_BTN_7 = evt.value
+                    self.saw_pattern |=  BIT_BTN_0_1 if evt.value else BIT_BTN_0_0
+            
 
         if evt.type == e.EV_MSC:
 
             if evt.code == e.MSC_SCAN:
-                self.saw_MSC_SCAN = evt.value
-                # if evt.value == 852034:
-                #     self.saw_MSC_SCAN_852034 = evt.value
-                # elif evt.value == 852036:
-                #     self.saw_MSC_SCAN_852036 = evt.value
-                # elif evt.value == 852037:
-                #     self.saw_MSC_SCAN_852037 = evt.value
+
+                if evt.value == 0x700e0:
+                    self.saw_pattern |= BIT_MSC_SCAN_700e0
+                elif evt.value == 0x700e2:
+                    self.saw_pattern |= BIT_MSC_SCAN_700e2
+                elif evt.value == 0x70011:
+                    self.saw_pattern |= BIT_MSC_SCAN_70011
+                elif evt.value == 0x70016:
+                    self.saw_pattern |= BIT_MSC_SCAN_70016
+                elif evt.value == 0x70019:
+                    self.saw_pattern |= BIT_MSC_SCAN_70019
+                elif evt.value == 0x70005:
+                    self.saw_pattern |= BIT_MSC_SCAN_70005
+                elif evt.value == 0x70008:
+                    self.saw_pattern |= BIT_MSC_SCAN_70008
+                elif evt.value == 0xd0042:
+                    self.saw_pattern |= BIT_MSC_SCAN_d0042
+                elif evt.value == 0xd0044:
+                    self.saw_pattern |= BIT_MSC_SCAN_d0044
+                elif evt.value == 0xd0045:
+                    self.saw_pattern |= BIT_MSC_SCAN_d0045
 
         if evt.type == e.EV_REL:
 
@@ -271,19 +410,6 @@ class XPPEN_DecoPro_Base(Reflex):
         if evt.type == e.EV_SYN:
 
             if evt.code == e.SYN_REPORT:
-
-                # Pen
-                if self.saw_BTN_TOUCH is not None:
-                    self.on_pen_btn_touch(self.saw_BTN_TOUCH, self.last_ABS_X, self.last_ABS_Y)
-                
-                if self.saw_BTN_STYLUS is not None:
-                    self.on_pen_btn_low(self.saw_BTN_STYLUS, self.last_ABS_X, self.last_ABS_Y)
-                
-                if self.saw_BTN_STYLUS2 is not None:
-                    self.on_pen_btn_high(self.saw_BTN_STYLUS2, self.last_ABS_X, self.last_ABS_Y)
-                    
-                if self.saw_BTN_TOOL_PEN is not None:
-                    self.on_pen_btn_close(self.saw_BTN_TOOL_PEN)
 
                 if (
                     self.saw_ABS_X is not None or 
@@ -312,29 +438,31 @@ class XPPEN_DecoPro_Base(Reflex):
                         self.last_ABS_Y, 
                         self.last_ABS_PRESSURE, 
                         self.last_ABS_TILT_X, 
-                        self.last_ABS_TILT_Y,
+                        self.last_ABS_TILT_Y, 
                     )
                 
-                # Keys
-                if self.saw_BTN_0 is not None:
-                    self.on_key00(self.saw_BTN_0)
-                elif self.saw_BTN_1 is not None:
-                    self.on_key01(self.saw_BTN_1)
+                any_match = False
+
+                match = self.pattern_match.get(self.saw_pattern)
+
+                if match is not None:
+                    if match[0] is not None:
+                        match[0](match[1])
+                    any_match = True
                 
-                elif self.saw_BTN_2 is not None:
-                    self.on_key10(self.saw_BTN_2)
-                elif self.saw_BTN_3 is not None:
-                    self.on_key11(self.saw_BTN_3)
+                match = self.pattern_match_pos.get(self.saw_pattern)
+
+                if match is not None:
+                    if match[0] is not None:
+                        match[0](match[1], self.last_ABS_X, self.last_ABS_Y)
+                    any_match = True
                 
-                elif self.saw_BTN_4 is not None:
-                    self.on_key20(self.saw_BTN_4)
-                elif self.saw_BTN_5 is not None:
-                    self.on_key21(self.saw_BTN_5)
-                
-                elif self.saw_BTN_6 is not None:
-                    self.on_key30(self.saw_BTN_6)
-                elif self.saw_BTN_7 is not None:
-                    self.on_key31(self.saw_BTN_7)
+                if self.saw_pattern != 0 and not any_match:
+                    log.debug(f"Unknown deco pro key pattern: {self.saw_pattern}")
+
+                # Close
+                if self.saw_BTN_TOOL_PEN is not None:
+                    self.on_pen_btn_close(self.saw_BTN_TOOL_PEN)
                 
                 # Orb
                 if self.saw_REL_WHEEL is not None:
@@ -355,16 +483,6 @@ class XPPEN_DecoPro_Base(Reflex):
 
     def clear(self):
 
-        # Buttons
-        self.saw_BTN_0 = None
-        self.saw_BTN_1 = None
-        self.saw_BTN_2 = None
-        self.saw_BTN_3 = None
-        self.saw_BTN_4 = None
-        self.saw_BTN_5 = None
-        self.saw_BTN_6 = None
-        self.saw_BTN_7 = None
-
         # Touchpad
         self.saw_REL_X = None
         self.saw_REL_Y = None
@@ -378,14 +496,10 @@ class XPPEN_DecoPro_Base(Reflex):
         self.saw_ABS_PRESSURE = None
         self.saw_ABS_TILT_X = None
         self.saw_ABS_TILT_Y = None
+        self.saw_BTN_TOOL_PEN = None
 
-        self.saw_BTN_TOUCH = None    # Touching the tablet
-        self.saw_BTN_STYLUS = None   # Lower pen button
-        self.saw_BTN_STYLUS2 = None  # Upper pen button
-        self.saw_BTN_TOOL_PEN = None # Pen is close to tablet
-
-        # Extra codes
-        self.saw_MSC_SCAN = None
+        # Buttons and Keys
+        self.saw_pattern = 0
 
     def on_activate(self):
         self.clear()
@@ -446,6 +560,10 @@ class XPPEN_DecoPro_Base(Reflex):
     def on_pen_abs(self, x, y, z, tx, ty):
         # log.debug("Base: Deco pro key on_pen_abs", x, y, z, tx, ty, self.touching)
 
+        # log.debug("Dispatching update")
+        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
+            eb.function("ABS", x, y, 0, 0, 0)
+    
         if self.touching and distance(self.touch_x, self.touch_y, x, y) > 10:
             canvas.send(f"draw {self.touch_x} {self.touch_y} {x} {y}")
             self.touch_x = x
@@ -466,10 +584,6 @@ class XPPEN_DecoPro_Base(Reflex):
         self.last_x = x
         self.last_y = y
         
-        # log.debug("Dispatching update")
-        with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
-            eb.function("ABS", x, y, 0, 0, 0)
-    
     def on_pen_btn_close(self, value):
         log.debug("Base: Deco pro key pen_btn_close", value)
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
