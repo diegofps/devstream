@@ -585,7 +585,11 @@ class XPPEN_DecoPro_Base(Reflex):
         self.last_y = y
         
     def on_pen_btn_close(self, value):
+        if value == 0:
+            return
+        
         log.debug("Base: Deco pro key pen_btn_close", value)
+
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_TOOL_PEN", value)
 
