@@ -11,11 +11,14 @@ from reflex import Reflex
 from threading import Thread
 from queue import Queue
 
+import base64
 import time
 import math
 import log
 import sys
 import os
+
+TOPIC_NOTIFICATION_CHANGED = "NotificationChanged"
 
 SOURCE_XPPEN_DECO_PRO = "XPPen Deco Pro"
 
@@ -227,9 +230,13 @@ class XPPEN_DecoPro_Base(Reflex):
 
     def __init__(self, shadow):
         super().__init__(shadow)
+
         self.configure_states(TOPIC_DECOPRO_STATE, TOPIC_DECOPRO_EVENT)
         self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
+        self.add_listener(TOPIC_NOTIFICATION_CHANGED, self.on_notification_changed)
         self.clear()
+
+        self.notificationQueue = []
 
         self.last_ABS_X = 0
         self.last_ABS_Y = 0
@@ -481,6 +488,28 @@ class XPPEN_DecoPro_Base(Reflex):
             canvas.username, canvas.userdisplay = event[0]
         log.info("Login changed received", self.username, self.userdisplay)
 
+    def on_notification_changed(self, topic_name, event):
+        log.info("Processing notification changed event:", event)
+
+        if len(event) == 0 or len(event[0]) != 2:
+            log.warn("Invalid notification changed event: ", event)
+            return
+
+        message, state = event[0]
+
+        for i,n in enumerate(self.notificationQueue):
+            if n[0] == message:
+                if state is None:
+                    del self.notificationQueue[i]
+                else:
+                    n[1] = state
+                break
+        else:
+            self.notificationQueue.append([message, state])
+        
+        notificationBase64 = base64.encode('\n'.join([x[0] for x in self.notificationQueue]))
+        canvas.send("set_notification " + notificationBase64)
+        
     def clear(self):
 
         # Touchpad
@@ -600,7 +629,7 @@ class XPPEN_DecoPro_Base(Reflex):
             return
         
         if self.touching and value == 0:
-            canvas.send(f"save_present")
+            canvas.send("save_present")
 
         self.touching = value != 0
         
@@ -613,7 +642,7 @@ class XPPEN_DecoPro_Base(Reflex):
         log.debug("Base: Deco pro key pen_btn_low", value)
         
         if self.erasing and value == 0:
-            canvas.send(f"save_present")
+            canvas.send("save_present")
 
         self.erasing = value != 0
 
@@ -625,7 +654,7 @@ class XPPEN_DecoPro_Base(Reflex):
             self.erase_y = y
 
             if self.touching:
-                canvas.send(f"save_present")
+                canvas.send("save_present")
                 self.touching = False
 
             # canvas.send(f"erase {x} {y} {x+1} {y+1}")

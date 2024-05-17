@@ -92,97 +92,101 @@ MACRO_KEYBOARDS = {
                 (e.KEY_T,1):[("record","MK")],
                 (e.KEY_S,1):[("record","ML")],
                 
-                (e.KEY_L,1):[("finish",)],
-                (e.KEY_K,1):[("finish",)],
-                (e.KEY_J,1):[("finish",)],
-                (e.KEY_I,1):[("finish",)],
-                (e.KEY_H,1):[("finish",)],
-                (e.KEY_G,1):[("finish",)],
-                (e.KEY_3,1):[("finish",)],
-                (e.KEY_2,1):[("finish",)],
-                (e.KEY_1,1):[("finish",)],
-                (e.KEY_0,1):[("finish",)],
-                (e.KEY_Z,1):[("finish",)],
-                (e.KEY_Y,1):[("finish",)],
+                (e.KEY_L,1):[("save",)],
+                (e.KEY_K,1):[("save",)],
+                (e.KEY_J,1):[("save",)],
+                (e.KEY_I,1):[("save",)],
+                (e.KEY_H,1):[("save",)],
+                (e.KEY_G,1):[("save",)],
+                (e.KEY_3,1):[("save",)],
+                (e.KEY_2,1):[("save",)],
+                (e.KEY_1,1):[("save",)],
+                (e.KEY_0,1):[("save",)],
+                (e.KEY_Z,1):[("save",)],
+                (e.KEY_Y,1):[("save",)],
             },
         },
     },
 
     "HyperX HyperX Mars Gaming KeyBoard": {
         "mem": {
-            "state": "state1",
+            "state": "stateIdle",
+            "group": "A",
         },
 
         "actions": {
 
-            # Default state. 
+            # State Idle. 
             # Macro keys will be executed a single time when pressed. 
             # Hold to repeat.
 
-            "state1": {
-                (e.KEY_KP0,1):[("play","KA", 1)], 
-                (e.KEY_KP1,1):[("play","KB", 1)],
-                (e.KEY_KP2,1):[("play","KC", 1)],
-                (e.KEY_KP3,1):[("play","KD", 1)],
-                (e.KEY_KP4,1):[("play","KE", 1)],
-                (e.KEY_KP5,1):[("play","KF", 1)],
-                (e.KEY_KP6,1):[("play","KG", 1)], 
-                (e.KEY_KP7,1):[("play","KH", 1)],
-                (e.KEY_KP8,1):[("play","KI", 1)],
-                (e.KEY_KP9,1):[("play","KJ", 1)],
+            "stateIdle": 
+            {
+                (e.KEY_NUMLOCK   ,1):[("move_group","A")], 
+                (e.KEY_KPSLASH   ,1):[("move_group","B")], 
+                (e.KEY_KPASTERISK,1):[("move_group","C")], 
+                (e.KEY_KPMINUS   ,1):[("move_group","D")], 
 
-                (e.KEY_KP0,2):[("play","KA", 1)],
-                (e.KEY_KP1,2):[("play","KB", 1)],
-                (e.KEY_KP2,2):[("play","KC", 1)],
-                (e.KEY_KP3,2):[("play","KD", 1)],
-                (e.KEY_KP4,2):[("play","KE", 1)],
-                (e.KEY_KP5,2):[("play","KF", 1)],
-                (e.KEY_KP6,2):[("play","KG", 1)],
-                (e.KEY_KP7,2):[("play","KH", 1)],
-                (e.KEY_KP8,2):[("play","KI", 1)],
-                (e.KEY_KP9,2):[("play","KJ", 1)],
+                (e.KEY_KP0,1):[("play","0", 1)], 
+                (e.KEY_KP1,1):[("play","1", 1)],
+                (e.KEY_KP2,1):[("play","2", 1)],
+                (e.KEY_KP3,1):[("play","3", 1)],
+                (e.KEY_KP4,1):[("play","4", 1)],
+                (e.KEY_KP5,1):[("play","5", 1)],
+                (e.KEY_KP6,1):[("play","6", 1)], 
+                (e.KEY_KP7,1):[("play","7", 1)],
+                (e.KEY_KP8,1):[("play","8", 1)],
+                (e.KEY_KP9,1):[("play","9", 1)],
+                (e.KEY_KPENTER,1):[("play","ENTER", 1)],
 
-                (e.KEY_KPDOT,1):[("interrupt"), ("move", "state2")],
+                (e.KEY_KP0,2):[("play","0", 1)], 
+                (e.KEY_KP1,2):[("play","1", 1)],
+                (e.KEY_KP2,2):[("play","2", 1)],
+                (e.KEY_KP3,2):[("play","3", 1)],
+                (e.KEY_KP4,2):[("play","4", 1)],
+                (e.KEY_KP5,2):[("play","5", 1)],
+                (e.KEY_KP6,2):[("play","6", 1)], 
+                (e.KEY_KP7,2):[("play","7", 1)],
+                (e.KEY_KP8,2):[("play","8", 1)],
+                (e.KEY_KP9,2):[("play","9", 1)],
+                (e.KEY_KPENTER,2):[("play","ENTER", 1)],
+
+                (e.KEY_KPDOT,0):[("interrupt",), ("move_state", "stateMore")],
             },
 
-            # Record state. 
+            # State More. 
             # Macro keys will be recorded when pressed.
-            # Hold to repeat.
 
-            "state2": {
-                (e.KEY_KP0,1):[("record","KA"), ("move","state3")], 
-                (e.KEY_KP1,1):[("record","KB"), ("move","state3")],
-                (e.KEY_KP2,1):[("record","KC"), ("move","state3")],
-                (e.KEY_KP3,1):[("record","KD"), ("move","state3")],
-                (e.KEY_KP4,1):[("record","KE"), ("move","state3")],
-                (e.KEY_KP5,1):[("record","KF"), ("move","state3")],
-                (e.KEY_KP6,1):[("record","KG"), ("move","state3")],
-                (e.KEY_KP7,1):[("record","KH"), ("move","state3")],
-                (e.KEY_KP8,1):[("record","KI"), ("move","state3")],
-                (e.KEY_KP9,1):[("record","KJ"), ("move","state3")],
+            "stateMore": 
+            {
+                (e.KEY_KP0,1):[("record","0"), ("move_state","stateRec")], 
+                (e.KEY_KP1,1):[("record","1"), ("move_state","stateRec")],
+                (e.KEY_KP2,1):[("record","2"), ("move_state","stateRec")],
+                (e.KEY_KP3,1):[("record","3"), ("move_state","stateRec")],
+                (e.KEY_KP4,1):[("record","4"), ("move_state","stateRec")],
+                (e.KEY_KP5,1):[("record","5"), ("move_state","stateRec")],
+                (e.KEY_KP6,1):[("record","6"), ("move_state","stateRec")],
+                (e.KEY_KP7,1):[("record","7"), ("move_state","stateRec")],
+                (e.KEY_KP8,1):[("record","8"), ("move_state","stateRec")],
+                (e.KEY_KP9,1):[("record","9"), ("move_state","stateRec")],
+                (e.KEY_KPENTER,1):[("record","ENTER"), ("move_state","stateRec")],
 
-                (e.KEY_KPDOT,0):[("move", "state1")],
+                (e.KEY_KPDOT,0):[("move_state", "stateIdle")],
             },
 
-            # Finish state. Macro will stop recording if DOT is pressed. 
-            # Macro keys will be executed a single time if pressed.
+            # State Rec. 
+            # Macro will be saved if DOT is pressed. 
+            # Keys 0, 1, 2, and 3 will add delay (0.01, 0.1, 1, 10) seconds
+            # Enter will cancel the recording
 
             "state3": {
-                (e.KEY_KP0,1):[("see",)],
+                (e.KEY_KP0,1):[("wait",  0.01)], 
+                (e.KEY_KP1,1):[("wait",  0.1)],
+                (e.KEY_KP2,1):[("wait",  1)],
+                (e.KEY_KP3,1):[("wait", 10)],
 
-                (e.KEY_KP1,1):[("see_and_click",   e.BTN_LEFT)],
-                (e.KEY_KP2,1):[("see_and_click", e.BTN_MIDDLE)],
-                (e.KEY_KP3,1):[("see_and_click",  e.BTN_RIGHT)],
-
-                (e.KEY_KP4,1):[("see_and_drag",    e.BTN_LEFT)],
-                (e.KEY_KP5,1):[("see_and_drag",  e.BTN_MIDDLE)],
-                (e.KEY_KP6,1):[("see_and_drag",   e.BTN_RIGHT)],
-
-                (e.KEY_KP7,1):[("wait", 0.1)],
-                (e.KEY_KP8,1):[("wait", 1.0)],
-                (e.KEY_KP9,1):[("wait", 10.0)],
-                
-                (e.KEY_KPDOT,1):[("finish",), ("move", "state1")],
+                (e.KEY_KPDOT,0):[("save",), ("move_state", "stateIdle")],
+                (e.KEY_KPENTER,0):[("cancel",), ("move_state", "stateIdle")],
             },
         },
     },
@@ -258,15 +262,6 @@ class MacroPlayer:
                 if task_type == "play":
                     self.play(*task_args)
 
-                # elif task_type == "train_see":
-                #     self.train_see(*task_args)
-
-                # elif task_type == "train_see_and_click":
-                #     self.train_see_and_click(*task_args)
-
-                # elif task_type == "train_see_and_drag":
-                #     self.train_see_and_drag(*task_args)
-                
                 elif task_type == "train_wait":
                     self.train_wait(*task_args)
 
@@ -297,58 +292,6 @@ class MacroPlayer:
         cmd = ("wait", duration)
         macro.sequence.append(cmd)
     
-    # def train_see(self, macro:Macro):
-
-    #     try:
-    #         macro.eye.capture_screen()
-
-    #         region1   = macro.eye.request_region("Select the reference region to search for")
-    #         region1id = macro.eye.learn(region1)
-
-    #         cmd       = ("see", region1, region1id)
-
-    #         macro.sequence.append(cmd)
-
-    #     except EyeException as e:
-    #         log.info("Interrupted see - ", e)
-    
-    # def train_see_and_click(self, macro:Macro, button):
-
-    #     try:
-    #         macro.eye.capture_screen()
-
-    #         region1   = macro.eye.request_region("Select the reference region to search for")
-    #         point1    = macro.eye.request_point("Select coordinate to click")
-    #         region1id = macro.eye.learn(region1)
-
-    #         cmd       = ("see_and_click", region1, point1, region1id, button)
-            
-    #         macro.sequence.append(cmd)
-
-    #     except EyeException as e:
-    #         log.info("Interrupted see_and_click - ", e)
-    
-    # def train_see_and_drag(self, macro:Macro, button):
-        
-    #     try:
-    #         macro.eye.capture_screen()
-
-    #         region1   = macro.eye.request_region("Select the first reference region to search for")
-    #         point1    = macro.eye.request_point("Select coordinate to click")
-
-    #         region2   = macro.eye.request_region("Select the second reference region to search for")
-    #         point2    = macro.eye.request_point("Select coordinate to release the click")
-
-    #         region1id = macro.eye.learn(region1)
-    #         region2id = macro.eye.learn(region2)
-
-    #         cmd       = ("see_and_drag", region1, region2, point1, point2, region1id, region2id, button)
-
-    #         macro.sequence.append(cmd)
-
-    #     except EyeException as e:
-    #         log.info("Interrupted see_and_drag - ", e)
-
     def play(self, macro:Macro, repeat):
         
         try:
@@ -371,18 +314,6 @@ class MacroPlayer:
                     if cmd_type == "press_key":
                         if not self.play_press_key(macro, *cmd_args):
                             break
-
-                    # elif cmd_type == "see":
-                    #     if not self.play_see(macro, *cmd_args):
-                    #         break
-
-                    # elif cmd_type == "see_and_click":
-                    #     if not self.play_see_and_click(macro, *cmd_args):
-                    #         break
-
-                    # elif cmd_type == "see_and_drag":
-                    #     if not self.play_see_and_drag(macro, *cmd_args):
-                    #         break
 
                     elif cmd_type == "wait":
                         if not self.play_wait(macro, *cmd_args):
@@ -411,170 +342,6 @@ class MacroPlayer:
 
         return True
     
-    # def play_see(self, macro:Macro, region1, region1id):
-
-    #     expires_at = time.time() + FIND_TIMEOUT
-    #     target     = None
-
-    #     while time.time() < expires_at:
-    #         macro.eye.capture_screen()
-    #         target = macro.eye.find(region1id)
-
-    #         if not self.stop.locked():
-    #             self.stop.acquire()
-    #             return False
-
-    #         if target is not None:
-    #             return True
-
-    #     return False
-
-    # def play_see_and_click(self, macro:Macro, region1, point1, region1id, mouse_button):
-        
-    #     expires_at = time.time() + FIND_TIMEOUT
-    #     target     = None
-
-    #     log.debug(1)
-    #     macro.eye.capture_screen()
-    #     log.debug(2)
-
-    #     while time.time() < expires_at:
-    #         target = macro.eye.find(region1id)
-    #         log.debug(3)
-
-    #         if not self.stop.locked():
-    #             self.stop.acquire()
-    #             return False
-
-    #         log.debug(4)
-
-    #         if target is not None:
-    #             log.debug("Target found:", target)
-    #             break
-
-    #         log.debug(5)
-    #         macro.eye.capture_screen()
-    #         log.debug(6)
-
-    #     log.debug(7)
-    #     if target is None:
-    #         log.debug("Target not found, returning")
-    #         return False
-
-    #     log.debug(8)
-    #     screen_width, screen_height = macro.eye.screen_size()
-    #     log.debug(9)
-
-    #     x = int((target[0] + point1[0] - region1[0]) * 32767 / screen_width)
-    #     y = int((target[1] + point1[1] - region1[1]) * 32767 / screen_height)
-
-    #     log.debug("Click coordinates:", x, y)
-    #     log.debug("  x ref:", target[0], point1[0], region1[0])
-    #     log.debug("  y ref:", target[1], point1[1], region1[1])
-
-    #     with VirtualPenEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
-
-    #         # Move the mouse to the desired position
-
-    #         eb.forward(e.EV_ABS, e.ABS_X, x)
-    #         eb.forward(e.EV_ABS, e.ABS_Y, y)
-    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-    #         eb.sleep(0.25)
-
-    #         # Click the mouse
-
-    #         eb.forward(e.EV_KEY, mouse_button, 1)
-    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-    #         eb.sleep(0.1)
-
-    #         # Release the mouse
-
-    #         eb.forward(e.EV_KEY, mouse_button, 0)
-    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-    #         eb.sleep(0.1)
-
-    #     log.debug("play_see_and_click finished")
-
-    #     return True
-
-    # def play_see_and_drag(self, macro:Macro, region1, region2, point1, point2, region1id, region2id, mouse_button):
-        
-    #     # Look for first region
-
-    #     expire1 = time.time() + FIND_TIMEOUT
-    #     target1 = None
-
-    #     while time.time() < expire1:
-    #         macro.eye.capture_screen()
-    #         target = macro.eye.find(region1id)
-
-    #         if not self.stop.locked():
-    #             self.stop.acquire()
-    #             return False
-
-    #         if target is not None:
-    #             break
-
-    #     if target is None:
-    #         return False
-
-    #     # Look for second region
-
-    #     expire2 = time.time() + FIND_TIMEOUT
-    #     target2 = None
-
-    #     while time.time() < expire2:
-    #         macro.eye.capture_screen()
-    #         target2 = macro.eye.find(region2id)
-
-    #         if not self.stop.locked():
-    #             self.stop.acquire()
-    #             return False
-
-    #         if target2 is not None:
-    #             break
-
-    #     if target2 is None:
-    #         return False
-
-    #     # Coordinates of the click and drag points
-
-    #     x1 = target1[0] + point1[0] - region1[0]
-    #     y1 = target1[1] + point1[1] - region1[1]
-
-    #     x2 = target2[0] + point2[0] - region2[0]
-    #     y2 = target2[1] + point2[1] - region2[1]
-
-    #     with VirtualPenEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
-
-    #         # Move to first coordinate
-
-    #         eb.forward(e.EV_ABS, e.ABS_X, x1)
-    #         eb.forward(e.EV_ABS, e.ABS_Y, y1)
-    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-    #         eb.sleep(0.25)
-
-    #         # Simulate click
-
-    #         eb.forward(e.EV_KEY, mouse_button, 1)
-    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-    #         eb.sleep(0.1)
-
-    #         # Move to second coordinate
-
-    #         eb.forward(e.EV_ABS, e.ABS_X, x2)
-    #         eb.forward(e.EV_ABS, e.ABS_Y, y2)
-    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-    #         eb.sleep(0.1)
-
-    #         # Simulate click release
-
-    #         eb.forward(e.EV_KEY, mouse_button, 0)
-    #         eb.forward(e.EV_SYN, e.SYN_REPORT, 0)
-    #         eb.sleep(0.1)
-
-    #     return True
-
     def play_wait(self, macro:Macro, seconds):
         
         if seconds < 1.0:
@@ -626,6 +393,7 @@ class MacroKeyboard(Reflex):
         super().on_remove()
         self.macro_player.terminate()
     
+    # Called when a key from a macro keyboard is pressed
     def on_macro_event(self, device_name, event):
 
         if device_name.startswith("DeviceReader:"):
@@ -640,64 +408,62 @@ class MacroKeyboard(Reflex):
         
         state = MACRO_KEYBOARDS[device_name]["mem"]["state"]
         actions = MACRO_KEYBOARDS[device_name]["actions"][state]
-
         action = (event.code, event.value)
 
         if action in actions:
-            for action in actions[action]:
 
-                if action[0] == "move":
-                    MACRO_KEYBOARDS[device_name]["mem"]["state"] = action[1]
+            for action in actions[action]:
+                log.info(f"Parsing action: {action[0]}")
+
+                if action[0] == "move_state":
+                    self.move_state(device_name, action[1])
+
+                elif action[0] == "move_group":
+                    self.move_group(device_name, action[1])
 
                 elif action[0] == "play":
-                    self.play(action[1], action[2])
+                    self.macro_play(device_name, action[1], action[2])
 
                 elif action[0] == "record":
-                    self.record_macro(action[1])
+                    self.macro_record_new(device_name, action[1])
 
-                elif action[0] == "finish":
-                    self.finish_macro()
+                elif action[0] == "save":
+                    self.macro_save()
+
+                elif action[0] == "cancel":
+                    self.macro_cancel()
 
                 elif action[0] == "interrupt":
-                    self.interrupt_macro()
+                    log.info("Calling macro_interrupt")
+                    self.macro_interrupt()
 
-                # elif action[0] == "see":
-                #     self.see()
-
-                # elif action[0] == "see_and_click":
-                #     self.see_and_click(action[1])
-                
-                # elif action[0] == "see_and_drag":
-                #     self.see_and_drag(action[1])
-                
                 elif action[0] == "wait":
-                    self.wait(action[1])
+                    self.macro_push_delay(action[1])
                 
                 else:
-                    log.error("Unknown action - ", action)
+                    log.error("Unknown action:", action)
 
-    def interrupt_macro(self):
-        log.debug("Interrupting macro")
+    def move_state(self, device_name, state_name):
+        log.debug("Moving to state", state_name)
+        MACRO_KEYBOARDS[device_name]["mem"]["state"] = state_name
 
+    def move_group(self, device_name, group_name):
+        log.debug("Moving to group", group_name)
+        MACRO_KEYBOARDS[device_name]["mem"]["group"] = group_name
+
+    def macro_interrupt(self):
+        log.debug("Interrupting macro playback")
         self.macro_player.interrupt()
     
-    # def see(self):
-    #     if self.macro is not None:
-    #         self.macro_player.push(("train_see", self.macro))
-
-    # def see_and_click(self, button):
-    #     if self.macro is not None:
-    #         self.macro_player.push(("train_see_and_click", self.macro, button))
-
-    # def see_and_drag(self, button):
-    #     if self.macro is not None:
-    #         self.macro_player.push(("train_see_and_click", self.macro, button))
-    
-    def wait(self, duration):
+    def macro_push_delay(self, duration):
         if self.macro is not None:
             self.macro_player.push(("train_wait", self.macro, duration))
 
-    def play(self, macro_name, repeat):
+    def macro_play(self, device_name, macro_key, repeat):
+
+        mem = MACRO_KEYBOARDS[device_name]["mem"]
+        macro_name = mem["group"] + macro_key if "group" in mem else macro_key
+
         log.debug("Playing macro - ", macro_name)
 
         if macro_name in self.recorded:
@@ -705,32 +471,46 @@ class MacroKeyboard(Reflex):
             self.macro_player.push(("play", macro, repeat))
 
         else:
-            log.error("Attempting to execute a macro that does not exists - ", macro_name)
+            log.warn("Attempting to execute a macro that does not exists - ", macro_name)
 
-    def record_macro(self, macro_name):
-        log.debug("Recording macro - ", macro_name)
+    def macro_record_new(self, device_name, macro_key):
+
+        mem = MACRO_KEYBOARDS[device_name]["mem"]
+        macro_name = mem["group"] + macro_key if "group" in mem else macro_key
 
         self.macro = Macro(macro_name)
 
-    def finish_macro(self):
-        log.debug("Finishing macro recording")
+        log.debug("Recording macro - ", macro_name)
+
+    def macro_save(self):
+        log.debug("Saving macro")
 
         if self.macro is None:
-            log.error("Attempting to finish a macro recording but no recording is in progress")
+            log.error("Attempting to save a macro recording but no recording is in progress")
             return
         
         if len(self.macro.sequence) == 0:
-            log.error("Nothing to save, macro didn't capture any event - ", self.macro.name)
+            log.warn("Nothing to save, macro didn't capture any event - ", self.macro.name)
         else:
             self.recorded[self.macro.name] = self.macro
             self.export_macros()
         
         self.macro = None
     
+    def macro_cancel(self):
+        log.debug("Canceling macro recording")
+
+        if self.macro is None:
+            log.error("Attempting to cancel a macro recording but no recording is in progress")
+            return
+        
+        self.macro = None
+
+    # Called when a key is being sent to the virtual keyboard
+    # This is used to record the macro
     def on_output_event(self, topic_name, event):
 
-        # Check if we should ignore this event
-
+        # We ignore the event if no macro is being recorded
         if self.macro is None:
             return
         
@@ -743,12 +523,15 @@ class MacroKeyboard(Reflex):
         code   = event[2]
         source = event[4] if len(event) >= 5 else None
         
+        # We ignore keys generated from a macro playback
         if source in IGNORE_SOURCE:
             return
         
+        # We also ignore SYN events
         if type in IGNORE_TYPE:
             return
         
+        # And finally we ignore numpad keys
         if code in IGNORE_CODE:
             return
         

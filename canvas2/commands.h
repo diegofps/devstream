@@ -137,4 +137,18 @@ public:
     void add() { }
 };
 
+class SetNotificationCommand : public Command {
+public:
+
+    SetNotificationCommand() :
+        Command("set_notification") { }
+
+    void add(std::string & notificationBase64) {
+        QByteArray ba(notificationBase64.data(), notificationBase64.size());
+        this->notification = ba.fromBase64(ba);
+    }
+
+    QString notification;
+};
+
 #endif // COMMANDS_H

@@ -7,6 +7,15 @@
 #include <QThread>
 
 
+struct Region {
+    int _left, _top, _right, _bottom;
+    int left() const { return _left; }
+    int top() const { return _top; }
+    int right() const { return _right; }
+    int bottom() const { return _bottom; }
+};
+
+
 Viewport::Viewport(ScalableDisplay *display)
     : QMainWindow(nullptr),
 
@@ -18,6 +27,10 @@ Viewport::Viewport(ScalableDisplay *display)
 {
     ui->setupUi(this);
     ui->canvas->setListener(this);
+
+    notificationPen.setColor(qRgba(255,255,255,64));
+    notificationBrush.setColor(qRgba(128,0,0,255));
+    notificationBrush.setStyle(Qt::SolidPattern);
 
     configureWindowProperties();
     positionWindow(display->internalGeometry);
@@ -133,8 +146,37 @@ void Viewport::erase(EraseCommand cmd) {
 }
 
 void Viewport::onPaint(QPainter & painter) {
+    QRect & geometry = display->internalGeometry;
+
     if (book != nullptr)
-        mustRepaint = book->onPaint(painter, display->internalGeometry);
+        mustRepaint = book->onPaint(painter, geometry);
+
+    if (notification == "")
+        return;
+
+    Region const padding {40,100,50,40};
+    Region const margin {20,10,20,10};
+    qreal const round = 10.0;
+
+    QFont const & font = painter.font();
+    QFontMetrics fm(font);
+    QRect messageSize = fm.boundingRect(notification);
+
+    QRect rect(geometry.width() - margin.left() - margin.right() - messageSize.width() - padding.right(),
+               padding.top(),
+               messageSize.width() + margin.left() + margin.right(),
+               messageSize.height() + margin.top() + margin.bottom());
+
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(notificationBrush);
+    painter.drawRoundedRect(rect, round, round);
+
+    QPoint point(geometry.width() - messageSize.width() - padding.right() - margin.right(),
+                 padding.top() + margin.top() + messageSize.height() - fm.underlinePos());
+
+    painter.setPen(notificationPen);
+    painter.setBrush(Qt::NoBrush);
+    painter.drawText(point, notification);
 }
 
 
@@ -151,4 +193,9 @@ void Viewport::setDisplay(ScalableDisplay * display)
 {
     this->display = display;
     positionWindow(display->internalGeometry);
+}
+
+void Viewport::setNotification(QString notification)
+{
+    this->notification = notification;
 }

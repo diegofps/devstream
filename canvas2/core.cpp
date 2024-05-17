@@ -12,6 +12,7 @@
 #include <QDateTime>
 #include <QRegularExpression>
 #include <QSemaphore>
+#include <QFile>
 
 const char * named_pipe = "/tmp/shadow_xppen_deco_pro";
 
@@ -62,6 +63,15 @@ runReader(Core * c)
     bool restart = false;
 
     while (true) {
+
+//        QFile ifs2(named_pipe);
+
+//        if (!ifs2.open(QFile::ReadOnly | QFile::Text))
+//        {
+//            qWarning("Failed to open named pipe");
+//            sleep(1);
+//            continue;
+//        }
 
         std::ifstream ifs(named_pipe);
 
@@ -118,6 +128,12 @@ runReader(Core * c)
 
             else if (cmd == "save_present") {
                 PUSH_CMD(SavePresentCommand, savePresent);
+            }
+
+            else if (cmd == "set_notification") {
+                std::string notificationBase64;
+                ifs >> notificationBase64;
+                PUSH_CMD(SetNotificationCommand, setNotification, notificationBase64);
             }
 
             else if (cmd == "") {
@@ -245,6 +261,7 @@ void Core::refreshSpace() {
 
         Viewport * viewport = new Viewport(display);
         viewport->setBook(activeBook);
+        viewport->setNotification(notification);
         viewports.append(viewport);
     }
 
@@ -407,4 +424,11 @@ void Core::erase(EraseCommand & cmd) {
 
     for (Viewport * viewport : viewports)
         viewport->erase(cmd);
+}
+
+void Core::setNotification(SetNotificationCommand & cmd)
+{
+    notification = cmd.notification;
+    for (Viewport * viewport : viewports)
+        viewport->setNotification(cmd.notification);
 }

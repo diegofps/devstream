@@ -28,6 +28,7 @@ public:
     void asyncUpdate();
     ScalableDisplay * getDisplay();
     void setDisplay(ScalableDisplay *display);
+    void setNotification(QString notification);
 
 public Q_SLOTS:
     void animate();
@@ -42,6 +43,10 @@ private:
     ScalableDisplay *display;
     QTimer timer;
     bool mustRepaint;
+
+    QPen notificationPen;
+    QBrush notificationBrush;
+    QString notification;
 
 };
 

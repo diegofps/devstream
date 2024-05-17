@@ -32,8 +32,9 @@ public slots:
     void movePage(MovePageCommand & cmd);
     void draw(DrawCommand & cmd);
     void erase(EraseCommand & cmd);
-    void undo(UndoCommand &cmd);
-    void savePresent(SavePresentCommand &cmd);
+    void undo(UndoCommand & cmd);
+    void savePresent(SavePresentCommand & cmd);
+    void setNotification(SetNotificationCommand & cmd);
     void refreshSpace();
 
 private:
@@ -52,6 +53,7 @@ private:
     qint64 highlightPositionUntil;
     sched_param lowThreadPriority;
     QList<ScalableDisplay*> displays;
+    QString notification;
 
 };
 
