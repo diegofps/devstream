@@ -100,6 +100,8 @@ class VirtualDevice(Reflex):
         self.acquired_keys.update([x[0] for x in cap[2]])
         self.acquired_keys.update([x[0] for x in cap[3]])
 
+        self._ignored_keys = set()
+
     def get_capabilities(self):
         return { e.EV_KEY : [], e.EV_ABS: [], e.EV_REL : [], e.EV_MSC : [] }
 
@@ -165,8 +167,9 @@ class VirtualDevice(Reflex):
             getattr(self, key_name).unlock()
     
     def on_event_forward(self, type, code, value):
-        if not code in self.acquired_keys:
-            log.info(f"{self.__class__.__name__} is ignoring key {e.KEY[code]}")
+        if not code in self.acquired_keys and not code in self._ignored_keys:
+            # log.info(self._ignored_keys, code)
+            log.info(f"{self.__class__.__name__} is missing the key {e.KEY[code]}")
         
         self.vdev.write(type, code, value)
 
@@ -192,3 +195,7 @@ class VirtualDevice(Reflex):
             key = Key(name, self.vdev, e.EV_KEY, value, scan_code)
             setattr(self, name, key)
 
+    def ignore_keys(self, keys):
+        for name in keys:
+            name = name if name.startswith("KEY_") or name.startswith("BTN_") else "KEY_" + name
+            self._ignored_keys.add(getattr(e, name))

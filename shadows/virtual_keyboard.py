@@ -84,5 +84,8 @@ class VirtualKeyboard(VirtualDevice):
             # "KPMINUS", "KPPLUS", "KPENTER", "KPDOT", "KPSLASH", "KPASTERISK", "NUMLOCK",
         ])
 
+        self.ignore_keys(["KP0", "KP1", "KP2", "KP3", "KP4", "KP5", "KP6", "KP7", "KP8", "KP9", 
+                          "KPDOT", "KPASTERISK", "KPENTER", "KPPLUS", "KPMINUS", "KPSLASH", "NUMLOCK"])
+
 def on_load(shadow):
     VirtualKeyboard(shadow)

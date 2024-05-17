@@ -49,6 +49,7 @@ MACRO_KEYBOARDS = {
     "Arduino LLC Arduino Leonardo": {
         "mem": {
             "state": "state1",
+            "group": "A",
         },
         
         "actions": {
@@ -137,7 +138,6 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP7,1):[("play","7", 1)],
                 (e.KEY_KP8,1):[("play","8", 1)],
                 (e.KEY_KP9,1):[("play","9", 1)],
-                (e.KEY_KPENTER,1):[("play","ENTER", 1)],
 
                 (e.KEY_KP0,2):[("play","0", 1)], 
                 (e.KEY_KP1,2):[("play","1", 1)],
@@ -149,9 +149,9 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP7,2):[("play","7", 1)],
                 (e.KEY_KP8,2):[("play","8", 1)],
                 (e.KEY_KP9,2):[("play","9", 1)],
-                (e.KEY_KPENTER,2):[("play","ENTER", 1)],
 
-                (e.KEY_KPDOT,0):[("interrupt",), ("move_state", "stateMore")],
+                (e.KEY_KPENTER,1):[("interrupt",)],
+                (e.KEY_KPDOT,1):[("interrupt",), ("move_state", "stateMore")],
             },
 
             # State More. 
@@ -169,7 +169,6 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP7,1):[("record","7"), ("move_state","stateRec")],
                 (e.KEY_KP8,1):[("record","8"), ("move_state","stateRec")],
                 (e.KEY_KP9,1):[("record","9"), ("move_state","stateRec")],
-                (e.KEY_KPENTER,1):[("record","ENTER"), ("move_state","stateRec")],
 
                 (e.KEY_KPDOT,0):[("move_state", "stateIdle")],
             },
@@ -179,14 +178,14 @@ MACRO_KEYBOARDS = {
             # Keys 0, 1, 2, and 3 will add delay (0.01, 0.1, 1, 10) seconds
             # Enter will cancel the recording
 
-            "state3": {
+            "stateRec": {
                 (e.KEY_KP0,1):[("wait",  0.01)], 
                 (e.KEY_KP1,1):[("wait",  0.1)],
                 (e.KEY_KP2,1):[("wait",  1)],
                 (e.KEY_KP3,1):[("wait", 10)],
 
-                (e.KEY_KPDOT,0):[("save",), ("move_state", "stateIdle")],
-                (e.KEY_KPENTER,0):[("cancel",), ("move_state", "stateIdle")],
+                (e.KEY_KPDOT,1):[("save",), ("move_state", "stateIdle")],
+                (e.KEY_KPENTER,1):[("cancel",), ("move_state", "stateIdle")],
             },
         },
     },
@@ -294,17 +293,20 @@ class MacroPlayer:
     
     def play(self, macro:Macro, repeat):
         
+        if not self.stop.locked():
+            self.stop.acquire()
+
         try:
 
             for r in range(repeat):
 
-                log.debug(f"Repeating play loop {r+1}/{repeat}")
+                log.debug(f"Repeating play loop {r+1}/{repeat}, length {len(macro.sequence)}")
 
                 for cmd in macro.sequence:
 
                     if not self.stop.locked():
                         self.stop.acquire()
-                        break
+                        return
 
                     cmd_type = cmd[0]
                     cmd_args = cmd[1:]
@@ -400,48 +402,58 @@ class MacroKeyboard(Reflex):
             device_name = device_name[13:]
         
         if not device_name in MACRO_KEYBOARDS:
-            log.warn("Unmapped macro keyboard - ", device_name)
+            log.warn("Unmapped macro keyboard: ", device_name)
             return
 
         if event.type != e.EV_KEY:
             return
         
+        group = MACRO_KEYBOARDS[device_name]["mem"]["group"]
         state = MACRO_KEYBOARDS[device_name]["mem"]["state"]
         actions = MACRO_KEYBOARDS[device_name]["actions"][state]
         action = (event.code, event.value)
+
+        log.info(f"Processing a macro keyboard key:", e.keys[action[0]], action[1], state, group)
 
         if action in actions:
 
             for action in actions[action]:
                 log.info(f"Parsing action: {action[0]}")
 
-                if action[0] == "move_state":
-                    self.move_state(device_name, action[1])
+                try:
 
-                elif action[0] == "move_group":
-                    self.move_group(device_name, action[1])
+                    if action[0] == "move_state":
+                        self.move_state(device_name, action[1])
 
-                elif action[0] == "play":
-                    self.macro_play(device_name, action[1], action[2])
+                    elif action[0] == "move_group":
+                        self.move_group(device_name, action[1])
 
-                elif action[0] == "record":
-                    self.macro_record_new(device_name, action[1])
+                    elif action[0] == "play":
+                        self.macro_play(device_name, action[1], action[2])
 
-                elif action[0] == "save":
-                    self.macro_save()
+                    elif action[0] == "record":
+                        self.macro_record_new(device_name, action[1])
 
-                elif action[0] == "cancel":
-                    self.macro_cancel()
+                    elif action[0] == "save":
+                        self.macro_save()
 
-                elif action[0] == "interrupt":
-                    log.info("Calling macro_interrupt")
-                    self.macro_interrupt()
+                    elif action[0] == "cancel":
+                        self.macro_cancel()
 
-                elif action[0] == "wait":
-                    self.macro_push_delay(action[1])
+                    elif action[0] == "interrupt":
+                        log.info("Calling macro_interrupt")
+                        self.macro_interrupt()
+
+                    elif action[0] == "wait":
+                        self.macro_push_delay(action[1])
+                    
+                    else:
+                        log.error("Unknown action:", action)
                 
-                else:
-                    log.error("Unknown action:", action)
+                except Exception as err:
+                    traceback.print_exc(file=sys.stdout)
+                    log.error(err)
+
 
     def move_state(self, device_name, state_name):
         log.debug("Moving to state", state_name)
