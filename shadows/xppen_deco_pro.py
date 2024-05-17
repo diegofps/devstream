@@ -251,8 +251,8 @@ class XPPEN_DecoPro_Base(Reflex):
         self.erase_x = 0
         self.erase_y = 0
 
-        self.username = None
-        self.userdisplay = None
+        # self.username = None
+        # self.userdisplay = None
 
         self.pattern_match_pos = {
 
@@ -486,7 +486,7 @@ class XPPEN_DecoPro_Base(Reflex):
             canvas.username, canvas.userdisplay = None, None
         else:
             canvas.username, canvas.userdisplay = event[0]
-        log.info("Login changed received", self.username, self.userdisplay)
+        log.info("Login changed received", canvas.username, canvas.userdisplay)
 
     def on_notification_changed(self, topic_name, event):
         log.info("Processing notification changed event:", event)

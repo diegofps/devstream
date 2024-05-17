@@ -13,8 +13,9 @@ cd ../..
 
 
 echo "Copying files..."
-mkdir -p /etc/devstream
+mkdir -p /etc/devstream/images
 cp -r ./*.py shadows /etc/devstream/
+cp -r ./images/help_*.png /etc/devstream/images
 cp ./devstream /etc/init.d/devstream
 cp ./build/canvas2/canvas2 /etc/devstream/canvas2.release
 

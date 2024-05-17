@@ -1,6 +1,7 @@
 
 from shadows.virtual_keyboard import VirtualKeyboardEvent, TOPIC_VIRTUALKEYBOARD_EVENT
 from shadows.virtual_device import VirtualDeviceEvent
+from shadows.watch_login import TOPIC_LOGIN_CHANGED
 from shadows.virtual_pen import VirtualPenEvent
 
 from threading import Thread, Lock
@@ -9,12 +10,14 @@ from reflex import Reflex
 
 # from .libeye.eye import Eye, EyeException
 
+import subprocess
 import traceback
+import threading
 import pickle
 import time
 import sys
 import log
-
+import os
 
 SOURCE_MACRO_KEYBOARD  = "Macro Keyboard"
 FIND_TIMEOUT = 30.0
@@ -150,8 +153,9 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP8,2):[("play","8", 1)],
                 (e.KEY_KP9,2):[("play","9", 1)],
 
-                (e.KEY_KPENTER,1):[("interrupt",)],
-                (e.KEY_KPDOT,1):[("interrupt",), ("move_state", "stateMore")],
+                (e.KEY_KPPLUS,1):[("interrupt",)],
+                (e.KEY_KPENTER,1):[("interrupt",), ("move_state", "stateMore")],
+                (e.KEY_KPDOT,1):[("show_help",)],
             },
 
             # State More. 
@@ -170,7 +174,7 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP8,1):[("record","8"), ("move_state","stateRec")],
                 (e.KEY_KP9,1):[("record","9"), ("move_state","stateRec")],
 
-                (e.KEY_KPDOT,0):[("move_state", "stateIdle")],
+                (e.KEY_KPENTER,0):[("move_state", "stateIdle")],
             },
 
             # State Rec. 
@@ -184,8 +188,9 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP2,1):[("wait",  1)],
                 (e.KEY_KP3,1):[("wait", 10)],
 
-                (e.KEY_KPDOT,1):[("save",), ("move_state", "stateIdle")],
-                (e.KEY_KPENTER,1):[("cancel",), ("move_state", "stateIdle")],
+                (e.KEY_KPENTER,1):[("save",), ("move_state", "stateIdle")],
+                (e.KEY_KPPLUS,1):[("cancel",), ("move_state", "stateIdle")],
+                (e.KEY_KPDOT,1):[("show_help",)],
             },
         },
     },
@@ -363,17 +368,20 @@ class MacroKeyboard(Reflex):
         super().__init__(shadow)
 
         self.macro_player = MacroPlayer(self.mind)
+        self.userdisplay = None
+        self.username = None
         self.recorded = {}
         self.macro = None
 
         self.import_macros()
 
-        # Monitor output keys sent to virtual output device
+        # Monitor current user name and display - needed to open the help screen
+        self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
 
+        # Monitor output keys sent to virtual output device - needed to record macros
         self.add_listener(TOPIC_VIRTUALKEYBOARD_EVENT, self.on_output_event)
 
-        # Monitor macro keyboards keys
-
+        # Monitor macro keyboards - needed to receive macro keys
         for device_name in MACRO_KEYBOARDS.keys():
             self.add_listener("DeviceReader:" + device_name, self.on_macro_event)
 
@@ -381,6 +389,15 @@ class MacroKeyboard(Reflex):
         super().on_remove()
         self.macro_player.terminate()
     
+    def on_login_changed(self, topic_name, event):
+
+        if len(event) == 0:
+            self.username, self.userdisplay = None, None
+        else:
+            self.username, self.userdisplay = event[0]
+
+        log.info("Macro Keyboard received a login changed received", self.username, self.userdisplay)
+
     # Called when a key from a macro keyboard is pressed
     def on_macro_event(self, device_name, event):
 
@@ -426,6 +443,9 @@ class MacroKeyboard(Reflex):
                     elif action[0] == "cancel":
                         self.macro_cancel()
 
+                    elif action[0] == "show_help":
+                        self.macro_help()
+
                     elif action[0] == "interrupt":
                         log.info("Calling macro_interrupt")
                         self.macro_interrupt()
@@ -452,6 +472,14 @@ class MacroKeyboard(Reflex):
     def macro_interrupt(self):
         log.debug("Interrupting macro playback")
         self.macro_player.interrupt()
+    
+    def macro_help(self):
+        log.info("Showing help")
+
+        imgpath = os.path.join(os.path.abspath('.'), 'images', 'help_numpad_as_macro_kbd.png')
+        cmd = f"su {self.username} -c 'DISPLAY={self.userdisplay} xdg-open {imgpath}'"
+        self.thread_help = threading.Thread(target=os.system, args=(cmd,))
+        self.thread_help.start()
     
     def macro_push_delay(self, duration):
         if self.macro is None:
@@ -544,7 +572,6 @@ class MacroKeyboard(Reflex):
         # log.debug(f"Saving event to macro '", self.macro.name, "', '", event, "'")
 
         event2 = (VirtualDeviceEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, source)
-        # self.macro_player.push(("train_press_key", self.macro, event, event2))
 
         cmd = ("press_key", event)
         self.macro.sequence.append(cmd)
