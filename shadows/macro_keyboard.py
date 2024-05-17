@@ -1,5 +1,6 @@
 
 from shadows.virtual_keyboard import VirtualKeyboardEvent, TOPIC_VIRTUALKEYBOARD_EVENT
+from shadows.xppen_deco_pro import TOPIC_NOTIFICATION_CHANGED
 from shadows.virtual_device import VirtualDeviceEvent
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
 from shadows.virtual_pen import VirtualPenEvent
@@ -126,35 +127,40 @@ MACRO_KEYBOARDS = {
 
             "stateIdle": 
             {
-                (e.KEY_NUMLOCK   ,1):[("move_group","A")], 
-                (e.KEY_KPSLASH   ,1):[("move_group","B")], 
-                (e.KEY_KPASTERISK,1):[("move_group","C")], 
-                (e.KEY_KPMINUS   ,1):[("move_group","D")], 
+                (e.KEY_NUMLOCK   ,1):[("move_group","A"), ("notify","Group","A",1)], 
+                (e.KEY_KPSLASH   ,1):[("move_group","B"), ("notify","Group","B",1)], 
+                (e.KEY_KPASTERISK,1):[("move_group","C"), ("notify","Group","C",1)], 
+                (e.KEY_KPMINUS   ,1):[("move_group","D"), ("notify","Group","D",1)], 
+
+                (e.KEY_NUMLOCK   ,0):[("notify","Group","",0)], 
+                (e.KEY_KPSLASH   ,0):[("notify","Group","",0)], 
+                (e.KEY_KPASTERISK,0):[("notify","Group","",0)], 
+                (e.KEY_KPMINUS   ,0):[("notify","Group","",0)], 
 
                 (e.KEY_KP0,1):[("play","0", 1)], 
-                (e.KEY_KP1,1):[("play","1", 1)],
-                (e.KEY_KP2,1):[("play","2", 1)],
-                (e.KEY_KP3,1):[("play","3", 1)],
-                (e.KEY_KP4,1):[("play","4", 1)],
-                (e.KEY_KP5,1):[("play","5", 1)],
+                (e.KEY_KP1,1):[("play","1", 1)], 
+                (e.KEY_KP2,1):[("play","2", 1)], 
+                (e.KEY_KP3,1):[("play","3", 1)], 
+                (e.KEY_KP4,1):[("play","4", 1)], 
+                (e.KEY_KP5,1):[("play","5", 1)], 
                 (e.KEY_KP6,1):[("play","6", 1)], 
-                (e.KEY_KP7,1):[("play","7", 1)],
-                (e.KEY_KP8,1):[("play","8", 1)],
-                (e.KEY_KP9,1):[("play","9", 1)],
+                (e.KEY_KP7,1):[("play","7", 1)], 
+                (e.KEY_KP8,1):[("play","8", 1)], 
+                (e.KEY_KP9,1):[("play","9", 1)], 
 
                 (e.KEY_KP0,2):[("play","0", 1)], 
-                (e.KEY_KP1,2):[("play","1", 1)],
-                (e.KEY_KP2,2):[("play","2", 1)],
-                (e.KEY_KP3,2):[("play","3", 1)],
-                (e.KEY_KP4,2):[("play","4", 1)],
-                (e.KEY_KP5,2):[("play","5", 1)],
+                (e.KEY_KP1,2):[("play","1", 1)], 
+                (e.KEY_KP2,2):[("play","2", 1)], 
+                (e.KEY_KP3,2):[("play","3", 1)], 
+                (e.KEY_KP4,2):[("play","4", 1)], 
+                (e.KEY_KP5,2):[("play","5", 1)], 
                 (e.KEY_KP6,2):[("play","6", 1)], 
-                (e.KEY_KP7,2):[("play","7", 1)],
-                (e.KEY_KP8,2):[("play","8", 1)],
-                (e.KEY_KP9,2):[("play","9", 1)],
+                (e.KEY_KP7,2):[("play","7", 1)], 
+                (e.KEY_KP8,2):[("play","8", 1)], 
+                (e.KEY_KP9,2):[("play","9", 1)], 
 
                 (e.KEY_KPPLUS,1):[("interrupt",)],
-                (e.KEY_KPENTER,1):[("interrupt",), ("move_state", "stateMore")],
+                (e.KEY_KPENTER,1):[("interrupt",), ("move_state","stateMore"), ("notify","Recording","...",1)],
                 (e.KEY_KPDOT,1):[("show_help",)],
             },
 
@@ -163,18 +169,18 @@ MACRO_KEYBOARDS = {
 
             "stateMore": 
             {
-                (e.KEY_KP0,1):[("record","0"), ("move_state","stateRec")], 
-                (e.KEY_KP1,1):[("record","1"), ("move_state","stateRec")],
-                (e.KEY_KP2,1):[("record","2"), ("move_state","stateRec")],
-                (e.KEY_KP3,1):[("record","3"), ("move_state","stateRec")],
-                (e.KEY_KP4,1):[("record","4"), ("move_state","stateRec")],
-                (e.KEY_KP5,1):[("record","5"), ("move_state","stateRec")],
-                (e.KEY_KP6,1):[("record","6"), ("move_state","stateRec")],
-                (e.KEY_KP7,1):[("record","7"), ("move_state","stateRec")],
-                (e.KEY_KP8,1):[("record","8"), ("move_state","stateRec")],
-                (e.KEY_KP9,1):[("record","9"), ("move_state","stateRec")],
+                (e.KEY_KP0,1):[("record","0"), ("move_state","stateRec"), ("notify","Recording","{group_name}0",1)], 
+                (e.KEY_KP1,1):[("record","1"), ("move_state","stateRec"), ("notify","Recording","{group_name}1",1)],
+                (e.KEY_KP2,1):[("record","2"), ("move_state","stateRec"), ("notify","Recording","{group_name}2",1)],
+                (e.KEY_KP3,1):[("record","3"), ("move_state","stateRec"), ("notify","Recording","{group_name}3",1)],
+                (e.KEY_KP4,1):[("record","4"), ("move_state","stateRec"), ("notify","Recording","{group_name}4",1)],
+                (e.KEY_KP5,1):[("record","5"), ("move_state","stateRec"), ("notify","Recording","{group_name}5",1)],
+                (e.KEY_KP6,1):[("record","6"), ("move_state","stateRec"), ("notify","Recording","{group_name}6",1)],
+                (e.KEY_KP7,1):[("record","7"), ("move_state","stateRec"), ("notify","Recording","{group_name}7",1)],
+                (e.KEY_KP8,1):[("record","8"), ("move_state","stateRec"), ("notify","Recording","{group_name}8",1)],
+                (e.KEY_KP9,1):[("record","9"), ("move_state","stateRec"), ("notify","Recording","{group_name}9",1)],
 
-                (e.KEY_KPENTER,0):[("move_state", "stateIdle")],
+                (e.KEY_KPENTER,0):[("move_state", "stateIdle"), ("notify","Recording","",0)],
             },
 
             # State Rec. 
@@ -182,14 +188,20 @@ MACRO_KEYBOARDS = {
             # Keys 0, 1, 2, and 3 will add delay (0.01, 0.1, 1, 10) seconds
             # Enter will cancel the recording
 
-            "stateRec": {
-                (e.KEY_KP0,1):[("wait",  0.01)], 
-                (e.KEY_KP1,1):[("wait",  0.1)],
-                (e.KEY_KP2,1):[("wait",  1)],
-                (e.KEY_KP3,1):[("wait", 10)],
+            "stateRec": 
+            {
+                (e.KEY_KP0,1):[("wait",  0.01), ("notify", "Delay", "0.01", 1)], 
+                (e.KEY_KP1,1):[("wait",  0.1), ("notify", "Delay", "0.1", 1)],
+                (e.KEY_KP2,1):[("wait",  1), ("notify", "Delay", "1", 1)],
+                (e.KEY_KP3,1):[("wait", 10), ("notify", "Delay", "10", 1)],
 
-                (e.KEY_KPENTER,1):[("save",), ("move_state", "stateIdle")],
-                (e.KEY_KPPLUS,1):[("cancel",), ("move_state", "stateIdle")],
+                (e.KEY_KP0,0):[("notify", "Delay", "0.01", 0)], 
+                (e.KEY_KP1,0):[("notify", "Delay", "0.1", 0)], 
+                (e.KEY_KP2,0):[("notify", "Delay", "1", 0)], 
+                (e.KEY_KP3,0):[("notify", "Delay", "10", 0)], 
+
+                (e.KEY_KPENTER,1):[("save",), ("move_state", "stateIdle"), ("notify","Recording","",0)],
+                (e.KEY_KPPLUS,1):[("cancel",), ("move_state", "stateIdle"), ("notify","Recording","",0)],
                 (e.KEY_KPDOT,1):[("show_help",)],
             },
         },
@@ -290,6 +302,8 @@ class MacroPlayer:
         if not self.stop.locked():
             self.stop.acquire()
 
+        self.mind.emit(TOPIC_NOTIFICATION_CHANGED, ("Playing", macro.name, 1))
+
         try:
 
             for r in range(repeat):
@@ -324,6 +338,8 @@ class MacroPlayer:
         except:
             traceback.print_exc()
             log.error("MacroPlayer: cmd failed: ", cmd_type, cmd_args)
+        
+        self.mind.emit(TOPIC_NOTIFICATION_CHANGED, ("Playing", "", 0))
 
     def _play_press_key(self, macro:Macro, event):
         
@@ -446,6 +462,9 @@ class MacroKeyboard(Reflex):
                     elif action[0] == "show_help":
                         self.macro_help()
 
+                    elif action[0] == "notify":
+                        self.notify(device_name, action[1], action[2], action[3])
+
                     elif action[0] == "interrupt":
                         log.info("Calling macro_interrupt")
                         self.macro_interrupt()
@@ -481,6 +500,21 @@ class MacroKeyboard(Reflex):
         self.thread_help = threading.Thread(target=os.system, args=(cmd,))
         self.thread_help.start()
     
+    def notify(self, device_name, title, extra, visible):
+        log.info("Sending notification")
+
+        mem = MACRO_KEYBOARDS[device_name]["mem"]
+
+        context = {
+            "group_name": mem["group"],
+            "state_name": mem["state"],
+        }
+
+        title = title.format(**context)
+        extra = extra.format(**context)
+
+        self.mind.emit(TOPIC_NOTIFICATION_CHANGED, (title, extra, visible))
+    
     def macro_push_delay(self, duration):
         if self.macro is None:
             return
@@ -506,7 +540,6 @@ class MacroKeyboard(Reflex):
 
         mem = MACRO_KEYBOARDS[device_name]["mem"]
         macro_name = mem["group"] + macro_key if "group" in mem else macro_key
-
         self.macro = Macro(macro_name)
 
         log.debug("Recording macro - ", macro_name)

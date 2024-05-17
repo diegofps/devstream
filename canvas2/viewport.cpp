@@ -198,4 +198,5 @@ void Viewport::setDisplay(ScalableDisplay * display)
 void Viewport::setNotification(QString notification)
 {
     this->notification = notification;
+    asyncUpdate();
 }

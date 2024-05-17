@@ -491,24 +491,30 @@ class XPPEN_DecoPro_Base(Reflex):
     def on_notification_changed(self, topic_name, event):
         log.info("Processing notification changed event:", event)
 
-        if len(event) == 0 or len(event[0]) != 2:
+        if len(event) != 3:
             log.warn("Invalid notification changed event: ", event)
             return
 
-        message, state = event[0]
+        title, extra, visibility = event
 
         for i,n in enumerate(self.notificationQueue):
-            if n[0] == message:
-                if state is None:
+            if n[0] == title:
+                if visibility == 0:
                     del self.notificationQueue[i]
                 else:
-                    n[1] = state
+                    n[1] = extra
+                    n[2] = visibility
                 break
         else:
-            self.notificationQueue.append([message, state])
+            if visibility != 0:
+                self.notificationQueue.append([title, extra, visibility])
         
-        notificationBase64 = base64.encode('\n'.join([x[0] for x in self.notificationQueue]))
-        canvas.send("set_notification " + notificationBase64)
+        lines = [f"{n[0]} [{n[1]}]" if n[1] else n[0] for n in self.notificationQueue]
+        notificationBase64 = base64.b64encode('\n'.join(lines).encode()).decode('utf-8')
+        cmd = "set_notification >" + notificationBase64
+        log.info("Asking canvas to send the command", cmd)
+        log.info(f"notificationQueue had {len(self.notificationQueue)} elements")
+        canvas.send(cmd)
         
     def clear(self):
 

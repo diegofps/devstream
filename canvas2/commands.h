@@ -3,6 +3,7 @@
 
 #include <QList>
 #include <QPoint>
+#include <QDebug>
 
 
 enum PageMode {
@@ -144,8 +145,10 @@ public:
         Command("set_notification") { }
 
     void add(std::string & notificationBase64) {
-        QByteArray ba(notificationBase64.data(), notificationBase64.size());
+        QByteArray ba(notificationBase64.data()+1, notificationBase64.size()-1);
         this->notification = ba.fromBase64(ba);
+        qDebug() << "Encoded notification message is: " << notificationBase64.c_str();
+        qDebug() << "Decoded notification message is: " << this->notification;
     }
 
     QString notification;
