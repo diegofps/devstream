@@ -32,6 +32,10 @@ class VirtualDeviceEvent:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.emit()
     
+    @staticmethod
+    def bycode(code):
+        return ["PRESS", "RELEASE", "UPDATE", "UPDATE_H", "UPDATE_V", "UNLOCK", "FORWARD", "FUNCTION", "SLEEP", "SEQUENCE"][code]
+
     def press(self, key_name):
         event = (VirtualDeviceEvent.PRESS, key_name, self.source)
         self.sequence.append(event)

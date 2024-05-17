@@ -191,6 +191,16 @@ MACRO_KEYBOARDS = {
     },
 }
 
+def format_key_event(event):
+
+    virtual_device_event = VirtualDeviceEvent.bycode(event[0])
+    code  = e.bytype[event[1]][event[2]]
+    type  = e.EV[event[1]]
+    value = event[3]
+    source = event[4]
+
+    return f"VirtualDeviceEvent={virtual_device_event}, type={type}, code={code}, value={value}, source={source}"
+
 
 class Macro:
 
@@ -239,9 +249,9 @@ class MacroPlayer:
         self.thread = Thread(target=self.run)
         self.thread.start()
 
-    def push(self, task):
+    def play(self, macro, repeat):
         if self.producer.acquire(blocking=False):
-            self.task = task
+            self.task = ("play", macro, repeat)
             self.consumer.release()
 
     def run(self):
@@ -259,14 +269,8 @@ class MacroPlayer:
                 log.debug("MacroPlayer: task: ", task_type, task_args)
 
                 if task_type == "play":
-                    self.play(*task_args)
+                    self._play(*task_args)
 
-                elif task_type == "train_wait":
-                    self.train_wait(*task_args)
-
-                elif task_type == "train_press_key":
-                    self.train_press_key(*task_args)
-                
                 else:
                     log.debug("Invalid task type: ", task_type)
             
@@ -276,22 +280,7 @@ class MacroPlayer:
 
             self.producer.release()
     
-    def train_press_key(self, macro:Macro, event1, event2):
-
-        cmd = ("press_key", event1)
-        macro.sequence.append(cmd)
-
-        cmd = ("press_key", event2)
-        macro.sequence.append(cmd)
-
-        log.debug("train_press_key finished successfully")
-
-    def train_wait(self, macro:Macro, duration):
-        
-        cmd = ("wait", duration)
-        macro.sequence.append(cmd)
-    
-    def play(self, macro:Macro, repeat):
+    def _play(self, macro:Macro, repeat):
         
         if not self.stop.locked():
             self.stop.acquire()
@@ -300,7 +289,7 @@ class MacroPlayer:
 
             for r in range(repeat):
 
-                log.debug(f"Repeating play loop {r+1}/{repeat}, length {len(macro.sequence)}")
+                log.debug(f"MacroPlayer: Repeating play loop {r+1}/{repeat}, length {len(macro.sequence)}")
 
                 for cmd in macro.sequence:
 
@@ -311,56 +300,53 @@ class MacroPlayer:
                     cmd_type = cmd[0]
                     cmd_args = cmd[1:]
 
-                    log.debug(f"  Playing cmd {cmd_type} with args {cmd_args}")
+                    # log.debug(f"  Playing cmd {cmd_type} with args {cmd_args}")
 
                     if cmd_type == "press_key":
-                        if not self.play_press_key(macro, *cmd_args):
+                        if not self._play_press_key(macro, *cmd_args):
                             break
 
                     elif cmd_type == "wait":
-                        if not self.play_wait(macro, *cmd_args):
+                        if not self._play_wait(macro, *cmd_args):
                             break
                     
                     else:
                         log.debug("Invalid macro cmd: ", cmd_type)
                     
-                else:
                     # TODO: Required to pause between each playback?
                     # time.sleep(0.01)
-                    continue
-                break
         
         except:
             traceback.print_exc()
             log.error("MacroPlayer: cmd failed: ", cmd_type, cmd_args)
 
-    def play_press_key(self, macro:Macro, event):
+    def _play_press_key(self, macro:Macro, event):
         
-        log.debug("Sending event to DeviceWriter:", event)
+        log.debug("  MacroPlayer: Sending key press event to DeviceWriter:", format_key_event(event))
         
         with VirtualKeyboardEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
             eb.forward(event[1], event[2], event[3])
-        # self.mind.emit(TOPIC_VIRTUALKEYBOARD_EVENT, event)
 
         return True
     
-    def play_wait(self, macro:Macro, seconds):
+    def _play_wait(self, macro:Macro, seconds):
+
+        log.debug(f"  MacroPlayer: Simulating wait event for {seconds} seconds")
         
-        if seconds < 1.0:
+        if seconds <= 0.1:
             time.sleep(seconds)
             return True
         
-        else:
-            expire = time.time() + seconds
+        expire = time.time() + seconds
 
-            while time.time() < expire:
-                if not self.stop.locked():
-                    self.stop.acquire()
-                    return False
+        while time.time() < expire:
+            if not self.stop.locked():
+                self.stop.acquire()
+                return False
 
-                time.sleep(0.1)
+            time.sleep(0.1)
 
-            return True
+        return True
 
     def interrupt(self):
         if self.consumer.locked():
@@ -468,8 +454,11 @@ class MacroKeyboard(Reflex):
         self.macro_player.interrupt()
     
     def macro_push_delay(self, duration):
-        if self.macro is not None:
-            self.macro_player.push(("train_wait", self.macro, duration))
+        if self.macro is None:
+            return
+
+        cmd = ("wait", duration)
+        self.macro.sequence.append(cmd)
 
     def macro_play(self, device_name, macro_key, repeat):
 
@@ -480,7 +469,7 @@ class MacroKeyboard(Reflex):
 
         if macro_name in self.recorded:
             macro = self.recorded[macro_name]
-            self.macro_player.push(("play", macro, repeat))
+            self.macro_player.play(macro, repeat)
 
         else:
             log.warn("Attempting to execute a macro that does not exists - ", macro_name)
@@ -552,10 +541,16 @@ class MacroKeyboard(Reflex):
 
         # Register the key in the macro's sequence
 
-        log.debug(f"Saving event to macro '", self.macro.name, "', '", event, "'")
+        # log.debug(f"Saving event to macro '", self.macro.name, "', '", event, "'")
 
         event2 = (VirtualDeviceEvent.FORWARD, e.EV_SYN, e.SYN_REPORT, 0, source)
-        self.macro_player.push(("train_press_key", self.macro, event, event2))
+        # self.macro_player.push(("train_press_key", self.macro, event, event2))
+
+        cmd = ("press_key", event)
+        self.macro.sequence.append(cmd)
+
+        cmd = ("press_key", event2)
+        self.macro.sequence.append(cmd)
     
     def export_macros(self):
         try:
