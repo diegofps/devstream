@@ -54,7 +54,7 @@ void NotificationPool::setWeakNotification(QString title, QString extra)
 
     long currentTime = time(NULL);
     qDebug() << "Creating weak notification at" << currentTime;
-    long expireTime = currentTime + 2;
+    long expireTime = currentTime + 1;
 
     weakNotifications.push_back(Notification(title, extra, expireTime));
     qDebug() << "  Created weak notification:" << title << ", " << extra << ", " << expireTime;

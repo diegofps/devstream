@@ -155,7 +155,7 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP9,2):[("play","9", 1)], 
 
                 (e.KEY_KPPLUS,1):[("interrupt",)],
-                (e.KEY_KPENTER,1):[("interrupt",), ("move_state","stateMore"), ("notify","Recording","...",1)],
+                (e.KEY_KPENTER,1):[("interrupt",), ("move_state","stateMore"), ("notify","Record","...",1)],
                 (e.KEY_KPDOT,1):[("show_help",)],
             },
 
@@ -164,18 +164,18 @@ MACRO_KEYBOARDS = {
 
             "stateMore": 
             {
-                (e.KEY_KP0,1):[("record","0"), ("move_state","stateRec"), ("notify","Recording","{group_name}0",1)], 
-                (e.KEY_KP1,1):[("record","1"), ("move_state","stateRec"), ("notify","Recording","{group_name}1",1)],
-                (e.KEY_KP2,1):[("record","2"), ("move_state","stateRec"), ("notify","Recording","{group_name}2",1)],
-                (e.KEY_KP3,1):[("record","3"), ("move_state","stateRec"), ("notify","Recording","{group_name}3",1)],
-                (e.KEY_KP4,1):[("record","4"), ("move_state","stateRec"), ("notify","Recording","{group_name}4",1)],
-                (e.KEY_KP5,1):[("record","5"), ("move_state","stateRec"), ("notify","Recording","{group_name}5",1)],
-                (e.KEY_KP6,1):[("record","6"), ("move_state","stateRec"), ("notify","Recording","{group_name}6",1)],
-                (e.KEY_KP7,1):[("record","7"), ("move_state","stateRec"), ("notify","Recording","{group_name}7",1)],
-                (e.KEY_KP8,1):[("record","8"), ("move_state","stateRec"), ("notify","Recording","{group_name}8",1)],
-                (e.KEY_KP9,1):[("record","9"), ("move_state","stateRec"), ("notify","Recording","{group_name}9",1)],
+                (e.KEY_KP0,1):[("record","0"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}0",1)], 
+                (e.KEY_KP1,1):[("record","1"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}1",1)],
+                (e.KEY_KP2,1):[("record","2"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}2",1)],
+                (e.KEY_KP3,1):[("record","3"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}3",1)],
+                (e.KEY_KP4,1):[("record","4"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}4",1)],
+                (e.KEY_KP5,1):[("record","5"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}5",1)],
+                (e.KEY_KP6,1):[("record","6"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}6",1)],
+                (e.KEY_KP7,1):[("record","7"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}7",1)],
+                (e.KEY_KP8,1):[("record","8"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}8",1)],
+                (e.KEY_KP9,1):[("record","9"), ("move_state","stateRec"), ("notify","Record","",0), ("notify","Recording","{group_name}9",1)],
 
-                (e.KEY_KPENTER,0):[("move_state", "stateIdle"), ("notify","Recording","",0)],
+                (e.KEY_KPENTER,0):[("move_state", "stateIdle"), ("notify","Record","",0)],
             },
 
             # State Rec. 
