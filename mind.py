@@ -1,8 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor
 from shadow import Shadow
 
+import threading
 import importlib
 import traceback
+import queue
 import evdev
 import time
 import log
@@ -22,6 +24,63 @@ class Topic:
         if callback in self.listeners:
             self.listeners.remove(callback)
 
+class Job:
+
+    def __init__(self, id, callback, priority, args):
+        self.callback = callback
+        self.priority = priority
+        self.args = args
+        self.id = id
+
+    def __lt__(self, other):
+        if other.priority is None:
+            return False
+        elif self.priority != other.priority:
+            return self.priority < other.priority
+        else:
+            return self.id < other.id
+        
+
+class Executor:
+
+    def __init__(self):
+        self.thread = threading.Thread(target=self._run)
+        self.priority_queue = queue.PriorityQueue()
+        self.lock = threading.Lock()
+        self.lock.acquire()
+        self.next_job_id = 0
+        self.done = False
+
+        self.thread.start()
+
+    def _run(self):
+        while not self.done:
+            job:Job = self.priority_queue.get()
+
+            if job.callback is None:
+                break
+
+            try:
+                job.callback(*job.args)
+            except Exception as err:
+                log.error("Something happened when processing a Mind's callback event:", err)
+                traceback.print_exc()
+        
+        self.lock.release()
+
+    def submit(self, callback, priority, *args):
+        job = Job(self.next_job_id, callback, priority, args)
+        self.priority_queue.put(job)
+        self.next_job_id += 1
+
+    def terminate(self):
+        self.done = True
+        self.priority_queue.put(Job(self.next_job_id, None, None, None))
+        self.next_job_id += 1
+    
+    def wait(self):
+        self.lock.acquire()
+        self.lock.release()
 
 class Mind:
 
@@ -81,7 +140,7 @@ class Mind:
             self.topics[topic_name] = topic
         
         else:
-            topic = self.topics[topic_name]
+            topic:Topic = self.topics[topic_name]
             topic.add(callback)
 
             if topic.value is not None:
@@ -101,17 +160,18 @@ class Mind:
             topic = self.topics[topic_name]
             topic.remove(callback)
 
-    def emit(self, topic_name, event):
+    def emit(self, topic_name, event, priority=100):
         if topic_name in self.topics:
             topic = self.topics[topic_name]
             topic.value = event
+        
         else:
             topic = Topic(topic_name)
             topic.value = event
             self.topics[topic_name] = topic
 
         try:
-            self.executor.submit(self._emit_all, topic_name, event)
+            self.executor.submit(self._emit_all, priority, topic_name, event)
         except RuntimeError as e:
             log.warn("Could not emit event, maybe we are shutting down -", e)
 
@@ -138,41 +198,40 @@ class Mind:
 
     def start(self):
 
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            self.executor = executor
+        self.executor = Executor()
 
-            # Output shadows
+        # Output shadows
 
-            self.add_shadow("virtual_keyboard")
-            self.add_shadow("virtual_mouse")
-            self.add_shadow("virtual_pen")
+        self.add_shadow("virtual_keyboard")
+        self.add_shadow("virtual_mouse")
+        self.add_shadow("virtual_pen")
 
-            # Input shadows
+        # Input shadows
 
-            self.add_shadow("logitech_marble")
-            self.add_shadow("vostro_keyboard")
-            self.add_shadow("basic_keyboards")
-            self.add_shadow("macro_keyboard")
-            self.add_shadow("logitech_mx2s")
-            self.add_shadow("xppen_deco_pro")
+        self.add_shadow("logitech_marble")
+        self.add_shadow("vostro_keyboard")
+        self.add_shadow("basic_keyboards")
+        self.add_shadow("macro_keyboard")
+        self.add_shadow("logitech_mx2s")
+        self.add_shadow("xppen_deco_pro")
 
-            # System shadows
+        # System shadows
 
-            self.add_shadow("dispatcher")
-            self.add_shadow("watch_login")
-            self.add_shadow("watch_devices")
-            # self.add_shadow("watch_disks")
+        self.add_shadow("dispatcher")
+        self.add_shadow("watch_login")
+        self.add_shadow("watch_devices")
+        # self.add_shadow("watch_disks")
+        
+        # Logic shadows
+
+        self.add_shadow("smart_output")
+
+        # Infinity loop until KeyboardInterrupt is received or the system terminates
+
+        try:
+            self.executor.wait()
             
-            # Logic shadows
-
-            self.add_shadow("smart_output")
-
-            # Infinity loop until KeyboardInterrupt is received or the system terminates
-
-            try:
-                while True:
-                    time.sleep(10000)
-            except:
-                print("\nTerminating...")
-            
+        except:
+            print("\nTerminating...")
+        
         log.debug("Bye!")

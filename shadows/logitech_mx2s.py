@@ -97,12 +97,12 @@ class MX2S_N(BaseMX2SNode): # Normal
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
             log.debug("Pressing H from MX2S_N")
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MX2S_N")
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G", 50)
     
     def on_scroll(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
@@ -159,12 +159,12 @@ class MX2S_H(BaseMX2SNode): # Navigator (H:side-up)
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("navigate_forward")
             
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MX2S_H, clean is", self.clean)
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG", 50)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -228,7 +228,7 @@ class MX2S_G(BaseMX2SNode): # System (G:side-down)
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
             log.debug("Pressing H from MX2S_H, clean is", self.clean)
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
@@ -238,7 +238,7 @@ class MX2S_G(BaseMX2SNode): # System (G:side-down)
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("navigate_back")
 
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -285,7 +285,7 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
         if event.value == 0: # -H
             log.debug("Releasing H from MX2S_HG, clean is", self.clean)
 
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G*")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G*", 50)
 
             with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 if self.clean:
@@ -298,7 +298,7 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
         if event.value == 0: # -G
             log.debug("Releasing G from MX2S_HG, clean is", self.clean)
 
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H*")
+            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H*", 50)
 
             with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 if self.clean:
@@ -338,5 +338,5 @@ def on_load(shadow):
     MX2S_HG(shadow)
     
     shadow.require_device(REQUIRED_DEVICES)
-    shadow.mind.emit(TOPIC_MX2S_STATE, "MX2S_N")
+    shadow.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
 

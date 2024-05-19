@@ -77,15 +77,15 @@ class Marble_N(BaseMarbleNode): # N
         if event.value == 1: # +B
             log.debug("\n\n\nN: Entering state B " + str(self.counter))
             self.counter += 1
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_B")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_B", 50)
     
     def on_up_click(self, event): # C
         if event.value == 1: # +C
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_C")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_C", 50)
 
     def on_right_click(self, event): # D
         if event.value == 1: # +D
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_D")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_D", 50)
     
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
@@ -149,7 +149,7 @@ class Marble_B(BaseMarbleNode):
             else:
                 log.debug("Ended state B with clean = false")
             
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
     
     def on_up_click(self, event): # C
         self.clean = False
@@ -214,7 +214,7 @@ class Marble_C(BaseMarbleNode):
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.unlock("DUAL_UNDO_VOLUME")
             
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
 
     def on_right_click(self, event): # D
         self.clean = False
@@ -282,7 +282,7 @@ class Marble_D(BaseMarbleNode):
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.unlock("DUAL_WINDOWS_TABS")
 
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
+            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -303,5 +303,5 @@ def on_load(shadow):
     Marble_D(shadow)
 
     shadow.require_device(REQUIRED_DEVICES)
-    shadow.mind.emit(TOPIC_MARBLE_STATE, "Marble_N")
+    shadow.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
 
