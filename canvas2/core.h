@@ -9,6 +9,7 @@
 #include <viewport.h>
 #include <thread>
 #include <page.h>
+#include <QThread>
 
 const int    MAX_PEN_INDEX = 17;
 const int    MIN_PEN_INDEX = 2;
@@ -16,6 +17,35 @@ const double PEN_BASE      = 1.5;
 
 
 class DrawCommand;
+class Core;
+
+class CommandThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    CommandThread() { }
+    virtual ~CommandThread() { }
+
+private:
+
+    void run() override;
+};
+
+class ReaderThread : public QThread
+{
+    Q_OBJECT
+
+    Core * core;
+
+public:
+    ReaderThread(Core * c) : core(c) { }
+    virtual ~ReaderThread() { }
+
+private:
+
+    void run() override;
+};
 
 class Core : public QObject, public BookListener
 {
@@ -23,6 +53,7 @@ class Core : public QObject, public BookListener
 
 public:
     explicit Core(QApplication *a);
+    virtual ~Core();
     void onPageChanged(Book *book, Page * page);
 
 public slots:
@@ -34,7 +65,9 @@ public slots:
     void erase(EraseCommand & cmd);
     void undo(UndoCommand & cmd);
     void savePresent(SavePresentCommand & cmd);
-    void setNotification(SetNotificationCommand & cmd);
+    void setWeakNotification(SetWeakNotificationCommand &cmd);
+    void setStrongNotification(SetStrongNotificationCommand &cmd);
+    void dropExpiredNotifications(DropExpiredNotifications & cmd);
     void refreshSpace();
 
 private:
@@ -43,8 +76,8 @@ private:
     Book transparentBook;
     Book opaqueBook;
     Book * activeBook;
-    std::thread reader;
-    std::thread worker;
+    QThread * readerThread;
+    QThread * commandThread;
     int size_pen_index;
     int size_pen;
     QColor brush_color;
@@ -53,8 +86,10 @@ private:
     qint64 highlightPositionUntil;
     sched_param lowThreadPriority;
     QList<ScalableDisplay*> displays;
-    QString notification;
+    NotificationPool notificationPool;
 
+private:
+    void requestDropExpiredNotifications();
 };
 
 #endif // CORE_H

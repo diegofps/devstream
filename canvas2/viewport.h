@@ -4,6 +4,7 @@
 #include "book.h"
 #include "canvaswidget.h"
 #include "commands.h"
+#include "notificationpool.h"
 
 #include <QMainWindow>
 #include <scalabledisplay.h>
@@ -17,7 +18,7 @@ class Viewport : public QMainWindow, public CanvasWidgetListener
     Q_OBJECT
 
 public:
-    Viewport(ScalableDisplay *display);
+    Viewport(ScalableDisplay *display, NotificationPool * nPool);
     ~Viewport();
 
     void setBook(Book * book);
@@ -28,7 +29,6 @@ public:
     void asyncUpdate();
     ScalableDisplay * getDisplay();
     void setDisplay(ScalableDisplay *display);
-    void setNotification(QString notification);
 
 public Q_SLOTS:
     void animate();
@@ -41,12 +41,9 @@ private:
     Ui::MainWindow *ui;
     Book *book;
     ScalableDisplay *display;
+    NotificationPool * notificationPool;
     QTimer timer;
     bool mustRepaint;
-
-    QPen notificationPen;
-    QBrush notificationBrush;
-    QString notification;
 
 };
 

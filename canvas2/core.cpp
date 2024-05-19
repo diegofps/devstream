@@ -56,118 +56,6 @@ Command * tail = nullptr;
     } \
 }
 
-void
-runReader(Core * c)
-{
-    std::string cmd;
-    bool restart = false;
-
-    while (true) {
-
-//        QFile ifs2(named_pipe);
-
-//        if (!ifs2.open(QFile::ReadOnly | QFile::Text))
-//        {
-//            qWarning("Failed to open named pipe");
-//            sleep(1);
-//            continue;
-//        }
-
-        std::ifstream ifs(named_pipe);
-
-        while (!restart)
-        {
-            if (!(ifs >> cmd)) {
-                qWarning("Error during cmd read");
-                restart = true;
-                sleep(1);
-                continue;
-            }
-
-            if (cmd == "draw") {
-                int x1, y1, x2, y2;
-                if (ifs >> x1 >> y1 >> x2 >> y2)
-                    PUSH_CMD(DrawCommand, draw, x1, y1, x2, y2);
-            }
-
-            else if (cmd == "erase") {
-                int x1, y1, x2, y2, x3, y3;
-                if (ifs >> x1 >> y1 >> x2 >> y2 >> x3 >> y3)
-                    PUSH_CMD(EraseCommand, erase, x1, y1, x2, y2, x3, y3);
-            }
-
-            else if (cmd == "move_page") {
-                int rx, ry;
-                if (ifs >> rx >> ry)
-                    PUSH_CMD(MovePageCommand, movePage, rx, ry);
-            }
-
-            else if (cmd == "change_brush_size") {
-                int size, x, y;
-                if (ifs >> size >> x >> y)
-                    PUSH_CMD(ChangePenSizeCommand, changePenSize, size, x, y);
-            }
-
-            else if (cmd == "set_page_mode") {
-                int pageMode;
-                if (ifs >> pageMode)
-                    PUSH_CMD(SetPageModeCommand, setPageMode, pageMode);
-            }
-
-            else if (cmd == "change_page") {
-                int offset;
-                if (ifs >> offset)
-                    PUSH_CMD(ChangePageCommand, changePage, offset);
-            }
-
-            else if (cmd == "undo") {
-                int offset;
-                if (ifs >> offset)
-                    PUSH_CMD(UndoCommand, undo, offset);
-            }
-
-            else if (cmd == "save_present") {
-                PUSH_CMD(SavePresentCommand, savePresent);
-            }
-
-            else if (cmd == "set_notification") {
-                std::string notificationBase64;
-                ifs >> notificationBase64;
-                PUSH_CMD(SetNotificationCommand, setNotification, notificationBase64);
-            }
-
-            else if (cmd == "") {
-                sleep(1);
-            }
-
-            else {
-                qWarning("Unknown command: %s", cmd.c_str());
-            }
-        }
-
-        restart = false;
-    }
-}
-
-void runWorker() {
-    Command * cmd;
-
-    while (true) {
-        semCommands.acquire();
-
-        {
-            std::lock_guard<std::mutex> lock(syncCommands);
-            cmd = head;
-            head = head->next;
-
-            if (head == nullptr)
-                tail = nullptr;
-        }
-
-        cmd->callback();
-        delete cmd;
-    }
-}
 
 Core::Core(QApplication *a)
     : QObject{nullptr},
@@ -176,19 +64,30 @@ Core::Core(QApplication *a)
       transparentBook(this, false),
       opaqueBook(this, true),
       activeBook(&transparentBook),
-      reader(runReader, this),
-      worker(runWorker),
+//      readerThread(runReader, this),
+//      workerThread(runWorker),
       size_pen_index(6),
       size_pen(pow(PEN_BASE, size_pen_index)),
       brush_color(QColor("#0000ff")),
       width_space(0),
       height_space(0)
 {
-    // Configure thread priorities
+    // Configure reader thread
 
-    lowThreadPriority.sched_priority = 2;
-    pthread_setschedparam(reader.native_handle(), SCHED_OTHER, &lowThreadPriority);
-    pthread_setschedparam(worker.native_handle(), SCHED_OTHER, &lowThreadPriority);
+//    lowThreadPriority.sched_priority = 2;
+//    pthread_setschedparam(reader.native_handle(), SCHED_OTHER, &lowThreadPriority);
+//    pthread_setschedparam(worker.native_handle(), SCHED_OTHER, &lowThreadPriority);
+
+    readerThread = new ReaderThread(this);
+    readerThread->setPriority(QThread::LowPriority);
+    readerThread->start();
+
+
+    // Configure command executor thread
+    commandThread = new CommandThread();
+    commandThread->setPriority(QThread::LowPriority);
+    commandThread->start();
+
 
     // Configure Viewports for each display
 
@@ -212,6 +111,15 @@ Core::Core(QApplication *a)
             refreshSpace();
         });
     }
+}
+
+Core::~Core()
+{
+//    readerThread->finish();
+//    commandThread->finish();
+
+//    readerThread->wait();
+//    commandThread->wait();
 }
 
 void Core::refreshSpace() {
@@ -259,9 +167,8 @@ void Core::refreshSpace() {
     for (ScalableDisplay * display : displaysAdded) {
         displays.append(display);
 
-        Viewport * viewport = new Viewport(display);
+        Viewport * viewport = new Viewport(display, &notificationPool);
         viewport->setBook(activeBook);
-        viewport->setNotification(notification);
         viewports.append(viewport);
     }
 
@@ -426,9 +333,168 @@ void Core::erase(EraseCommand & cmd) {
         viewport->erase(cmd);
 }
 
-void Core::setNotification(SetNotificationCommand & cmd)
+void Core::setWeakNotification(SetWeakNotificationCommand & cmd)
 {
-    notification = cmd.notification;
+    notificationPool.setWeakNotification(cmd.title, cmd.extra);
+    requestDropExpiredNotifications();
+
     for (Viewport * viewport : viewports)
-        viewport->setNotification(cmd.notification);
+        viewport->asyncUpdate();
+}
+
+void Core::requestDropExpiredNotifications()
+{
+    Core * c = this;
+    std::string cmd { "drop_expired_notifications" };
+    PUSH_CMD(DropExpiredNotifications, dropExpiredNotifications);
+}
+
+void Core::setStrongNotification(SetStrongNotificationCommand & cmd)
+{
+    notificationPool.setStrongNotification(cmd.title, cmd.extra, cmd.visible);
+
+    for (Viewport * viewport : viewports)
+        viewport->asyncUpdate();
+}
+
+void Core::dropExpiredNotifications(DropExpiredNotifications &)
+{
+    long nextExpireTime = notificationPool.dropExpiredNotifications();
+
+    for (Viewport * viewport : viewports)
+        viewport->asyncUpdate();
+
+    if (nextExpireTime >= 0)
+        QTimer::singleShot(nextExpireTime * 1000, this, &Core::requestDropExpiredNotifications);
+}
+
+void CommandThread::run()
+{
+    Command * cmd;
+
+    while (true) {
+        semCommands.acquire();
+
+        {
+            std::lock_guard<std::mutex> lock(syncCommands);
+            cmd = head;
+            head = head->next;
+
+            if (head == nullptr)
+                tail = nullptr;
+        }
+
+        cmd->callback();
+        delete cmd;
+    }
+}
+
+void ReaderThread::run()
+{
+    std::string cmd;
+    bool reopenPipe;
+    Core * c = core;
+
+    while (true)
+    {
+
+        //        QFile ifs2(named_pipe);
+
+        //        if (!ifs2.open(QFile::ReadOnly | QFile::Text))
+        //        {
+        //            qWarning("Failed to open named pipe");
+        //            sleep(1);
+        //            continue;
+        //        }
+
+        std::ifstream ifs(named_pipe);
+        reopenPipe = false;
+
+        while (!reopenPipe)
+        {
+            if (!(ifs >> cmd)) {
+                qWarning("Error during cmd read");
+                reopenPipe = true;
+                sleep(1);
+                continue;
+            }
+
+            if (cmd == "draw") {
+                int x1, y1, x2, y2;
+                if (ifs >> x1 >> y1 >> x2 >> y2)
+                    PUSH_CMD(DrawCommand, draw, x1, y1, x2, y2);
+            }
+
+            else if (cmd == "erase") {
+                int x1, y1, x2, y2, x3, y3;
+                if (ifs >> x1 >> y1 >> x2 >> y2 >> x3 >> y3)
+                    PUSH_CMD(EraseCommand, erase, x1, y1, x2, y2, x3, y3);
+            }
+
+            else if (cmd == "move_page") {
+                int rx, ry;
+                if (ifs >> rx >> ry)
+                    PUSH_CMD(MovePageCommand, movePage, rx, ry);
+            }
+
+            else if (cmd == "change_brush_size") {
+                int size, x, y;
+                if (ifs >> size >> x >> y)
+                    PUSH_CMD(ChangePenSizeCommand, changePenSize, size, x, y);
+            }
+
+            else if (cmd == "set_page_mode") {
+                int pageMode;
+                if (ifs >> pageMode)
+                    PUSH_CMD(SetPageModeCommand, setPageMode, pageMode);
+            }
+
+            else if (cmd == "change_page") {
+                int offset;
+                if (ifs >> offset)
+                    PUSH_CMD(ChangePageCommand, changePage, offset);
+            }
+
+            else if (cmd == "undo") {
+                int offset;
+                if (ifs >> offset)
+                    PUSH_CMD(UndoCommand, undo, offset);
+            }
+
+            else if (cmd == "save_present") {
+                PUSH_CMD(SavePresentCommand, savePresent);
+            }
+
+            else if (cmd == "set_weak_notification") {
+                std::string titleBase64;
+                ifs >> titleBase64;
+
+                std::string extraBase64;
+                ifs >> extraBase64;
+
+                PUSH_CMD(SetWeakNotificationCommand, setWeakNotification, titleBase64, extraBase64);
+            }
+
+            else if (cmd == "set_strong_notification") {
+                std::string titleBase64;
+                ifs >> titleBase64;
+
+                std::string extraBase64;
+                ifs >> extraBase64;
+
+                int visible;
+                ifs >> visible;
+
+                PUSH_CMD(SetStrongNotificationCommand, setStrongNotification, titleBase64, extraBase64, visible);
+            }
+
+            else if (cmd == "") {
+                sleep(1);
+            }
+
+            else {
+                qWarning("Unknown command '%s'", cmd.c_str());
+            }
+        }
+    }
 }

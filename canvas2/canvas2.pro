@@ -16,6 +16,7 @@ SOURCES += \
     cellchanges.cpp \
     core.cpp \
     main.cpp \
+    notificationpool.cpp \
     page.cpp \
     pagechanges.cpp \
     scalabledisplay.cpp \
@@ -28,6 +29,7 @@ HEADERS += \
     cellchanges.h \
     commands.h \
     core.h \
+    notificationpool.h \
     page.h \
     pagechanges.h \
     scalabledisplay.h \

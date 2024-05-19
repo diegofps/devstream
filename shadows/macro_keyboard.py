@@ -1,6 +1,6 @@
 
 from shadows.virtual_keyboard import VirtualKeyboardEvent, TOPIC_VIRTUALKEYBOARD_EVENT
-from shadows.xppen_deco_pro import TOPIC_NOTIFICATION_CHANGED
+from shadows.xppen_deco_pro import TOPIC_NOTIFICATION_STRONG, TOPIC_NOTIFICATION_WEAK
 from shadows.virtual_device import VirtualDeviceEvent
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
 from shadows.virtual_pen import VirtualPenEvent
@@ -127,15 +127,10 @@ MACRO_KEYBOARDS = {
 
             "stateIdle": 
             {
-                (e.KEY_NUMLOCK   ,1):[("move_group","A"), ("notify","Group","A",1)], 
-                (e.KEY_KPSLASH   ,1):[("move_group","B"), ("notify","Group","B",1)], 
-                (e.KEY_KPASTERISK,1):[("move_group","C"), ("notify","Group","C",1)], 
-                (e.KEY_KPMINUS   ,1):[("move_group","D"), ("notify","Group","D",1)], 
-
-                (e.KEY_NUMLOCK   ,0):[("notify","Group","",0)], 
-                (e.KEY_KPSLASH   ,0):[("notify","Group","",0)], 
-                (e.KEY_KPASTERISK,0):[("notify","Group","",0)], 
-                (e.KEY_KPMINUS   ,0):[("notify","Group","",0)], 
+                (e.KEY_NUMLOCK   ,1):[("move_group","A"), ("weak_notify","Group","A")], 
+                (e.KEY_KPSLASH   ,1):[("move_group","B"), ("weak_notify","Group","B")], 
+                (e.KEY_KPASTERISK,1):[("move_group","C"), ("weak_notify","Group","C")], 
+                (e.KEY_KPMINUS   ,1):[("move_group","D"), ("weak_notify","Group","D")], 
 
                 (e.KEY_KP0,1):[("play","0", 1)], 
                 (e.KEY_KP1,1):[("play","1", 1)], 
@@ -190,15 +185,10 @@ MACRO_KEYBOARDS = {
 
             "stateRec": 
             {
-                (e.KEY_KP0,1):[("wait",  0.01), ("notify", "Delay", "0.01", 1)], 
-                (e.KEY_KP1,1):[("wait",  0.1), ("notify", "Delay", "0.1", 1)],
-                (e.KEY_KP2,1):[("wait",  1), ("notify", "Delay", "1", 1)],
-                (e.KEY_KP3,1):[("wait", 10), ("notify", "Delay", "10", 1)],
-
-                (e.KEY_KP0,0):[("notify", "Delay", "0.01", 0)], 
-                (e.KEY_KP1,0):[("notify", "Delay", "0.1", 0)], 
-                (e.KEY_KP2,0):[("notify", "Delay", "1", 0)], 
-                (e.KEY_KP3,0):[("notify", "Delay", "10", 0)], 
+                (e.KEY_KP0,1):[("wait",  0.01), ("weak_notify", "Delay", "0.01")], 
+                (e.KEY_KP1,1):[("wait",  0.1), ("weak_notify", "Delay", "0.1")],
+                (e.KEY_KP2,1):[("wait",  1), ("weak_notify", "Delay", "1")],
+                (e.KEY_KP3,1):[("wait", 10), ("weak_notify", "Delay", "10")],
 
                 (e.KEY_KPENTER,1):[("save",), ("move_state", "stateIdle"), ("notify","Recording","",0)],
                 (e.KEY_KPPLUS,1):[("cancel",), ("move_state", "stateIdle"), ("notify","Recording","",0)],
@@ -302,7 +292,7 @@ class MacroPlayer:
         if not self.stop.locked():
             self.stop.acquire()
 
-        self.mind.emit(TOPIC_NOTIFICATION_CHANGED, ("Playing", macro.name, 1))
+        self.mind.emit(TOPIC_NOTIFICATION_STRONG, ("Playing", macro.name, 1))
 
         try:
 
@@ -339,7 +329,7 @@ class MacroPlayer:
             traceback.print_exc()
             log.error("MacroPlayer: cmd failed: ", cmd_type, cmd_args)
         
-        self.mind.emit(TOPIC_NOTIFICATION_CHANGED, ("Playing", "", 0))
+        self.mind.emit(TOPIC_NOTIFICATION_STRONG, ("Playing", "", 0))
 
     def _play_press_key(self, macro:Macro, event):
         
@@ -370,7 +360,7 @@ class MacroPlayer:
         return True
 
     def interrupt(self):
-        if self.consumer.locked():
+        if self.stop.locked():
             self.stop.release()
 
     def terminate(self):
@@ -463,7 +453,10 @@ class MacroKeyboard(Reflex):
                         self.macro_help()
 
                     elif action[0] == "notify":
-                        self.notify(device_name, action[1], action[2], action[3])
+                        self.notify_strong(device_name, action[1], action[2], action[3])
+
+                    elif action[0] == "weak_notify":
+                        self.notify_weak(device_name, action[1], action[2])
 
                     elif action[0] == "interrupt":
                         log.info("Calling macro_interrupt")
@@ -500,8 +493,8 @@ class MacroKeyboard(Reflex):
         self.thread_help = threading.Thread(target=os.system, args=(cmd,))
         self.thread_help.start()
     
-    def notify(self, device_name, title, extra, visible):
-        log.info("Sending notification")
+    def notify_strong(self, device_name, title, extra, visible):
+        log.info("Sending strong notification")
 
         mem = MACRO_KEYBOARDS[device_name]["mem"]
 
@@ -513,7 +506,22 @@ class MacroKeyboard(Reflex):
         title = title.format(**context)
         extra = extra.format(**context)
 
-        self.mind.emit(TOPIC_NOTIFICATION_CHANGED, (title, extra, visible))
+        self.mind.emit(TOPIC_NOTIFICATION_STRONG, (title, extra, visible))
+    
+    def notify_weak(self, device_name, title, extra):
+        log.info("Sending weak notification")
+
+        mem = MACRO_KEYBOARDS[device_name]["mem"]
+
+        context = {
+            "group_name": mem["group"],
+            "state_name": mem["state"],
+        }
+
+        title = title.format(**context)
+        extra = extra.format(**context)
+
+        self.mind.emit(TOPIC_NOTIFICATION_WEAK, (title, extra))
     
     def macro_push_delay(self, duration):
         if self.macro is None:

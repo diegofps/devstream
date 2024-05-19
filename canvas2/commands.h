@@ -138,20 +138,50 @@ public:
     void add() { }
 };
 
-class SetNotificationCommand : public Command {
+class NotificationCommand : public Command {
 public:
 
-    SetNotificationCommand() :
-        Command("set_notification") { }
+    NotificationCommand(char const * const name) :
+        Command(name) { }
 
-    void add(std::string & notificationBase64) {
-        QByteArray ba(notificationBase64.data()+1, notificationBase64.size()-1);
-        this->notification = ba.fromBase64(ba);
-        qDebug() << "Encoded notification message is: " << notificationBase64.c_str();
-        qDebug() << "Decoded notification message is: " << this->notification;
+    void add(std::string & titleBase64, std::string & extraBase64)
+    {
+        add(titleBase64, extraBase64, 1);
     }
 
-    QString notification;
+    void add(std::string & titleBase64, std::string & extraBase64, int visible)
+    {
+        QByteArray baTitle(titleBase64.data()+1, titleBase64.size()-1);
+        this->title = QByteArray::fromBase64(baTitle);
+
+        QByteArray baExtra(extraBase64.data()+1, extraBase64.size()-1);
+        this->extra = QByteArray::fromBase64(baExtra);
+
+        this->visible = visible;
+    }
+
+    QString title;
+    QString extra;
+    int visible;
+};
+
+class SetWeakNotificationCommand : public NotificationCommand
+{
+public:
+    SetWeakNotificationCommand() : NotificationCommand("set_weak_notification") { }
+};
+
+class SetStrongNotificationCommand : public NotificationCommand
+{
+public:
+    SetStrongNotificationCommand() : NotificationCommand("set_strong_notification") { }
+};
+
+
+class DropExpiredNotifications : public Command {
+public:
+    DropExpiredNotifications() : Command("drop_expired_notifications") { }
+    void add() { }
 };
 
 #endif // COMMANDS_H

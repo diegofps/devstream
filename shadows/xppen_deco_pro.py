@@ -18,7 +18,8 @@ import log
 import sys
 import os
 
-TOPIC_NOTIFICATION_CHANGED = "NotificationChanged"
+TOPIC_NOTIFICATION_STRONG = "SetStrongNotification"
+TOPIC_NOTIFICATION_WEAK = "SetWeakNotification"
 
 SOURCE_XPPEN_DECO_PRO = "XPPen Deco Pro"
 
@@ -96,16 +97,18 @@ class Canvas(Thread):
                         if msg is None:
                             break
 
-                        if not msg[0] == ' ':
-                            msg = ' ' + msg
+                        # if not msg[0] != ' ':
+                        #     msg = ' ' + msg
                         
-                        if not msg[-1] == ' ':
-                            msg = msg + ' '
+                        # if not msg[-1] != ' ':
+                        #     msg = msg + ' '
                         
                         for i in range(self.tries):
                             try:
                                 # log.debug("sending command: ", msg)
+                                fout.write(' ')
                                 fout.write(msg)
+                                fout.write(' ')
                                 fout.flush()
                                 # log.debug("message sent")
                                 break
@@ -233,10 +236,11 @@ class XPPEN_DecoPro_Base(Reflex):
 
         self.configure_states(TOPIC_DECOPRO_STATE, TOPIC_DECOPRO_EVENT)
         self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
-        self.add_listener(TOPIC_NOTIFICATION_CHANGED, self.on_notification_changed)
+        self.add_listener(TOPIC_NOTIFICATION_STRONG, self.on_set_strong_notification)
+        self.add_listener(TOPIC_NOTIFICATION_WEAK, self.on_set_weak_notification)
         self.clear()
 
-        self.notificationQueue = []
+        # self.notificationQueue = []
 
         self.last_ABS_X = 0
         self.last_ABS_Y = 0
@@ -488,32 +492,34 @@ class XPPEN_DecoPro_Base(Reflex):
             canvas.username, canvas.userdisplay = event[0]
         log.info("Login changed received", canvas.username, canvas.userdisplay)
 
-    def on_notification_changed(self, topic_name, event):
-        log.info("Processing notification changed event:", event)
+    def on_set_strong_notification(self, topic_name, event):
+        log.info("Processing set strong notification event:", event)
 
         if len(event) != 3:
-            log.warn("Invalid notification changed event: ", event)
+            log.warn("Invalid strong notification request: ", event)
             return
 
         title, extra, visibility = event
-
-        for i,n in enumerate(self.notificationQueue):
-            if n[0] == title:
-                if visibility == 0:
-                    del self.notificationQueue[i]
-                else:
-                    n[1] = extra
-                    n[2] = visibility
-                break
-        else:
-            if visibility != 0:
-                self.notificationQueue.append([title, extra, visibility])
+        titleBase64 = base64.b64encode(title.encode()).decode('utf-8')
+        extraBase64 = base64.b64encode(extra.encode()).decode('utf-8')
+        cmd = f"set_strong_notification >{titleBase64} >{extraBase64} {visibility}"
         
-        lines = [f"{n[0]} [{n[1]}]" if n[1] else n[0] for n in self.notificationQueue]
-        notificationBase64 = base64.b64encode('\n'.join(lines).encode()).decode('utf-8')
-        cmd = "set_notification >" + notificationBase64
-        log.info("Asking canvas to send the command", cmd)
-        log.info(f"notificationQueue had {len(self.notificationQueue)} elements")
+        log.info("Asking canvas to send the command:", cmd)
+        canvas.send(cmd)
+        
+    def on_set_weak_notification(self, topic_name, event):
+        log.info("Processing set weak notification event:", event)
+
+        if len(event) != 2:
+            log.warn("Invalid weak notification request: ", event)
+            return
+
+        title, extra = event
+        titleBase64 = base64.b64encode(title.encode()).decode('utf-8')
+        extraBase64 = base64.b64encode(extra.encode()).decode('utf-8')
+        cmd = f"set_weak_notification >{titleBase64} >{extraBase64}"
+        
+        log.info("Asking canvas to send the command:", cmd)
         canvas.send(cmd)
         
     def clear(self):
