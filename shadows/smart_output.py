@@ -89,7 +89,7 @@ class SmartOutput(VirtualDevice):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
 
-                ("Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5"): [{
+                ("Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5", "Gimp-2.10"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_PAGEUP", "-KEY_PAGEUP", "-KEY_LEFTCTRL"]}],
                 
@@ -110,7 +110,7 @@ class SmartOutput(VirtualDevice):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTCTRL"]}],
 
-                ("Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5"): [{
+                ("Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5", "Gimp-2.10"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_PAGEDOWN", "-KEY_PAGEDOWN", "-KEY_LEFTCTRL"]}],
                 
