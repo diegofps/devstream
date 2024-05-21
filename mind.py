@@ -14,7 +14,7 @@ class Topic:
 
     def __init__(self, name):
         self.listeners = []
-        self.value = None
+        self.last_event = None
         self.name = name
     
     def add(self, callback):
@@ -110,6 +110,8 @@ class Mind:
         mod.on_load(shadow, *args)
         self.shadows[shadow.name] = shadow
 
+        log.info(f"{shadow_name} was added to the mind.")
+
         return shadow
     
     def remove_shadow(self, shadow_name):
@@ -124,6 +126,8 @@ class Mind:
         if shadow is not None:
             del self.shadows[shadow_name]
             shadow.on_remove()
+        
+        log.info(f"{shadow_name} was removed from the mind.")
 
     def _add_listener(self, topic_name, callback):
         
@@ -143,8 +147,8 @@ class Mind:
             topic:Topic = self.topics[topic_name]
             topic.add(callback)
 
-            if topic.value is not None:
-                self._emit_one(callback, topic_name, topic.value)
+            if topic.last_event is not None:
+                self._emit_one(callback, topic_name, topic.last_event)
 
     def _remove_listener(self, topic_name, callback):
     
@@ -162,12 +166,12 @@ class Mind:
 
     def emit(self, topic_name, event, priority=100):
         if topic_name in self.topics:
-            topic = self.topics[topic_name]
-            topic.value = event
+            topic:Topic = self.topics[topic_name]
+            topic.last_event = event
         
         else:
             topic = Topic(topic_name)
-            topic.value = event
+            topic.last_event = event
             self.topics[topic_name] = topic
 
         try:

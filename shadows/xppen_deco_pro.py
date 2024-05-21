@@ -493,7 +493,7 @@ class XPPEN_DecoPro_Base(Reflex):
         log.info("Login changed received", canvas.username, canvas.userdisplay)
 
     def on_set_strong_notification(self, topic_name, event):
-        log.info("Processing set strong notification event:", event)
+        # log.info("Processing set strong notification event:", event)
 
         if len(event) != 3:
             log.warn("Invalid strong notification request: ", event)
@@ -504,11 +504,11 @@ class XPPEN_DecoPro_Base(Reflex):
         extraBase64 = base64.b64encode(extra.encode()).decode('utf-8')
         cmd = f"set_strong_notification >{titleBase64} >{extraBase64} {visibility}"
         
-        log.info("Asking canvas to send the command:", cmd)
+        # log.info("Asking canvas to send the command:", cmd)
         canvas.send(cmd)
         
     def on_set_weak_notification(self, topic_name, event):
-        log.info("Processing set weak notification event:", event)
+        # log.info("Processing set weak notification event:", event)
 
         if len(event) != 2:
             log.warn("Invalid weak notification request: ", event)
@@ -519,7 +519,7 @@ class XPPEN_DecoPro_Base(Reflex):
         extraBase64 = base64.b64encode(extra.encode()).decode('utf-8')
         cmd = f"set_weak_notification >{titleBase64} >{extraBase64}"
         
-        log.info("Asking canvas to send the command:", cmd)
+        # log.info("Asking canvas to send the command:", cmd)
         canvas.send(cmd)
         
     def clear(self):

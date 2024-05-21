@@ -402,7 +402,7 @@ class MacroKeyboard(Reflex):
         else:
             self.username, self.userdisplay = event[0]
 
-        log.info("Macro Keyboard received a login changed received", self.username, self.userdisplay)
+        log.info(f"Macro Keyboard received a login changed for username '{self.username}' and display '{self.userdisplay}'")
 
     # Called when a key from a macro keyboard is pressed
     def on_macro_event(self, device_name, event):
@@ -422,7 +422,7 @@ class MacroKeyboard(Reflex):
         actions = MACRO_KEYBOARDS[device_name]["actions"][state]
         action = (event.code, event.value)
 
-        log.info(f"Processing a macro keyboard key:", e.keys[action[0]], action[1], state, group)
+        # log.debug(f"Processing a macro keyboard key:", e.keys[action[0]], action[1], state, group)
 
         if action in actions:
 

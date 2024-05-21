@@ -48,15 +48,17 @@ class Dispatcher(Reflex):
                 del self.devices[device_path]
 
     def on_login_changed(self, topic_name, event):
+        log.info("Dispatcher has detected a login change: ", event)
+
         if self.username is None and self.display is None:
             if len(event) != 0:
                 self.username, self.display = event[0]
-                log.info("User is now active, name =", self.username, "and display =", self.display)
+                log.info(f"User is now identified by name '{self.username}' and display '{self.display}'. Starting WatchWindows.")
                 self.mind.add_shadow("watch_windows", self.username, self.display)
 
         else:
             if len(event) == 0:
-                log.info("User is inactive")
+                log.info("User is now inactive. Stoping WatchWindows.")
                 self.mind.remove_shadow("watch_windows")
                 self.username = None
                 self.display = None

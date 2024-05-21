@@ -18,7 +18,7 @@ class WatchWindows(Reflex):
         self.display = display
         self.start()
 
-        # log.debug("Username:", username, "Display:", display)
+        log.info("Starting WatchWindows => Username:", username, "Display:", display)
 
     def run(self):
         self.done = False
@@ -39,6 +39,11 @@ class WatchWindows(Reflex):
                     idd = line[40:-1]
                     props = self.get_window_props(idd)
 
+                    if not props:
+                        log.warn("WatchWindow was unable to detect the current window, restarting the monitor in 2s.")
+                        time.sleep(2)
+                        break
+
                     name1 = ""
                     name2 = ""
                     name3 = ""
@@ -52,9 +57,10 @@ class WatchWindows(Reflex):
                     log.info("Window changed '%s' '%s' '%s'" % (name1, name2, name3))
                     self.mind.emit(TOPIC_WINDOW_CHANGED, (name1, name2, name3))
             except Exception as e:
-                log.error("Fail during window manager monitoring, retrying in 3s...", e)
-            
-            time.sleep(3)
+                log.error("Fail during window monitoring, retrying in 3s...", e)
+                time.sleep(3)
+    
+        log.info("WatchWindows is terminating gracefully")
 
     def get_window_props(self, idd):
         if idd is None or idd == "" or idd == "0x0":
