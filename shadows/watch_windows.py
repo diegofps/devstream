@@ -40,6 +40,7 @@ class WatchWindows(Reflex):
                     props = self.get_window_props(idd)
 
                     if not props:
+                        proc.kill()
                         log.warn("WatchWindow was unable to detect the current window, restarting the monitor in 2s.")
                         time.sleep(2)
                         break

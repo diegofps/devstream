@@ -9,6 +9,7 @@ class Shadow:
         self.name = self.firstname if lastname is None else self.firstname + ":" + lastname
         self.mind = mind
         self.reflexes = {}
+        self.on_terminate_listeners = []
 
         log.info("Starting shadow", self.name, "...")
     
@@ -30,6 +31,12 @@ class Shadow:
 
         for reflex in self.reflexes.values():
             reflex.on_remove()
+        
+        for listener in self.on_terminate_listeners:
+            listener(self)
 
     def require_device(self, device_name):
         self.mind.require_device(device_name)
+    
+    def set_on_terminate_listener(self, listener):
+        self.on_terminate_listeners.append(listener)

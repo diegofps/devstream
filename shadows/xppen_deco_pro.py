@@ -15,7 +15,6 @@ import base64
 import time
 import math
 import log
-import sys
 import os
 
 TOPIC_NOTIFICATION_STRONG = "SetStrongNotification"
@@ -23,8 +22,13 @@ TOPIC_NOTIFICATION_WEAK = "SetWeakNotification"
 
 SOURCE_XPPEN_DECO_PRO = "XPPen Deco Pro"
 
-# Configure PIPE
-class Canvas(Thread):
+
+#####################################################################
+
+canvas = None
+
+# Handles the drawing Canvas and its communication PIPE
+class Canvas:
 
     def __init__(self):
         self.pipe_filepath = "/tmp/shadow_xppen_deco_pro"
@@ -33,6 +37,7 @@ class Canvas(Thread):
         self.username = None
         self.queue = Queue()
         self.tries = 3
+        self.done = False
 
         if os.path.exists(self.pipe_filepath):
             # os.unlink(self.pipe_filepath)
@@ -52,8 +57,11 @@ class Canvas(Thread):
             self.process_thread.start()
         self.pipe_thread.start()
 
+    def terminate(self):
+        self.done = True
+
     def process_main(self):
-        while True:
+        while not self.done:
             if self.username is None or self.userdisplay is None:
                 log.warn("DecoPro.Process: Deco Pro is waiting for user interface")
                 time.sleep(2)
@@ -88,7 +96,7 @@ class Canvas(Thread):
             time.sleep(5)
 
     def pipe_main(self):
-        while True:
+        while not self.done:
             try:
                 with open(self.pipe_filepath, 'a') as fout:
                     while True:
@@ -132,7 +140,8 @@ class Canvas(Thread):
     def send(self, msg):
         self.queue.put(msg)
 
-canvas = Canvas()
+
+#####################################################################
 
 MAX_BRUSH = 15
 MIN_BRUSH = 1
@@ -144,6 +153,7 @@ MODE_TRANSPARENT = 1
 MODE_OPAQUE      = 2
 MODE_PASSTHROUGH = 3
 MODE_DISABLED    = 4
+
 
 #####################################################################
 
@@ -791,8 +801,15 @@ class XPPEN_DecoPro_Disable(XPPEN_DecoPro_Passthrough):
         log.info("mode disabled")
         canvas.send(f"set_page_mode {MODE_DISABLED}")
 
+def on_terminate_shadow(shadow):
+    global canvas
+    canvas.terminate()
+
 
 def on_load(shadow):
+    global canvas
+    canvas = Canvas()
+
     XPPEN_DecoPro_Transparent(shadow)
     XPPEN_DecoPro_Opaque(shadow)
     XPPEN_DecoPro_Passthrough(shadow)
@@ -800,4 +817,5 @@ def on_load(shadow):
 
     shadow.require_device(REQUIRED_DEVICES)
     shadow.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
+    shadow.set_on_terminate_listener(on_terminate_shadow)
 
