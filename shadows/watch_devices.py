@@ -72,7 +72,7 @@ class WatchDevices(Reflex):
     def get_devices(self):
 
         # Devices in "/dev/input/by-id/" referencing a file in "/dev/input/"
-        device_ids = ["/dev/input/by-id/" + x for x in os.listdir("/dev/input/by-id/")]
+        device_ids = ["/dev/input/by-id/" + x for x in os.listdir("/dev/input/by-id/")] if os.path.exists("/dev/input/by-id/") else []
         devices = [(x, self.follow_symlink(x)) for x in device_ids]
         devices = [x for x in devices if x[1] is not None]
         removable_devices = set([x[1] for x in devices])
