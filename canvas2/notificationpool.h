@@ -86,7 +86,7 @@ private:
     Region const padding {40,15,50,15};
     Region const margin {20,10,20,10};
     qreal const round {10.0};
-
+//    std::mutex mutex;
 };
 
 #endif // NOTIFICATIONPOOL_H

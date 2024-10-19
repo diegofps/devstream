@@ -40,7 +40,6 @@ void NotificationPool::setStrongNotification(QString title, QString extra, bool 
 
 void NotificationPool::setWeakNotification(QString title, QString extra)
 {
-
     for (qsizetype i=0;i!=weakNotifications.size();++i)
     {
         auto & n = weakNotifications[i];

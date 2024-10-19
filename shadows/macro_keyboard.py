@@ -116,7 +116,10 @@ MACRO_KEYBOARDS = {
     "HyperX HyperX Mars Gaming KeyBoard": {
         "mem": {
             "state": "stateIdle",
-            "group": "A",
+            "bit0": "0",
+            "bit1": "0",
+            "bit2": "0",
+            "bit3": "0",
         },
 
         "actions": {
@@ -127,10 +130,15 @@ MACRO_KEYBOARDS = {
 
             "stateIdle": 
             {
-                (e.KEY_NUMLOCK   ,1):[("move_group","A"), ("weak_notify","Group","A")], 
-                (e.KEY_KPSLASH   ,1):[("move_group","B"), ("weak_notify","Group","B")], 
-                (e.KEY_KPASTERISK,1):[("move_group","C"), ("weak_notify","Group","C")], 
-                (e.KEY_KPMINUS   ,1):[("move_group","D"), ("weak_notify","Group","D")], 
+                (e.KEY_NUMLOCK   ,1):[("set","bit0", "1")], 
+                (e.KEY_KPSLASH   ,1):[("set","bit1", "1")], 
+                (e.KEY_KPASTERISK,1):[("set","bit2", "1")], 
+                (e.KEY_KPMINUS   ,1):[("set","bit3", "1")], 
+
+                (e.KEY_NUMLOCK   ,0):[("set","bit0", "0")], 
+                (e.KEY_KPSLASH   ,0):[("set","bit1", "0")], 
+                (e.KEY_KPASTERISK,0):[("set","bit2", "0")], 
+                (e.KEY_KPMINUS   ,0):[("set","bit3", "0")], 
 
                 (e.KEY_KP0,1):[("play","0", 1)], 
                 (e.KEY_KP1,1):[("play","1", 1)], 
@@ -155,7 +163,7 @@ MACRO_KEYBOARDS = {
                 (e.KEY_KP9,2):[("play","9", 1)], 
 
                 (e.KEY_KPPLUS,1):[("interrupt",)],
-                (e.KEY_KPENTER,1):[("interrupt",), ("move_state","stateMore"), ("notify","Rec","...",1)],
+                (e.KEY_KPENTER,1):[("interrupt",), ("set", "state","stateMore"), ("notify","Rec","...",1)],
                 (e.KEY_KPDOT,1):[("show_help",)],
             },
 
@@ -164,18 +172,28 @@ MACRO_KEYBOARDS = {
 
             "stateMore": 
             {
-                (e.KEY_KP0,1):[("record","0"), ("move_state","stateRec"), ("notify","Rec","{group_name}0",1)], 
-                (e.KEY_KP1,1):[("record","1"), ("move_state","stateRec"), ("notify","Rec","{group_name}1",1)],
-                (e.KEY_KP2,1):[("record","2"), ("move_state","stateRec"), ("notify","Rec","{group_name}2",1)],
-                (e.KEY_KP3,1):[("record","3"), ("move_state","stateRec"), ("notify","Rec","{group_name}3",1)],
-                (e.KEY_KP4,1):[("record","4"), ("move_state","stateRec"), ("notify","Rec","{group_name}4",1)],
-                (e.KEY_KP5,1):[("record","5"), ("move_state","stateRec"), ("notify","Rec","{group_name}5",1)],
-                (e.KEY_KP6,1):[("record","6"), ("move_state","stateRec"), ("notify","Rec","{group_name}6",1)],
-                (e.KEY_KP7,1):[("record","7"), ("move_state","stateRec"), ("notify","Rec","{group_name}7",1)],
-                (e.KEY_KP8,1):[("record","8"), ("move_state","stateRec"), ("notify","Rec","{group_name}8",1)],
-                (e.KEY_KP9,1):[("record","9"), ("move_state","stateRec"), ("notify","Rec","{group_name}9",1)],
+                (e.KEY_NUMLOCK   ,1):[("set","bit0", "1")], 
+                (e.KEY_KPSLASH   ,1):[("set","bit1", "1")], 
+                (e.KEY_KPASTERISK,1):[("set","bit2", "1")], 
+                (e.KEY_KPMINUS   ,1):[("set","bit3", "1")], 
 
-                (e.KEY_KPENTER,0):[("move_state", "stateIdle"), ("notify","Rec","",0)],
+                (e.KEY_NUMLOCK   ,0):[("set","bit0", "0")], 
+                (e.KEY_KPSLASH   ,0):[("set","bit1", "0")], 
+                (e.KEY_KPASTERISK,0):[("set","bit2", "0")], 
+                (e.KEY_KPMINUS   ,0):[("set","bit3", "0")], 
+
+                (e.KEY_KP0,1):[("record","0"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}0",1)], 
+                (e.KEY_KP1,1):[("record","1"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}1",1)],
+                (e.KEY_KP2,1):[("record","2"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}2",1)],
+                (e.KEY_KP3,1):[("record","3"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}3",1)],
+                (e.KEY_KP4,1):[("record","4"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}4",1)],
+                (e.KEY_KP5,1):[("record","5"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}5",1)],
+                (e.KEY_KP6,1):[("record","6"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}6",1)],
+                (e.KEY_KP7,1):[("record","7"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}7",1)],
+                (e.KEY_KP8,1):[("record","8"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}8",1)],
+                (e.KEY_KP9,1):[("record","9"), ("set", "state","stateRec"), ("notify","Rec","{bit0}{bit1}{bit2}{bit3}9",1)],
+
+                (e.KEY_KPENTER,0):[("set", "state", "stateIdle"), ("notify","Rec","",0)],
             },
 
             # State Rec. 
@@ -185,13 +203,23 @@ MACRO_KEYBOARDS = {
 
             "stateRec": 
             {
+                (e.KEY_NUMLOCK   ,1):[("set","bit0", "1")], 
+                (e.KEY_KPSLASH   ,1):[("set","bit1", "1")], 
+                (e.KEY_KPASTERISK,1):[("set","bit2", "1")], 
+                (e.KEY_KPMINUS   ,1):[("set","bit3", "1")], 
+
+                (e.KEY_NUMLOCK   ,0):[("set","bit0", "0")], 
+                (e.KEY_KPSLASH   ,0):[("set","bit1", "0")], 
+                (e.KEY_KPASTERISK,0):[("set","bit2", "0")], 
+                (e.KEY_KPMINUS   ,0):[("set","bit3", "0")], 
+
                 (e.KEY_KP0,1):[("wait",  0.01), ("weak_notify", "Delay", "0.01")], 
                 (e.KEY_KP1,1):[("wait",  0.1), ("weak_notify", "Delay", "0.1")],
                 (e.KEY_KP2,1):[("wait",  1), ("weak_notify", "Delay", "1")],
                 (e.KEY_KP3,1):[("wait", 10), ("weak_notify", "Delay", "10")],
 
-                (e.KEY_KPENTER,1):[("save",), ("move_state", "stateIdle"), ("notify","Rec","",0)],
-                (e.KEY_KPPLUS,1):[("cancel",), ("move_state", "stateIdle"), ("notify","Rec","",0)],
+                (e.KEY_KPENTER,1):[("save",), ("set", "state", "stateIdle"), ("notify","Rec","",0)],
+                (e.KEY_KPPLUS,1):[("cancel",), ("set", "state", "stateIdle"), ("notify","Rec","",0)],
                 (e.KEY_KPDOT,1):[("show_help",)],
             },
         },
@@ -287,12 +315,14 @@ class MacroPlayer:
 
             self.producer.release()
     
-    def _play(self, macro:Macro, repeat):
+    def _play(self, macro:Macro, repeat:int):
         
         if not self.stop.locked():
             self.stop.acquire()
 
-        self.mind.emit(TOPIC_NOTIFICATION_STRONG, ("Playing", macro.name, 1))
+        self.mind.emit(TOPIC_NOTIFICATION_WEAK, ("Playing", macro.name))
+        # self.mind.emit(TOPIC_NOTIFICATION_STRONG, ("Playing", macro.name, 1))
+        log.debug(f"Sending weak notification for 'Playing' {macro.name}")
 
         try:
 
@@ -329,11 +359,12 @@ class MacroPlayer:
             traceback.print_exc()
             log.error("MacroPlayer: cmd failed: ", cmd_type, cmd_args)
         
-        self.mind.emit(TOPIC_NOTIFICATION_STRONG, ("Playing", "", 0))
+        # self.mind.emit(TOPIC_NOTIFICATION_STRONG, ("Playing", "", 0))
+        # log.debug("Sending weak notification for 'playing' 0")
 
     def _play_press_key(self, macro:Macro, event):
         
-        log.debug("  MacroPlayer: Sending key press event to DeviceWriter:", format_key_event(event))
+        # log.debug("  MacroPlayer: Sending key press event to DeviceWriter:", format_key_event(event))
         
         with VirtualKeyboardEvent(self.mind, SOURCE_MACRO_KEYBOARD) as eb:
             eb.forward(event[1], event[2], event[3])
@@ -342,7 +373,7 @@ class MacroPlayer:
     
     def _play_wait(self, macro:Macro, seconds):
 
-        log.debug(f"  MacroPlayer: Simulating wait event for {seconds} seconds")
+        # log.debug(f"  MacroPlayer: Simulating wait event for {seconds} seconds")
         
         if seconds <= 0.1:
             time.sleep(seconds)
@@ -417,7 +448,7 @@ class MacroKeyboard(Reflex):
         if event.type != e.EV_KEY:
             return
         
-        group = MACRO_KEYBOARDS[device_name]["mem"]["group"]
+        # group = MACRO_KEYBOARDS[device_name]["mem"]["group"]
         state = MACRO_KEYBOARDS[device_name]["mem"]["state"]
         actions = MACRO_KEYBOARDS[device_name]["actions"][state]
         action = (event.code, event.value)
@@ -431,11 +462,8 @@ class MacroKeyboard(Reflex):
 
                 try:
 
-                    if action[0] == "move_state":
-                        self.move_state(device_name, action[1])
-
-                    elif action[0] == "move_group":
-                        self.move_group(device_name, action[1])
+                    if action[0] == "set":
+                        self.set_var(device_name, action[1], action[2])
 
                     elif action[0] == "play":
                         self.macro_play(device_name, action[1], action[2])
@@ -453,10 +481,10 @@ class MacroKeyboard(Reflex):
                         self.macro_help()
 
                     elif action[0] == "notify":
-                        self.notify_strong(device_name, action[1], action[2], action[3])
+                        self.notify(device_name, action[1], action[2], action[3])
 
                     elif action[0] == "weak_notify":
-                        self.notify_weak(device_name, action[1], action[2])
+                        self.weak_notify(device_name, action[1], action[2])
 
                     elif action[0] == "interrupt":
                         log.info("Calling macro_interrupt")
@@ -472,14 +500,9 @@ class MacroKeyboard(Reflex):
                     traceback.print_exc(file=sys.stdout)
                     log.error(err)
 
-
-    def move_state(self, device_name, state_name):
-        log.debug("Moving to state", state_name)
-        MACRO_KEYBOARDS[device_name]["mem"]["state"] = state_name
-
-    def move_group(self, device_name, group_name):
-        log.debug("Moving to group", group_name)
-        MACRO_KEYBOARDS[device_name]["mem"]["group"] = group_name
+    def set_var(self, device_name, var_name, var_value):
+        log.debug(f"Updating variable {var_name}={var_value}")
+        MACRO_KEYBOARDS[device_name]["mem"][var_name] = var_value
 
     def macro_interrupt(self):
         log.debug("Interrupting macro playback")
@@ -493,47 +516,32 @@ class MacroKeyboard(Reflex):
         self.thread_help = threading.Thread(target=os.system, args=(cmd,))
         self.thread_help.start()
     
-    def notify_strong(self, device_name, title, extra, visible):
+    def notify(self, device_name:str, title:str, extra:str, visible):
         log.info("Sending strong notification")
 
         mem = MACRO_KEYBOARDS[device_name]["mem"]
-
-        context = {
-            "group_name": mem["group"],
-            "state_name": mem["state"],
-        }
-
-        title = title.format(**context)
-        extra = extra.format(**context)
-
+        title = title.format(**mem)
+        extra = extra.format(**mem)
         self.mind.emit(TOPIC_NOTIFICATION_STRONG, (title, extra, visible))
     
-    def notify_weak(self, device_name, title, extra):
+    def weak_notify(self, device_name:str, title:str, extra:str):
         log.info("Sending weak notification")
 
         mem = MACRO_KEYBOARDS[device_name]["mem"]
-
-        context = {
-            "group_name": mem["group"],
-            "state_name": mem["state"],
-        }
-
-        title = title.format(**context)
-        extra = extra.format(**context)
-
+        title = title.format(**mem)
+        extra = extra.format(**mem)
         self.mind.emit(TOPIC_NOTIFICATION_WEAK, (title, extra))
     
-    def macro_push_delay(self, duration):
-        if self.macro is None:
-            return
+    def macro_push_delay(self, duration:float):
+        if self.macro:
+            cmd = ("wait", duration)
+            self.macro.sequence.append(cmd)
 
-        cmd = ("wait", duration)
-        self.macro.sequence.append(cmd)
+    def macro_play(self, device_name:str, macro_key:str, repeat:int):
 
-    def macro_play(self, device_name, macro_key, repeat):
-
-        mem = MACRO_KEYBOARDS[device_name]["mem"]
-        macro_name = mem["group"] + macro_key if "group" in mem else macro_key
+        mem:dict = MACRO_KEYBOARDS[device_name]["mem"]
+        # macro_name = mem["group"] + macro_key if "group" in mem else macro_key
+        macro_name = ''.join([mem.get(name, '0') for name in ['bit0', 'bit1', 'bit2', 'bit3']]) + macro_key
 
         log.debug("Playing macro - ", macro_name)
 
@@ -547,7 +555,8 @@ class MacroKeyboard(Reflex):
     def macro_record_new(self, device_name, macro_key):
 
         mem = MACRO_KEYBOARDS[device_name]["mem"]
-        macro_name = mem["group"] + macro_key if "group" in mem else macro_key
+        # macro_name = mem["group"] + macro_key if "group" in mem else macro_key
+        macro_name = ''.join([mem.get(name, '0') for name in ['bit0', 'bit1', 'bit2', 'bit3']]) + macro_key
         self.macro = Macro(macro_name)
 
         log.debug("Recording macro - ", macro_name)

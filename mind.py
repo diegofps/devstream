@@ -1,14 +1,11 @@
-from concurrent.futures import ThreadPoolExecutor
-from shadow import Shadow
-
 import threading
 import importlib
 import traceback
 import queue
 import evdev
-import time
 import log
 
+from shadow import Shadow
 
 class Topic:
 
@@ -16,7 +13,7 @@ class Topic:
         self.listeners = []
         self.last_event = None
         self.name = name
-    
+
     def add(self, callback):
         self.listeners.append(callback)
     
@@ -62,7 +59,8 @@ class Executor:
 
             try:
                 job.callback(*job.args)
-            except Exception as err:
+            
+            except Exception as err: # pylint: disable=W0718
                 log.error("Something happened when processing a Mind's callback event:", err)
                 traceback.print_exc()
         
@@ -90,8 +88,9 @@ class Mind:
         self.topics = {}
         
         self.devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
-        self.device_names = set([dev.name for dev in self.devices])
+        self.device_names = {dev.name for dev in self.devices}
         self.required_devices = set()
+        self.executor = None
 
     def require_device(self, device_name):
         if isinstance(device_name, list):
@@ -103,7 +102,7 @@ class Mind:
     def add_shadow(self, shadow_name, *args):
         if shadow_name in self.shadows:
             log.warn("Shadow is already added, skipping -", shadow_name)
-            return
+            return None
         
         shadow = Shadow(self, shadow_name)
         mod = importlib.import_module("shadows." + shadow_name)
@@ -196,7 +195,6 @@ class Mind:
         try:
             callback(topic_name, event)
         except Exception as e:
-            import traceback
             traceback.print_exc()
             log.error("Error during event processing for topic", topic_name, "- error:", e)
 

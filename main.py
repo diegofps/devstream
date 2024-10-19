@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
-from mind import Mind
+"""
+This is a module docstring
+"""
 
-import log
 import sys
 import os
+import log
+
+from mind import Mind
 
 
 os.nice(-20)
