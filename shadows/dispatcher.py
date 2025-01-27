@@ -33,7 +33,7 @@ class Dispatcher(Reflex):
                     self.devices[device_path] = shadow
                     # log.debug("shadow started!")
                 else:
-                    log.debug("Device is not in required list, skipping", dev.name, dev.path)
+                    log.debug(f"Device is not in required list, skipping: name=\"{dev.name}\", path=\"{dev.path}\"")
             except Exception as e:
                 log.warn("Device reading failure:", e)
     

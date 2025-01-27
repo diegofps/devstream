@@ -113,7 +113,7 @@ MACRO_KEYBOARDS = {
         },
     },
 
-    "HyperX HyperX Mars Gaming KeyBoard": {
+    ("HyperX HyperX Mars Gaming KeyBoard", "MSI  FORGE GK310 "): {
         "mem": {
             "state": "stateIdle",
             "bit0": "0",
@@ -225,6 +225,21 @@ MACRO_KEYBOARDS = {
         },
     },
 }
+
+
+# Unwrap MACRO_KEYBOARD tuple keys to strings
+
+TMP_MACRO_KEYBOARD = {}
+
+for device, rules in MACRO_KEYBOARDS.items():
+    if isinstance(device, tuple):
+        for name in device:
+            TMP_MACRO_KEYBOARD[name] = rules
+    else:
+        TMP_MACRO_KEYBOARD[device] = rules
+
+MACRO_KEYBOARDS = TMP_MACRO_KEYBOARD
+
 
 def format_key_event(event):
 
