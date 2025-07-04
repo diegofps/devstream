@@ -76,6 +76,9 @@ class Canvas:
             # Now we try to execute canvas2 from one of the available paths
             try:
                 for filepath in self.process_filepath:
+                    if self.done:
+                        break
+
                     if os.path.exists(filepath):
                         log.info("DecoPro.Process: Starting Deco Pro Canvas")
                         cmd = "su %s -c 'DISPLAY=%s %s'" % (self.username, self.userdisplay, filepath)
@@ -93,7 +96,7 @@ class Canvas:
                     exception_class=e.__class__.__name__,
                     description=e, 
                 )
-            time.sleep(5)
+                time.sleep(5)
 
     def pipe_main(self):
         while not self.done:

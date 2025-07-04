@@ -215,7 +215,7 @@ class Mind:
         self.add_shadow("basic_keyboards")
         self.add_shadow("macro_keyboard")
         self.add_shadow("logitech_mx2s")
-        self.add_shadow("xppen_deco_pro")
+        #self.add_shadow("xppen_deco_pro")
 
         # System shadows
 

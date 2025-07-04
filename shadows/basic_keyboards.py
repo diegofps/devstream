@@ -14,8 +14,9 @@ TARGET_DEVICES = [
     "CORSAIR CORSAIR K63 Wireless Mechanical Gaming Keyboard", 
     "CORSAIR CORSAIR K63 Wireless USB Receiver Keyboard", 
     "CORSAIR CORSAIR K63 Wireless USB Receiver", 
-    "HyperX HyperX Mars Gaming KeyBoard",
-    "MSI  FORGE GK310 "
+    "HyperX HyperX Mars Gaming KeyBoard", 
+    "MSI  FORGE GK310 ", 
+    "LITE-ON Technology USB NetVista Full Width Keyboard.",
 ]
 
 SOURCE_BASIC_KEYBOARD = "Basic Keyboard"

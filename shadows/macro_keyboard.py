@@ -113,7 +113,7 @@ MACRO_KEYBOARDS = {
         },
     },
 
-    ("HyperX HyperX Mars Gaming KeyBoard", "MSI  FORGE GK310 "): {
+    ("HyperX HyperX Mars Gaming KeyBoard", "MSI  FORGE GK310 ", "LITE-ON Technology USB NetVista Full Width Keyboard."): {
         "mem": {
             "state": "stateIdle",
             "bit0": "0",
