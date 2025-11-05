@@ -20,7 +20,7 @@ class Dispatcher(Reflex):
         self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
 
     def on_device_connected(self, topic_name, event):
-        # log.debug("Dispatcher received a device connected event", topic_name, event)
+        log.debug("Dispatcher received a device connected event", topic_name, event)
         for device_path in event:
             # log.debug("Checking device at", device_path)
             try:
@@ -39,8 +39,8 @@ class Dispatcher(Reflex):
     
     def on_device_disconnected(self, topic_name, event):
         for device_path in event:
-            # log.info("Device disconnected:", device_path)
-            # log.debug(",".join(self.devices.keys()))
+            log.info("Device disconnected:", device_path)
+            log.debug(",".join(self.devices.keys()))
 
             if device_path in self.devices:
                 shadow = self.devices[device_path]

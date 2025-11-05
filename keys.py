@@ -34,21 +34,28 @@ class Key:
 class DirectKey:
     
     def __init__(self, name, device, type, code, scan=None):
+        self.accumulated = 0.0
         self.device = device
         self.scan = scan
         self.name = name
         self.type = type
         self.code = code
     
-    def update(self, value):
-        if self.scan is not None:
-            if isinstance(self.scan, tuple):
-                self.device.write(*self.scan)
-            else:
-                self.device.write(e.EV_MSC, e.MSC_SCAN, self.scan)
-        
-        self.device.write(self.type, self.code, value)
-        self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
+    def update(self, value:float):
+        self.accumulated += value
+
+        if abs(self.accumulated) >= 1.0:
+            inner_value = int(self.accumulated)
+            self.accumulated -= inner_value
+
+            if self.scan is not None:
+                if isinstance(self.scan, tuple):
+                    self.device.write(*self.scan)
+                else:
+                    self.device.write(e.EV_MSC, e.MSC_SCAN, self.scan)
+            
+            self.device.write(self.type, self.code, inner_value)
+            self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
     
     def press(self):
         self.update(1)
@@ -62,7 +69,7 @@ class WheelKey:
     def __init__(self, name, device, type, code, code_high, size):
         self.code_high = code_high
         self.device = device
-        self.cumulative = 0
+        self.cumulative = 0.0
         self.size = size
         self.name = name
         self.type = type
@@ -73,7 +80,7 @@ class WheelKey:
         self.cumulative += value
 
         if self.code_high is not None:
-            self.device.write(self.type, self.code_high, value)
+            self.device.write(self.type, self.code_high, int(value))
         
         while self.cumulative >= self.size:
             if self.code is not None:

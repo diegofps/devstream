@@ -251,11 +251,13 @@ class SmartOutput(VirtualDevice):
                 "default": self.scroll_h_1,
                 ("Dia", "Inkscape"): self.scroll_h_2,
                 "Google-chrome": self.scroll_h_3,
+                "Eog": self.scroll_h_4,
             },
             "scroll_v": {
                 "default": self.scroll_v_1,
                 ("Dia", "Inkscape"): self.scroll_v_2,
                 "Google-chrome": self.scroll_v_3,
+                "Eog": self.scroll_v_4,
             },
         }
 
@@ -338,6 +340,9 @@ class SmartOutput(VirtualDevice):
         self.SCROLL_ZOOM    = DelayedKey("SCROLL_ZOOM",    lambda v: self.run("zoom_in") if v else self.run("zoom_out"), 200)
         self.SCROLL_UNDO    = DelayedKey("SCROLL_UNDO",    lambda v: self.run("undo") if v else self.run("redo"), 200)
 
+        self.SCROLL_H = DelayedKey("SCROLL_H", self.scroll_h_send_cmd, 200)
+        self.SCROLL_V = DelayedKey("SCROLL_V", self.scroll_v_send_cmd, 200)
+
         self.DUAL_WINDOWS_TABS = LockableDelayedKey(
                 "DUAL_WINDOWS_TABS", 
                 lambda v: self.run("next_window") if v else self.run("previous_window"), 
@@ -407,6 +412,30 @@ class SmartOutput(VirtualDevice):
     def scroll_v_3(self, value):
         with VirtualMouseEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
             eb.update("WHEEL_V", value * -10)
+    
+    def scroll_h_4(self, value):
+        log.debug(f"on scroll_h_4, {value}")
+        self.SCROLL_H.update(-value)
+    
+    def scroll_v_4(self, value):
+        log.debug(f"on scroll_v_4, {value}")
+        self.SCROLL_V.update(-value)
+
+    def scroll_h_send_cmd(self, value):
+        log.debug("on scroll_h_send_cmd")
+        key = "KEY_PAGEUP" if value > 0 else "KEY_PAGEDOWN"
+        with VirtualKeyboardEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
+            eb.press("KEY_LEFTCTRL")
+            eb.press(key)
+            eb.release(key)
+            eb.release("KEY_LEFTCTRL")
+    
+    def scroll_v_send_cmd(self, value):
+        log.debug("on scroll_v_send_cmd")
+        key = "KEY_PAGEUP" if value > 0 else "KEY_PAGEDOWN"
+        with VirtualKeyboardEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
+            eb.press(key)
+            eb.release(key)
     
 
 def on_load(shadow):
