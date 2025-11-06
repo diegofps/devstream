@@ -176,7 +176,10 @@ class NuleaM512_N(BaseNuleaM512Node):
         
         self.selecting_window = True
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-            eb.update("SCROLL_WINDOWS", -event.value)
+            if event.value < 0:
+                eb.function("next_window")
+            else:
+                eb.function("previous_window")
         
     def on_wheel_right(self, event):
         log.debug("N: on_wheel_right " + str(event.value))
@@ -225,12 +228,12 @@ class NuleaM512_ALT(BaseNuleaM512Node):
         log.debug("B: on_down_click " + str(event.value))
         if event.value == 0:
 
-            if self.clean:
-                log.debug("Ended state B and emitting go_to_declaration, clean = true")
-                with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-                    eb.function("navigate_back")
-            else:
-                log.debug("Ended state ALT with clean = false")
+            # if self.clean:
+            #     log.debug("Ended state B and emitting go_to_declaration, clean = true")
+            #     with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
+            #         eb.function("navigate_back")
+            # else:
+            #     log.debug("Ended state ALT with clean = false")
             
             self.mind.emit(TOPIC_NULEAM512_STATE, "NuleaM512_N", 50)
     
@@ -251,9 +254,12 @@ class NuleaM512_ALT(BaseNuleaM512Node):
     def on_bottom_right_click(self, event): # D
         self.clean = False
 
-        if event.value == 0:
-            with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-                eb.function("navigate_forward")
+        # if event.value == 0:
+        #     with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
+        #         eb.function("navigate_forward")
+        
+        with VirtualKeyboardEvent(self.mind, SOURCE_NULEAM512) as eb:
+            eb.update("KEY_PLAYPAUSE", event.value)
     
     def on_move_rel_x(self, event):
         self.clean = False
