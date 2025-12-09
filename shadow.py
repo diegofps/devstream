@@ -15,7 +15,7 @@ class Shadow:
     
     def add_reflex(self, reflex):
         if reflex.name in self.reflexes:
-            log.warn("Reusing reflex name when adding a entry. Removing previous reflex")
+            log.warn("Reusing reflex name when adding an entry. Removing previous reflex")
             self.remove_reflex(reflex.name)
         
         self.reflexes[reflex.name] = reflex

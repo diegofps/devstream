@@ -12,7 +12,6 @@ REQUIRED_DEVICES = [
     "Logitech MX Anywhere 2S"
 ]
 
-
 TOPIC_DEVICE_MX2S = "DeviceReader:Logitech MX Anywhere 2S"
 TOPIC_MX2S_STATE  = "MX2S:State"
 
@@ -25,6 +24,7 @@ class BaseMX2SNode(Reflex):
         self.configure_states(TOPIC_MX2S_STATE, TOPIC_DEVICE_MX2S)
 
     def on_event(self, device_name, event):
+        # log.debug(f"event received from {device_name}: {event}")
 
         if event.type == e.EV_KEY:
 
@@ -105,6 +105,7 @@ class MX2S_N(BaseMX2SNode): # Normal
             self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G", 50)
     
     def on_scroll(self, event):
+        log.debug(f"Sending scroll event: {event}")
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.update("WHEEL_V", event.value)
     
@@ -323,12 +324,21 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
             eb.update("KEY_PREVIOUSSONG", event.value)
     
     def on_move_rel_x(self, event):
-        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-            eb.update("REL_X", event.value)
+        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+        #     eb.update("REL_X", event.value)
+
+        # log.debug("Moving x in state B " + str(event.value))
+        self.clean = False
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+            eb.function("scroll_h", event.value * 1.50)
 
     def on_move_rel_y(self, event):
-        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-            eb.update("REL_Y", event.value)
+        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+        #     eb.update("REL_Y", event.value)
+
+        self.clean = False
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+            eb.function("scroll_v", event.value * 2.00)
 
 def on_load(shadow):
 

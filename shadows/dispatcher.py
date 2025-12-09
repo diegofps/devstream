@@ -21,17 +21,19 @@ class Dispatcher(Reflex):
 
     def on_device_connected(self, topic_name, event):
         log.debug("Dispatcher received a device connected event", topic_name, event)
+
         for device_path in event:
-            # log.debug("Checking device at", device_path)
+            log.debug("Checking device at", device_path)
+            
             try:
-                # log.info("Device connected:", device_path)
+                log.info("Device connected:", device_path)
                 dev = InputDevice(device_path)
 
                 if dev.name in self.mind.required_devices:
-                    # log.debug(f"{dev.name} is a device with interest, starting shadow ...")
+                    log.debug(f"{dev.name} is a device with interest, starting shadow ...")
                     shadow = self.mind.add_shadow("device_reader", dev)
                     self.devices[device_path] = shadow
-                    # log.debug("shadow started!")
+                    log.debug("shadow started!")
                 else:
                     log.debug(f"Device is not in required list, skipping: name=\"{dev.name}\", path=\"{dev.path}\"")
             except Exception as e:

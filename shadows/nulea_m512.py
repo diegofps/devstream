@@ -10,12 +10,16 @@ import log
 
 
 REQUIRED_DEVICES = [
-    "Compx 2.4G Receiver Mouse"
+    "Compx 2.4G Receiver Mouse",
+    "Nulea BT5.0 "
 ]
 
-TOPIC_DEVICE_NULEAM512 = "DeviceReader:Compx 2.4G Receiver Mouse"
-TOPIC_NULEAM512_STATE = "NuleaM512:State"
+TOPIC_DEVICE_NULEAM512 = [
+    "DeviceReader:Compx 2.4G Receiver Mouse",
+    "DeviceReader:Nulea BT5.0 "
+]
 
+TOPIC_NULEAM512_STATE = "NuleaM512:State"
 SOURCE_NULEAM512 = "Nulea M512"
 
 class BaseNuleaM512Node(Reflex):
@@ -25,7 +29,7 @@ class BaseNuleaM512Node(Reflex):
         self.configure_states(TOPIC_NULEAM512_STATE, TOPIC_DEVICE_NULEAM512)
 
     def on_event(self, topic_name, event):
-        log.debug("Processing nuleam512 event", self.name, event)
+        log.debug("Processing Nulea M512 event: ", self.name, event)
 
         if event.type == e.EV_KEY:
 
@@ -110,7 +114,7 @@ class NuleaM512_N(BaseNuleaM512Node):
         
     def on_top_right_click(self, event): # menu
         log.debug("N: on_top_right_click " + str(event.value))
-        self.finish_window_selection()
+        # self.finish_window_selection()
 
         if event.value == 1:
             if self.btn_left != 0 or self.btn_right != 0 or self.btn_middle != 0:
@@ -133,7 +137,7 @@ class NuleaM512_N(BaseNuleaM512Node):
     
     def on_top_left_click(self, event): # middle
         log.debug("N: on_top_left_click " + str(event.value))
-        self.finish_window_selection()
+        # self.finish_window_selection()
         self.btn_middle = event.value
 
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
@@ -141,7 +145,7 @@ class NuleaM512_N(BaseNuleaM512Node):
 
     def on_bottom_right_click(self, event): # right
         log.debug("N: on_bottom_right_click " + str(event.value))
-        self.finish_window_selection()
+        # self.finish_window_selection()
         self.btn_right = event.value
 
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
@@ -149,7 +153,7 @@ class NuleaM512_N(BaseNuleaM512Node):
     
     def on_bottom_left_click(self, event): # left
         log.debug("N: on_bottom_left_click " + str(event.value))
-        self.finish_window_selection()
+        # self.finish_window_selection()
         self.btn_left = event.value
 
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
@@ -157,7 +161,7 @@ class NuleaM512_N(BaseNuleaM512Node):
     
     def on_move_rel_x(self, event):
         log.debug("N: on_move_rel_x " + str(event.value))
-        self.finish_window_selection()
+        # self.finish_window_selection()
 
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
             value = self.smooth(event.value, 0.2, 0.5, 1, 20)
@@ -165,7 +169,7 @@ class NuleaM512_N(BaseNuleaM512Node):
         
     def on_move_rel_y(self, event):
         log.debug("N: on_move_rel_y " + str(event.value))
-        self.finish_window_selection()
+        # self.finish_window_selection()
 
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
             value = self.smooth(event.value, 0.2, 0.5, 1, 20)
@@ -174,16 +178,15 @@ class NuleaM512_N(BaseNuleaM512Node):
     def on_wheel_left(self, event):
         log.debug("N: on_wheel_left " + str(event.value))
         
-        self.selecting_window = True
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-            if event.value < 0:
-                eb.function("next_window")
+            if event.value > 0:
+                eb.function("next_tab", event.value)
             else:
-                eb.function("previous_window")
+                eb.function("previous_tab", event.value)
         
     def on_wheel_right(self, event):
         log.debug("N: on_wheel_right " + str(event.value))
-        self.finish_window_selection()
+        # self.finish_window_selection()
         
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
             eb.update("SCROLL_VOLUME", event.value)
@@ -204,25 +207,31 @@ class NuleaM512_N(BaseNuleaM512Node):
         else:
             return value * ((abs_value - threshold1) / (threshold2 - threshold1) * (multiply2 - multiply1) + multiply1)
 
-    def finish_window_selection(self):
-        if self.selecting_window:
-            self.selecting_window = False
-            with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-                eb.function("select_window")
+    # def finish_window_selection(self):
+    #     if self.selecting_window:
+    #         self.selecting_window = False
+    #         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
+    #             eb.function("select_window")
     
 
 class NuleaM512_ALT(BaseNuleaM512Node):
 
     def __init__(self, shadow):
         super().__init__(shadow)
+        self.selecting_window = False
         self.clean = True
     
     def on_activate(self):
         super().on_activate()
+        self.selecting_window = False
         self.clean = True
     
     def on_deactivate(self):
         super().on_deactivate()
+        if self.selecting_window:
+            self.selecting_window = False
+            with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
+                eb.function("select_window")
 
     def on_top_right_click(self, event): # B
         log.debug("B: on_down_click " + str(event.value))
@@ -270,17 +279,19 @@ class NuleaM512_ALT(BaseNuleaM512Node):
 
     def on_move_rel_y(self, event):
         self.clean = False
+
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
             eb.function("scroll_v", event.value)
 
     def on_wheel_left(self, event):
+        self.selecting_window = True
         self.clean = False
-        
+
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-            if event.value > 0:
-                eb.function("next_tab", event.value)
+            if event.value < 0:
+                eb.function("next_window")
             else:
-                eb.function("previous_tab", event.value)
+                eb.function("previous_window")
         
     def on_wheel_right(self, event):
         self.clean = False
