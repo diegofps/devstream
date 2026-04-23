@@ -26,6 +26,7 @@ class VostroKeyboard(Reflex):
             self.add_listener("DeviceReader:" + device_name, self.on_event)
 
     def on_event(self, device_name, event):
+        self.debug_event(device_name, event)
         if event.type == e.EV_KEY:
             mapping = self.vostro_map.get(event.code)
             if mapping is not None:

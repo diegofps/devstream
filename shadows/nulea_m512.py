@@ -29,7 +29,7 @@ class BaseNuleaM512Node(Reflex):
         self.configure_states(TOPIC_NULEAM512_STATE, TOPIC_DEVICE_NULEAM512)
 
     def on_event(self, topic_name, event):
-        log.debug("Processing Nulea M512 event: ", self.name, event)
+        # log.debug("Processing Nulea M512 event: ", self.name, event)
 
         if event.type == e.EV_KEY:
 
@@ -69,7 +69,7 @@ class BaseNuleaM512Node(Reflex):
                 log.debug("This is a different rel event")
         
         else:
-            log.debug("This event is not KEY nor REL")
+            log.debug("This event is not KEY nor REL: ", self.name, event)
     
     def on_activate(self):
         pass

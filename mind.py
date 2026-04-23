@@ -41,7 +41,7 @@ class Job:
 class Executor:
 
     def __init__(self):
-        self.thread = threading.Thread(target=self._run)
+        self.thread = threading.Thread(target=self._run, daemon=True)
         self.priority_queue = queue.PriorityQueue()
         self.lock = threading.Lock()
         self.lock.acquire()
@@ -131,10 +131,13 @@ class Mind:
     def _add_listener(self, topic_name, callback):
         
         if isinstance(topic_name, list):
+            log.debug(f"adding listeners list: {topic_name}")
             for name in topic_name:
                 self._add_listener(name, callback)
             return
         
+        log.debug(f"adding listener for {topic_name}")
+
         # Register this listener in the corresponding topic
 
         if not topic_name in self.topics:
@@ -179,13 +182,22 @@ class Mind:
             log.warn("Could not emit event, maybe we are shutting down -", e)
 
     def _emit_all(self, topic_name, event):
+        # debug = "Nulea" in topic_name
+
+        # if debug:
+        #     log.debug(f"Mind is processing event {topic_name}")
+
         if topic_name in self.topics:
             topic = self.topics[topic_name]
 
             # log.info("Calling listeners", str(topic.listeners))
-
+            # if debug:
+            #     log.debug(f"topic found, listeners: {len(topic.listeners)}")
+            
             for callback in topic.listeners:
                 try:
+                    # if debug:
+                    #     log.debug("Calling callback")
                     callback(topic_name, event)
                 except Exception as e:
                     traceback.print_exc()
@@ -211,10 +223,11 @@ class Mind:
         # Input shadows
 
         self.add_shadow("logitech_marble")
-        self.add_shadow("vostro_keyboard")
+        # self.add_shadow("vostro_keyboard")
         self.add_shadow("basic_keyboards")
         self.add_shadow("macro_keyboard")
         self.add_shadow("logitech_mx2s")
+        self.add_shadow("logi_mxMaster3s")
         self.add_shadow("nulea_m512")
         #self.add_shadow("xppen_deco_pro")
 

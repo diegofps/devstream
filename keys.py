@@ -44,19 +44,66 @@ class DirectKey:
     def update(self, value:float):
         self.accumulated += value
 
-        if abs(self.accumulated) >= 1.0:
-            inner_value = int(self.accumulated)
-            self.accumulated -= inner_value
-
-            if self.scan is not None:
-                if isinstance(self.scan, tuple):
-                    self.device.write(*self.scan)
-                else:
-                    self.device.write(e.EV_MSC, e.MSC_SCAN, self.scan)
-            
-            self.device.write(self.type, self.code, inner_value)
-            self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
+        if abs(self.accumulated) < 1.0:
+            return
     
+        inner_value = int(self.accumulated)
+        self.accumulated -= inner_value
+
+        if self.scan is not None:
+            if isinstance(self.scan, tuple):
+                self.device.write(*self.scan)
+            else:
+                self.device.write(e.EV_MSC, e.MSC_SCAN, self.scan)
+        
+        self.device.write(self.type, self.code, inner_value)
+        self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
+
+    def press(self):
+        self.update(1)
+    
+    def release(self):
+        self.update(0)
+
+
+class SmoothedKey:
+    
+    def __init__(self, name, device, type, code, scan=None):
+        self.accumulated = 0.0
+        self.device = device
+        self.scan = scan
+        self.name = name
+        self.type = type
+        self.code = code
+
+        self.window_pos = 0
+        self.window_size = 5
+        self.window_values = [0.0] * self.window_size
+    
+    def update(self, value:float):
+        self.window_values[self.window_pos] = value
+        self.window_pos += 1
+
+        if self.window_pos == self.window_size:
+            self.window_pos = 0
+        
+        self.accumulated += sum(self.window_values) / self.window_size
+
+        if abs(self.accumulated) < 1.0:
+            return
+    
+        inner_value = int(self.accumulated)
+        self.accumulated -= inner_value
+
+        if self.scan is not None:
+            if isinstance(self.scan, tuple):
+                self.device.write(*self.scan)
+            else:
+                self.device.write(e.EV_MSC, e.MSC_SCAN, self.scan)
+        
+        self.device.write(self.type, self.code, inner_value)
+        self.device.write(e.EV_SYN, e.SYN_REPORT, 0)
+
     def press(self):
         self.update(1)
     

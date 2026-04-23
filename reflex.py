@@ -115,6 +115,9 @@ class Reflex:
         
         # if evt.type != e.SYN and evt.code in [e.ABS_TILT_X, e.ABS_TILT_Y, e.ABS_X, e.ABS_Y]: #, e.ABS_PRESSURE
         #     return 
+        self.debug_event(topic_name, evt)
+    
+    def debug_event(self, topic_name, evt):
 
         code  = e.bytype[evt.type][evt.code]
         type  = e.EV[evt.type]

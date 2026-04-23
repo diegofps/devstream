@@ -113,7 +113,10 @@ MACRO_KEYBOARDS = {
         },
     },
 
-    ("HyperX HyperX Mars Gaming KeyBoard", "MSI  FORGE GK310 ", "LITE-ON Technology USB NetVista Full Width Keyboard."): {
+    ("HyperX HyperX Mars Gaming KeyBoard", 
+     "MSI  FORGE GK310 ", 
+     "LITE-ON Technology USB NetVista Full Width Keyboard.",
+     "AT Translated Set 2 keyboard"): {
         "mem": {
             "state": "stateIdle",
             "bit0": "0",
@@ -296,7 +299,7 @@ class MacroPlayer:
         self.consumer.acquire()
         self.stop.acquire()
 
-        self.thread = Thread(target=self.run)
+        self.thread = Thread(target=self.run, daemon=True)
         self.thread.start()
 
     def play(self, macro, repeat):

@@ -16,7 +16,8 @@ TARGET_DEVICES = [
     "CORSAIR CORSAIR K63 Wireless USB Receiver", 
     "HyperX HyperX Mars Gaming KeyBoard", 
     "MSI  FORGE GK310 ", 
-    "LITE-ON Technology USB NetVista Full Width Keyboard.",
+    "LITE-ON Technology USB NetVista Full Width Keyboard.", 
+    "AT Translated Set 2 keyboard", 
 ]
 
 SOURCE_BASIC_KEYBOARD = "Basic Keyboard"
@@ -31,6 +32,7 @@ class BasicKeyboards(Reflex):
             self.add_listener("DeviceReader:" + device, self.on_event)
 
     def on_event(self, topic_name, event):
+        self.debug_event(topic_name, event)
         with VirtualKeyboardEvent(self.mind, SOURCE_BASIC_KEYBOARD) as eb:
             eb.forward(event.type, event.code, event.value)
 

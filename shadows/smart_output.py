@@ -184,6 +184,33 @@ class SmartOutput(VirtualDevice):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_T", "-KEY_T", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
             },
+            "copy": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_C", "-KEY_C", "-KEY_LEFTCTRL"]}],
+
+                ("Terminator", "Gnome-terminal"): [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_C", "-KEY_C", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
+            },
+            "cut": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_X", "-KEY_X", "-KEY_LEFTCTRL"]}],
+
+                ("Terminator", "Gnome-terminal"): [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_X", "-KEY_X", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
+            },
+            "paste": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_V", "-KEY_V", "-KEY_LEFTCTRL"]}],
+
+                ("Terminator", "Gnome-terminal"): [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_V", "-KEY_V", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
+            },
             "go_to_declaration": {
                 "default": [
                     {"type": "keyboard", 

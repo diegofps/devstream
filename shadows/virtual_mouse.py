@@ -1,5 +1,5 @@
 from evdev import AbsInfo, UInput, ecodes as e
-from keys import WheelKey, DirectKey
+from keys import WheelKey, SmoothedKey, DirectKey
 
 from .virtual_device import VirtualDevice, VirtualDeviceEvent
 

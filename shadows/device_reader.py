@@ -31,7 +31,6 @@ class DeviceReader(Reflex):
             except OSError as e:
                 log.error("OSError, resuming in 3s -", e)
                 # print("Device error", self.dev.name)
-
                 # traceback.print_exc(file=sys.stdout)
                 time.sleep(3)
             
