@@ -83,9 +83,11 @@ class BaseMXMaster3SNode(Reflex):
                     self.on_scroll_left_click(event)
 
     def on_activate(self):
+        log.debug(f"{self.__class__.__name__} is activating")
         pass
 
     def on_deactivate(self):
+        log.debug(f"{self.__class__.__name__} is deactivating")
         pass
 
 
