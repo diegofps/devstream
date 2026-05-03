@@ -67,20 +67,8 @@ class BaseMXMaster3SNode(Reflex):
                 self.on_scroll(event)
 
             elif event.code == e.REL_HWHEEL_HI_RES:
-
-                if event.value < 0:
-                    event.value = 1
-                    self.on_scroll_right_click(event)
-
-                    event.value = 0
-                    self.on_scroll_right_click(event)
-                
-                else:
-                    event.value = 1
-                    self.on_scroll_left_click(event)
-
-                    event.value = 0
-                    self.on_scroll_left_click(event)
+                event.value = -event.value
+                self.on_scroll_h(event)
 
     def on_activate(self):
         log.debug(f"{self.__class__.__name__} is activating")
@@ -110,31 +98,23 @@ class MXMaster3S_N(BaseMXMaster3SNode): # Normal
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
-            # log.debug("Pressing H from MXMaster3S_N")
             self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_H", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            # log.debug("Pressing G from MXMaster3S_N")
             self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_G", 50)
     
     def on_side_ground_click(self, event): # F
         if event.value == 1: # +F
-            # log.debug("Pressing F from MXMaster3S_N")
             self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_F", 50)
     
     def on_scroll(self, event):
-        # log.debug(f"Sending scroll event: {event}")
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("WHEEL_V", event.value)
     
-    def on_scroll_left_click(self, event):
+    def on_scroll_h(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("WHEEL_H", +120)
-    
-    def on_scroll_right_click(self, event):
-        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("WHEEL_H", -120)
+            eb.update("WHEEL_H", event.value)
     
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
@@ -188,29 +168,15 @@ class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
     
     def on_side_ground_click(self, event): # F
         pass
-        # if event.value == 1: # +F
-        #     # log.debug("Pressing F from MXMaster3S_N")
-        #     self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_F", 50)
-    
+
     def on_scroll(self, event): # E
         self.clean = False
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("SCROLL_TABS", event.value)
     
-    def on_scroll_left_click(self, event): # D
-        self.clean = False
-
-        if event.value == 0:
-            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("zoom_in")
-    
-    def on_scroll_right_click(self, event): # F
-        self.clean = False
+    def on_scroll_h(self, event):
+        pass
         
-        if event.value == 0:
-            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("zoom_out")
-    
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("REL_X", event.value)
@@ -274,12 +240,9 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("SCROLL_WINDOWS", event.value)
     
-    def on_scroll_left_click(self, event): # D
-        self.clean = False
-    
-    def on_scroll_right_click(self, event): # F
-        self.clean = False
-    
+    def on_scroll_h(self, event):
+        pass
+        
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("REL_X", event.value)
@@ -344,29 +307,15 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("SCROLL_VOLUME", event.value)
     
-    def on_scroll_left_click(self, event): # D
-        self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("KEY_NEXTSONG", event.value)
-    
-    def on_scroll_right_click(self, event): # F
-        self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("KEY_PREVIOUSSONG", event.value)
-    
+    def on_scroll_h(self, event):
+        pass
+        
     def on_move_rel_x(self, event):
-        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-        #     eb.update("REL_X", event.value)
-
-        # log.debug("Moving x in state B " + str(event.value))
         self.clean = False
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.function("scroll_h", event.value * 1.50)
 
     def on_move_rel_y(self, event):
-        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-        #     eb.update("REL_Y", event.value)
-
         self.clean = False
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.function("scroll_v", event.value * 2.00)
@@ -398,82 +347,37 @@ class MXMaster3S_F(BaseMXMaster3SNode): # Editor
 
     def on_side_up_click(self, event): # H
         pass
-        # if event.value == 0: # -H
-        #     log.debug("Releasing H from MXMaster3S_HG, clean is", self.clean)
-
-        #     self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_G*", 50)
-
-        #     with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #         if self.clean:
-        #             eb.press("KEY_LEFTMETA")
-        #             eb.release("KEY_LEFTMETA")
-
-        #         eb.release("KEY_LEFTALT")
     
     def on_side_down_click(self, event): # G
         pass
-        # if event.value == 0: # -G
-        #     log.debug("Releasing G from MXMaster3S_HG, clean is", self.clean)
-
-        #     self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_H*", 50)
-
-        #     with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #         if self.clean:
-        #             eb.press("KEY_LEFTMETA")
-        #             eb.release("KEY_LEFTMETA")
-                
-        #         eb.release("KEY_LEFTALT")
     
     def on_side_ground_click(self, event): # F
         if event.value == 0: # -F
             log.debug("Releasing F from MXMaster3S_F, clean is", self.clean)
 
             if self.clean:
-                with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                    eb.function("navigate_back")
+                with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                        eb.press("KEY_LEFTMETA")
+                        eb.release("KEY_LEFTMETA")
+                # with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                #     eb.function("navigate_back")
 
             self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
     
     def on_scroll(self, event): # E
         self.clean = False
-        # key = "KEY_UP" if event.value > 0 else "KEY_DOWN"
-        # with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #     # eb.press(key)
-        #     eb.release(key)
+        speed = 8
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("SCROLL_UNDO", -speed if event.value > 0 else speed)
     
-    def on_scroll_left_click(self, event): # D
-        log.debug("on_scroll_left_click")
-        # self.clean = False
-        # with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #     # eb.press("KEY_LEFT")
-        #     eb.release("KEY_LEFT")
-        
-    def on_scroll_right_click(self, event): # F
-        log.debug("on_scroll_right_click")
-        # self.clean = False
-        # with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #     # eb.press("KEY_RIGHT")
-        #     # eb.sleep(0.05)
-        #     eb.release("KEY_RIGHT")
+    def on_scroll_h(self, event):
+        pass
         
     def on_move_rel_x(self, event):
         pass
-        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-        #     eb.update("REL_X", event.value)
-
-        # log.debug("Moving x in state B " + str(event.value))
-        self.clean = False
-        # with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #     eb.function("scroll_h", event.value * 1.50)
 
     def on_move_rel_y(self, event):
         pass
-        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-        #     eb.update("REL_Y", event.value)
-
-        # self.clean = False
-        # with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #     eb.function("scroll_v", event.value * 2.00)
 
 
 def on_load(shadow):
