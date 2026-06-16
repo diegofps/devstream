@@ -2,7 +2,7 @@
 from shadows.watch_windows import TOPIC_WINDOW_CHANGED
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
 
-from shadows.virtual_device import VirtualDeviceEvent, VirtualDevice
+from shadows.virtual_device import VirtualDeviceEvent, VirtualDeviceReflex
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
 from shadows.virtual_pen import VirtualPenEvent
@@ -28,7 +28,7 @@ class SmartOutputEvent(VirtualDeviceEvent):
         super().__init__(mind, TOPIC_SMARTOUTPUT_EVENT, source)
 
 
-class SmartOutput(VirtualDevice):
+class SmartOutput(VirtualDeviceReflex):
 
     def __init__(self, shadow):
         super().__init__(shadow)

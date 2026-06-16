@@ -1,7 +1,7 @@
 from evdev import AbsInfo, UInput, ecodes as e
 from keys import DirectKey
 
-from .virtual_device import VirtualDevice, VirtualDeviceEvent
+from .virtual_device import VirtualDeviceReflex, VirtualDeviceEvent
 
 import log
 
@@ -17,7 +17,7 @@ class VirtualPenEvent(VirtualDeviceEvent):
         super().__init__(mind, TOPIC_VIRTUALPEN_EVENT, source)
 
 
-class VirtualPen(VirtualDevice):
+class VirtualPen(VirtualDeviceReflex):
 
     def __init__(self, shadow):
 

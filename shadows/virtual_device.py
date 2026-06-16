@@ -86,10 +86,10 @@ class VirtualDeviceEvent:
             self.mind.emit(self.topic, event)
 
 
-class VirtualDevice(Reflex):
+class VirtualDeviceReflex(Reflex):
 
-    def __init__(self, shadow, name=None, version=0x3, product=0x1, vendor=0x1, input_props=None, bustype=0x3):
-        super().__init__(shadow)
+    def __init__(self, name=None, version=0x3, product=0x1, vendor=0x1, input_props=None, bustype=0x3):
+        super().__init__(name)
         self.functions = {}
 
         cap = self.get_capabilities()

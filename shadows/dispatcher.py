@@ -6,6 +6,12 @@ from reflex import Reflex
 import log
 
 
+"""
+This class has three responsibilities:
+- Monitor newly connected devices and starts the DeviceReader if there is a shadow that has interest on them. (receiving events from WatchDevices)
+- Monitor newly removed devices and stop the DeviceReader if it was active. (receiving events from WatchDevices)
+- Monitor the user's login state and start / stop the shadow WatchWindows. (receiving events from WatchLogin)
+"""
 class Dispatcher(Reflex):
 
     def __init__(self, shadow):
@@ -30,10 +36,11 @@ class Dispatcher(Reflex):
                 dev = InputDevice(device_path)
 
                 if dev.name in self.mind.required_devices:
-                    log.debug(f"{dev.name} is a device with interest, starting shadow ...")
-                    shadow = self.mind.add_shadow("device_reader", dev)
-                    self.devices[device_path] = shadow
-                    log.debug("shadow started!")
+                    log.debug(f"{dev.name} is a device with interest, starting device_reader shadow ...")
+                    shadow_name = f"device_reader:{dev.name}"
+                    shadow = self.mind.load_shadow(shadow_name, dev)
+                    self.devices[device_path] = (shadow_name, shadow)
+                    log.debug("Shadow started from dispatcher!")
                 else:
                     log.debug(f"Device is not in required list, skipping: name=\"{dev.name}\", path=\"{dev.path}\"")
             except Exception as e:
@@ -45,8 +52,8 @@ class Dispatcher(Reflex):
             log.debug(",".join(self.devices.keys()))
 
             if device_path in self.devices:
-                shadow = self.devices[device_path]
-                self.mind.remove_shadow(shadow.name)
+                shadow_name, _ = self.devices[device_path]
+                self.mind.remove_shadow(shadow_name)
                 del self.devices[device_path]
 
     def on_login_changed(self, topic_name, event):

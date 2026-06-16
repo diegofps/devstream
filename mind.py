@@ -5,13 +5,12 @@ import queue
 import evdev
 import log
 
-from shadow import Shadow
 
 class Topic:
 
     def __init__(self, name):
-        self.listeners = []
         self.last_event = None
+        self.listeners = []
         self.name = name
 
     def add(self, callback):
@@ -20,6 +19,7 @@ class Topic:
     def remove(self, callback):
         if callback in self.listeners:
             self.listeners.remove(callback)
+    
 
 class Job:
 
@@ -80,128 +80,94 @@ class Executor:
         self.lock.acquire()
         self.lock.release()
 
+
 class Mind:
 
-    def __init__(self):
-
-        self.shadows = {}
-        self.topics = {}
-        
+    def __init__(self, name=None):
         self.devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+        self.name = type(self).__name__ if name is None else name
         self.device_names = {dev.name for dev in self.devices}
+        self.topics:dict[str,Topic] = {}
         self.required_devices = set()
-        self.executor = None
+        self.executor = Executor()
+        self.shadows = {}
 
     def require_device(self, device_name):
-        if isinstance(device_name, list):
-            for name in device_name:
-                self.require_device(name)
+        if isinstance(device_name, (set,list)):
+            self.required_devices.update(device_name)
         else:
             self.required_devices.add(device_name)
     
-    def add_shadow(self, shadow_name, *args):
-        if shadow_name in self.shadows:
-            log.warn("Shadow is already added, skipping -", shadow_name)
-            return None
-        
-        shadow = Shadow(self, shadow_name)
-        mod = importlib.import_module("shadows." + shadow_name)
-        mod.on_load(shadow, *args)
+    def add_shadow(self, shadow):
+        assert not shadow.name in self.shadows, "A shadow with the same name already exists in the mind"
         self.shadows[shadow.name] = shadow
-
-        log.info(f"{shadow_name} was added to the mind.")
-
+        shadow.attach(self)
+        shadow.activate()
         return shadow
     
-    def remove_shadow(self, shadow_name):
-        # log.debug("Removing shadow", shadow_name)
-        
-        if not shadow_name in self.shadows:
-            log.warn("Attempting to remove a shadow that is not loaded", shadow_name)
-            return
-        
-        shadow = self.shadows.get(shadow_name)
-
+    def remove_shadow(self, name):
+        shadow = self.shadows.get(name)
         if shadow is not None:
-            del self.shadows[shadow_name]
-            shadow.on_remove()
+            del self.shadows[name]
+            shadow.deactivate()
+            shadow.dettach()
+
+    def add_listener(self, topic_names, callback):
+        log.debug(f"Adding listener for {topic_names}")
         
-        log.info(f"{shadow_name} was removed from the mind.")
-
-    def _add_listener(self, topic_name, callback):
+        if not isinstance(topic_names, list):
+            topic_names = [topic_names]
         
-        if isinstance(topic_name, list):
-            log.debug(f"adding listeners list: {topic_name}")
-            for name in topic_name:
-                self._add_listener(name, callback)
-            return
-        
-        log.debug(f"adding listener for {topic_name}")
+        for topic_name in topic_names:
+            if topic_name in self.topics:
+                topic = self.topics[topic_name]
+                topic.add(callback)
+                
+                if topic.last_event is not None:
+                    self._emit_one(callback, topic_name, topic.last_event)
+            
+            else:
+                topic = Topic(topic_name)
+                topic.add(callback)
+                self.topics[topic_name] = topic
 
-        # Register this listener in the corresponding topic
+    def remove_listener(self, topic_names, callback):
+        if not isinstance(topic_names, list):
+            topic_names = [topic_names]
 
-        if not topic_name in self.topics:
-            topic = Topic(topic_name)
-            topic.add(callback)
-            self.topics[topic_name] = topic
-        
-        else:
-            topic:Topic = self.topics[topic_name]
-            topic.add(callback)
-
-            if topic.last_event is not None:
-                self._emit_one(callback, topic_name, topic.last_event)
-
-    def _remove_listener(self, topic_name, callback):
-    
-        if isinstance(topic_name, list):
-            for name in topic_name:
-                self._remove_listener(name, topic_name)
-            return
-
-        # Remove it if there is a topic name with this name 
-        # and the listener is there.
-
-        if topic_name in self.topics:
-            topic = self.topics[topic_name]
-            topic.remove(callback)
+        for topic_name in topic_names:
+            if topic_name in self.topics:
+                self.topics[topic_name].remove(callback)
 
     def emit(self, topic_name, event, priority=100):
-        if topic_name in self.topics:
-            topic:Topic = self.topics[topic_name]
-            topic.last_event = event
-        
-        else:
-            topic = Topic(topic_name)
-            topic.last_event = event
-            self.topics[topic_name] = topic
-
         try:
             self.executor.submit(self._emit_all, priority, topic_name, event)
         except RuntimeError as e:
             log.warn("Could not emit event, maybe we are shutting down -", e)
 
-    def _emit_all(self, topic_name, event):
-        # debug = "Nulea" in topic_name
+    def run(self):
+        try:
+            self.executor.wait()
+        except:
+            print("\nTerminating...")
 
-        # if debug:
-        #     log.debug(f"Mind is processing event {topic_name}")
+    def _emit_all(self, topic_name, event):
 
         if topic_name in self.topics:
-            topic = self.topics[topic_name]
+            topic:Topic = self.topics[topic_name]
+            topic.last_event = event
+        
+        else:
+            topic = Topic(topic_name)
+            topic.last_event = event
+            self.topics[topic_name] = topic
 
-            # log.info("Calling listeners", str(topic.listeners))
-            # if debug:
-            #     log.debug(f"topic found, listeners: {len(topic.listeners)}")
-            
-            for callback in topic.listeners:
-                try:
-                    # if debug:
-                    #     log.debug("Calling callback")
-                    callback(topic_name, event)
-                except Exception as e:
-                    traceback.print_exc()
-                    log.error("Error during event processing for topic", topic_name, "- error:", e)
+        for callback in topic.listeners:
+            try:
+                callback(topic_name, event)
+            except Exception as e:
+                traceback.print_exc()
+                log.error("Error during event processing for topic", topic_name, "- error:", e)
 
     def _emit_one(self, callback, topic_name, event):
         try:
@@ -209,45 +175,3 @@ class Mind:
         except Exception as e:
             traceback.print_exc()
             log.error("Error during event processing for topic", topic_name, "- error:", e)
-
-    def start(self):
-
-        self.executor = Executor()
-
-        # Output shadows
-
-        self.add_shadow("virtual_keyboard")
-        self.add_shadow("virtual_mouse")
-        self.add_shadow("virtual_pen")
-
-        # Input shadows
-
-        self.add_shadow("logitech_marble")
-        # self.add_shadow("vostro_keyboard")
-        self.add_shadow("basic_keyboards")
-        self.add_shadow("macro_keyboard")
-        self.add_shadow("logitech_mx2s")
-        self.add_shadow("logi_mxMaster3s")
-        self.add_shadow("nulea_m512")
-        #self.add_shadow("xppen_deco_pro")
-
-        # System shadows
-
-        self.add_shadow("dispatcher")
-        self.add_shadow("watch_login")
-        self.add_shadow("watch_devices")
-        # self.add_shadow("watch_disks")
-        
-        # Logic shadows
-
-        self.add_shadow("smart_output")
-
-        # Infinity loop until KeyboardInterrupt is received or the system terminates
-
-        try:
-            self.executor.wait()
-            
-        except:
-            print("\nTerminating...")
-        
-        log.debug("Bye!")

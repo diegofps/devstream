@@ -1,7 +1,8 @@
 from evdev import AbsInfo, UInput, ecodes as e
 from keys import WheelKey, SmoothedKey, DirectKey
 
-from .virtual_device import VirtualDevice, VirtualDeviceEvent
+from .virtual_device import VirtualDeviceReflex, VirtualDeviceEvent
+from shadow import Shadow
 
 import time
 import log
@@ -15,11 +16,11 @@ class VirtualMouseEvent(VirtualDeviceEvent):
         super().__init__(mind, TOPIC_VIRTUALMOUSE_EVENT, source)
 
 
-class VirtualMouse(VirtualDevice):
+class VirtualMouseReflex(VirtualDeviceReflex):
 
-    def __init__(self, shadow):
+    def __init__(self):
         
-        super().__init__(shadow, "devstream_mouse", vendor=0x951, product=0x16c6, version=0x111, bustype=0x11)
+        super().__init__("devstream_mouse", vendor=0x951, product=0x16c6, version=0x111, bustype=0x11)
         
         self.init_keys()
         self.add_listener(TOPIC_VIRTUALMOUSE_EVENT, self.on_event)
@@ -64,5 +65,9 @@ class VirtualMouse(VirtualDevice):
         ])
     
 
-def on_load(shadow):
-    VirtualMouse(shadow)
+class VirtualMouse(Shadow):
+    def on_configure(self):
+        self.add_reflex(VirtualMouseReflex())
+
+# def on_load(shadow):
+#     VirtualMouseReflex(shadow)

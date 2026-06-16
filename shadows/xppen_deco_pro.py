@@ -804,7 +804,7 @@ class XPPEN_DecoPro_Disable(XPPEN_DecoPro_Passthrough):
         log.info("mode disabled")
         canvas.send(f"set_page_mode {MODE_DISABLED}")
 
-def on_terminate_shadow(shadow):
+def on_unload_shadow(shadow):
     global canvas
     canvas.terminate()
 
@@ -820,5 +820,5 @@ def on_load(shadow):
 
     shadow.require_device(REQUIRED_DEVICES)
     shadow.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
-    shadow.set_on_terminate_listener(on_terminate_shadow)
+    shadow.set_on_unload_listener(on_unload_shadow)
 

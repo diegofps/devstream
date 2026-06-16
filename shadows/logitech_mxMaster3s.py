@@ -3,6 +3,7 @@ from shadows.virtual_mouse import VirtualMouseEvent
 from shadows.smart_output import SmartOutputEvent
 from evdev import ecodes as e
 from reflex import Reflex
+from shadow import Shadow
 
 import log
 
@@ -18,9 +19,9 @@ SOURCE_LOGITECH_MXMASTER3S = "Logi MX Master 3S"
 
 class BaseMXMaster3SNode(Reflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.configure_states(TOPIC_MXMASTER3S_STATE, TOPIC_DEVICE_MXMASTER3S)
+    def on_configure(self):
+        for x in REQUIRED_DEVICES:
+            self.add_listener(f"DeviceReader:{x}", self.on_event)
 
     def on_event(self, device_name, event):
         # log.debug(f"event received from {device_name}: {event}")
@@ -81,8 +82,8 @@ class BaseMXMaster3SNode(Reflex):
 
 class MXMaster3S_N(BaseMXMaster3SNode): # Normal
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
+    def __init__(self, name=None):
+        super().__init__(name)
     
     def on_left_click(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
@@ -127,8 +128,9 @@ class MXMaster3S_N(BaseMXMaster3SNode): # Normal
 
 class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
+    def __init__(self, name=None):
+        super().__init__(name)
+        self.clean = True
     
     def on_left_click(self, event): # A
         self.clean = False
@@ -188,8 +190,8 @@ class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
 
 class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
+    def __init__(self, name=None):
+        super().__init__(name)
         self.clean = True
     
     def on_deactivate(self):
@@ -254,8 +256,8 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
 
 class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
+    def __init__(self, name=None):
+        super().__init__(name)
         self.clean = True
     
     def on_left_click(self, event): # A
@@ -323,8 +325,8 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
 
 class MXMaster3S_F(BaseMXMaster3SNode): # Editor
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
+    def __init__(self, name=None):
+        super().__init__(name)
         self.clean = True
     
     def on_left_click(self, event): # A
@@ -357,10 +359,8 @@ class MXMaster3S_F(BaseMXMaster3SNode): # Editor
 
             if self.clean:
                 with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                        eb.press("KEY_LEFTMETA")
-                        eb.release("KEY_LEFTMETA")
-                # with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                #     eb.function("navigate_back")
+                    eb.press("KEY_LEFTMETA")
+                    eb.release("KEY_LEFTMETA")
 
             self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
     
@@ -372,7 +372,7 @@ class MXMaster3S_F(BaseMXMaster3SNode): # Editor
     
     def on_scroll_h(self, event):
         pass
-        
+
     def on_move_rel_x(self, event):
         pass
 
@@ -380,14 +380,34 @@ class MXMaster3S_F(BaseMXMaster3SNode): # Editor
         pass
 
 
-def on_load(shadow):
+class LogitechMXMaster3S(Shadow):
 
-    MXMaster3S_N(shadow)
-    MXMaster3S_G(shadow)
-    MXMaster3S_H(shadow)
-    MXMaster3S_F(shadow)
-    MXMaster3S_HG(shadow)
+    def on_configure(self):
+        # TODO: Monitor logid's log and restart its service when you detect the 5 tries giving up failure
+        # journalctl command: sudo journalctl --lines 1 -u logid
+        # target line for regex: Jun 03 13:54:57 ncc2501 logid[3187]: [WARN] Failed to add device /dev/hidraw3 after 5 tries. Treating as failure.
+
+        self.add_reflex(MXMaster3S_N())
+        self.add_reflex(MXMaster3S_G())
+        self.add_reflex(MXMaster3S_H())
+        self.add_reflex(MXMaster3S_F())
+        self.add_reflex(MXMaster3S_HG())
     
-    shadow.require_device(REQUIRED_DEVICES)
-    shadow.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
+        self.require_device(REQUIRED_DEVICES)
+        self.activate_reflex("MXMaster3S_N", 50)
+
+# def on_load(shadow):
+
+#     # TODO: Monitor logid's log and restart its service when you detect the 5 tries giving up failure
+#     # journalctl command: sudo journalctl --lines 1 -u logid
+#     # target line for regex: Jun 03 13:54:57 ncc2501 logid[3187]: [WARN] Failed to add device /dev/hidraw3 after 5 tries. Treating as failure.
+
+#     MXMaster3S_N(shadow)
+#     MXMaster3S_G(shadow)
+#     MXMaster3S_H(shadow)
+#     MXMaster3S_F(shadow)
+#     MXMaster3S_HG(shadow)
+    
+#     self.require_device(REQUIRED_DEVICES)
+#     self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
 

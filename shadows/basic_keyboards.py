@@ -2,6 +2,7 @@ from shadows.virtual_keyboard import VirtualKeyboardEvent
 
 from evdev import ecodes as e
 from reflex import Reflex
+from shadow import Shadow
 
 import log
 
@@ -22,14 +23,10 @@ TARGET_DEVICES = [
 
 SOURCE_BASIC_KEYBOARD = "Basic Keyboard"
 
-
-class BasicKeyboards(Reflex):
-
-    def __init__(self, shadow):
-        super().__init__(shadow)
-
-        for device in TARGET_DEVICES:
-            self.add_listener("DeviceReader:" + device, self.on_event)
+class BasicKeyboardsReflex(Reflex):
+    def on_configure(self):
+        for x in TARGET_DEVICES:
+            self.add_listener(f"DeviceReader:{x}", self.on_event)
 
     def on_event(self, topic_name, event):
         self.debug_event(topic_name, event)
@@ -37,6 +34,7 @@ class BasicKeyboards(Reflex):
             eb.forward(event.type, event.code, event.value)
 
 
-def on_load(shadow):
-    BasicKeyboards(shadow)
-    shadow.mind.require_device(TARGET_DEVICES)
+class BasicKeyboards(Shadow):
+    def on_configure(self):
+        self.require_device(TARGET_DEVICES)
+        self.add_reflex(BasicKeyboardsReflex(), True)

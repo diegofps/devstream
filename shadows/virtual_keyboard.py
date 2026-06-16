@@ -1,6 +1,6 @@
 from evdev import UInput, ecodes as e
 
-from .virtual_device import VirtualDevice, VirtualDeviceEvent
+from .virtual_device import VirtualDeviceReflex, VirtualDeviceEvent
 
 
 TOPIC_VIRTUALKEYBOARD_EVENT = "VirtualKeyboard"
@@ -11,7 +11,7 @@ class VirtualKeyboardEvent(VirtualDeviceEvent):
         super().__init__(mind, TOPIC_VIRTUALKEYBOARD_EVENT, source)
 
 
-class VirtualKeyboard(VirtualDevice):
+class VirtualKeyboard(VirtualDeviceReflex):
 
     def __init__(self, shadow):
         super().__init__(shadow, "devstream_keyboard")

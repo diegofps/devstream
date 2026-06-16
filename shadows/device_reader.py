@@ -6,8 +6,8 @@ import log
 
 class DeviceReader(Reflex):
 
-    def __init__(self, shadow, dev):
-        super().__init__(shadow, dev.name)
+    def __init__(self, name, dev):
+        super().__init__(name, dev.name)
 
         self.done = False
         self.dev = dev
