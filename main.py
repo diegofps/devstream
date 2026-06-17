@@ -5,7 +5,7 @@ import log
 import os
 
 from mind import Mind
-from shadows import VirtualMouse, LogitechMXMaster3S, WatchDevices, Dispatcher
+from shadows import VirtualMouse, VirtualKeyboard, LogitechMXMaster3S, WatchDevices, Dispatcher, BasicKeyboards, WatchLogin, SmartOutput
 
 
 os.nice(-20)
@@ -16,30 +16,30 @@ mind = Mind()
 
 # Output shadows
 
-# mind.add_shadow("virtual_keyboard")
-# mind.add_shadow(VirtualMouse())
+mind.add_shadow(VirtualKeyboard())
+mind.add_shadow(VirtualMouse())
 # mind.add_shadow("virtual_pen")
 
 # Input shadows
 
 # mind.add_shadow("logitech_marble")
 # mind.add_shadow("vostro_keyboard")
-# mind.add_shadow(BasicKeyboards()) # mind.add_shadow("basic_keyboards")
+mind.add_shadow(BasicKeyboards())
 # mind.add_shadow("macro_keyboard")
 # mind.add_shadow("logitech_mx2s")
-mind.add_shadow(LogitechMXMaster3S()) # mind.add_shadow("logitech_mxMaster3s")
+mind.add_shadow(LogitechMXMaster3S())
 # mind.add_shadow("nulea_m512")
 #mind.add_shadow("xppen_deco_pro")
 
 # System shadows
 
-mind.add_shadow(Dispatcher()) # mind.add_shadow("dispatcher")
-# mind.add_shadow("watch_login")
-mind.add_shadow(WatchDevices()) # mind.add_shadow("watch_devices")
+mind.add_shadow(Dispatcher())
+mind.add_shadow(WatchLogin())
+mind.add_shadow(WatchDevices())
 
 # Intelligence shadows
 
-# mind.add_shadow("smart_output")
+mind.add_shadow(SmartOutput())
 
 # Main loop
 

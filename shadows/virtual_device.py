@@ -16,7 +16,7 @@ class VirtualDeviceEvent:
     UPDATE_V = 4
     UNLOCK   = 5
     FORWARD  = 6
-    FUNCTION = 7
+    # FUNCTION = 7
     SLEEP    = 8
     SEQUENCE = 9
 
@@ -34,7 +34,7 @@ class VirtualDeviceEvent:
     
     @staticmethod
     def bycode(code):
-        return ["PRESS", "RELEASE", "UPDATE", "UPDATE_H", "UPDATE_V", "UNLOCK", "FORWARD", "FUNCTION", "SLEEP", "SEQUENCE"][code]
+        return ["PRESS", "RELEASE", "UPDATE", "UPDATE_H", "UPDATE_V", "UNLOCK", "FORWARD", "SLEEP", "SEQUENCE"][code]
 
     def press(self, key_name):
         event = (VirtualDeviceEvent.PRESS, key_name, self.source)
@@ -64,10 +64,6 @@ class VirtualDeviceEvent:
         event = (VirtualDeviceEvent.FORWARD, type, code, value, self.source)
         self.sequence.append(event)
 
-    def function(self, function_name, *args):
-        event = (VirtualDeviceEvent.FUNCTION, self.source, function_name, *args)
-        self.sequence.append(event)
-
     def sleep(self, delay_in_seconds):
         event = (VirtualDeviceEvent.SLEEP, delay_in_seconds, self.source)
         self.sequence.append(event)
@@ -88,14 +84,13 @@ class VirtualDeviceEvent:
 
 class VirtualDeviceReflex(Reflex):
 
-    def __init__(self, name=None, version=0x3, product=0x1, vendor=0x1, input_props=None, bustype=0x3):
-        super().__init__(name)
-        self.functions = {}
+    def __init__(self, version=0x3, product=0x1, vendor=0x1, input_props=None, bustype=0x3, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         cap = self.get_capabilities()
 
-        if name is not None:
-            self.vdev = UInput(cap, name=name, version=version, product=product, vendor=vendor, input_props=input_props, bustype=bustype)
+        if self.name is not None:
+            self.vdev = UInput(cap, name=self.name, version=version, product=product, vendor=vendor, input_props=input_props, bustype=bustype)
         else:
             self.vdev = None
 
@@ -137,8 +132,8 @@ class VirtualDeviceReflex(Reflex):
         elif event_type == VirtualDeviceEvent.FORWARD:
             self.on_event_forward(event[1], event[2], event[3])
         
-        elif event_type == VirtualDeviceEvent.FUNCTION:
-            self.run(event[2], *event[3:])
+        # elif event_type == VirtualDeviceEvent.FUNCTION:
+        #     self.run(event[2], *event[3:])
         
         elif event_type == VirtualDeviceEvent.SLEEP:
             self.on_event_sleep(event[1])
@@ -180,8 +175,8 @@ class VirtualDeviceReflex(Reflex):
     def on_event_sleep(self, delay):
         time.sleep(delay)
         
-    def run(self, name, *args):
-        getattr(self, 'function_' + name)(*args)
+    # def run(self, name, *args):
+    #     getattr(self, 'function_' + name)(*args)
 
     def terminate(self):
         if self.vdev is not None:

@@ -1,6 +1,7 @@
 from evdev import UInput, ecodes as e
 
 from .virtual_device import VirtualDeviceReflex, VirtualDeviceEvent
+from shadow import Shadow
 
 
 TOPIC_VIRTUALKEYBOARD_EVENT = "VirtualKeyboard"
@@ -11,12 +12,13 @@ class VirtualKeyboardEvent(VirtualDeviceEvent):
         super().__init__(mind, TOPIC_VIRTUALKEYBOARD_EVENT, source)
 
 
-class VirtualKeyboard(VirtualDeviceReflex):
+class VirtualKeyboardReflex(VirtualDeviceReflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow, "devstream_keyboard")
-        
+    def __init__(self, *args, **kwargs):
+        super().__init__(name="devstream_keyboard", *args, **kwargs)
         self.init_keys()
+    
+    def on_configure(self):
         self.add_listener(TOPIC_VIRTUALKEYBOARD_EVENT, self.on_event)
 
     def get_capabilities(self):
@@ -87,5 +89,10 @@ class VirtualKeyboard(VirtualDeviceReflex):
         self.ignore_keys(["KP0", "KP1", "KP2", "KP3", "KP4", "KP5", "KP6", "KP7", "KP8", "KP9", 
                           "KPDOT", "KPASTERISK", "KPENTER", "KPPLUS", "KPMINUS", "KPSLASH", "NUMLOCK"])
 
-def on_load(shadow):
-    VirtualKeyboard(shadow)
+
+class VirtualKeyboard(Shadow):
+    def on_configure(self):
+        self.add_reflex(VirtualKeyboardReflex(autostart=True))
+
+# def on_load(shadow):
+#     VirtualKeyboardReflex(shadow)

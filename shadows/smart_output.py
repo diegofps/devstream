@@ -2,43 +2,183 @@
 from shadows.watch_windows import TOPIC_WINDOW_CHANGED
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
 
-from shadows.virtual_device import VirtualDeviceEvent, VirtualDeviceReflex
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
-from shadows.virtual_pen import VirtualPenEvent
+# from shadows.virtual_pen import VirtualPenEvent
 
 from keys import DelayedKey, LockableDelayedKey
 
 from subprocess import Popen, PIPE
+from shadow import Shadow
+from reflex import Reflex
 
 import shlex
-import time
 import log
 import os
 import re
 
 
-TOPIC_SMARTOUTPUT_EVENT = "Smart Output"
-
+TOPIC_SMARTOUTPUT_EVENT = "SmartOutput"
 SOURCE_SMART_OUTPUT = "Smart Output"
 
 
-class SmartOutputEvent(VirtualDeviceEvent):
-    def __init__(self, mind, source):
-        super().__init__(mind, TOPIC_SMARTOUTPUT_EVENT, source)
+class SmartOutputEvent:
+
+    FUNCTION = 0
+    UPDATE = 1
+    
+    def __init__(self, mind, source=None):
+        self.source        = source
+        self.topic         = TOPIC_SMARTOUTPUT_EVENT
+        self.mind          = mind
+        self.sequence      = []
+    
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.emit()
+    
+    def update(self, key_name, *args):
+        event = (SmartOutputEvent.UPDATE, key_name, args)
+        self.sequence.append(event)
+
+    def function(self, function_name, *args):
+        event = (SmartOutputEvent.FUNCTION, function_name, args)
+        self.sequence.append(event)
+
+    def emit(self):
+        if self.sequence:
+            event = (self.sequence, self.source)
+            self.mind.emit(self.topic, event)
 
 
-class SmartOutput(VirtualDeviceReflex):
-
-    def __init__(self, shadow):
-        super().__init__(shadow)
+class SmartOutputReflex(Reflex):
         
+    def on_configure(self):
+
         self.username = None
         self.userdisplay = None
-
+        self.functions = {}
+        
         self.init_keys()
+        self.preferences = self.init_preferences()
+        self.update_functions(None)
 
-        preferences = {
+        # Configure listeners
+        self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
+        self.add_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
+        self.add_listener(TOPIC_SMARTOUTPUT_EVENT, self.on_event)
+
+    def on_event(self, topic_name, event):
+        log.debug(f"Reflex {self.name} for a new event, topic_name={topic_name}, event={event}")
+        sequence, source = event
+
+        for event_type, name, args in sequence:
+            if event_type == SmartOutputEvent.FUNCTION:
+                self.run_function(name, *args)
+            elif event_type == SmartOutputEvent.UPDATE:
+                self.run_update(name, *args)
+            else:
+                log.warn(f"Invalid event type in SmartOutputEvent: {event_type}")
+    
+    def run_update(self, key_name, value):
+        if hasattr(self, key_name):
+            getattr(self, key_name).update(value)
+    
+    def run_function(self, function_name, *args):
+        log.info("inside run_function. Looking for", function_name)
+        
+        if not function_name in self.functions:
+            log.error("Unknown function: %s", function_name)
+            return
+        
+        function = self.functions[function_name]
+
+        if isinstance(function, list):
+            # log.info(f"Running function {function_name} as list of events")
+            
+            for f in function:
+                log.info(f["type"])
+                if f["type"] == "keyboard":
+                    VirtualEvent = VirtualKeyboardEvent
+                elif f["type"] == "mouse":
+                    VirtualEvent = VirtualMouseEvent
+                else:
+                    log.error(f"Unknown function type: {f['type']}")
+                    continue
+                
+                with VirtualEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
+                    for key in f["sequence"]:
+                        log.info("key:", key)
+                        if isinstance(key, (int, float)):
+                            eb.sleep(key)
+                        elif key.startswith("+"):
+                            eb.press(key[1:])
+                        elif key.startswith("-"):
+                            eb.release(key[1:])
+                        else:
+                            eb.press(key)
+                            eb.release(key)
+
+        elif isinstance(function, str):
+            if hasattr(self, function):
+                getattr(self, function)(*args)
+            else:
+                log.error(f"Unknown function: {function}")
+
+        else:
+            # log.info(f"Running function {function_name} as instance method")
+            function(*args)
+
+    def init_keys(self):
+
+        self.SCROLL_VOLUME  = DelayedKey("SCROLL_VOLUME",  lambda v: self.run_function("volume_up") if v else self.run_function("volume_down"), 200)
+        self.SCROLL_TABS    = DelayedKey("SCROLL_TABS",    lambda v: self.run_function("next_tab") if v else self.run_function("previous_tab"), 500)
+        self.SCROLL_WINDOWS = DelayedKey("SCROLL_WINDOWS", lambda v: self.run_function("next_window") if v else self.run_function("previous_window"), 500)
+        self.SCROLL_ZOOM    = DelayedKey("SCROLL_ZOOM",    lambda v: self.run_function("zoom_in") if v else self.run_function("zoom_out"), 200)
+        self.SCROLL_UNDO    = DelayedKey("SCROLL_UNDO",    lambda v: self.run_function("undo") if v else self.run_function("redo"), 200)
+
+        self.SCROLL_H = DelayedKey("SCROLL_H", self.scroll_h_send_cmd, 200)
+        self.SCROLL_V = DelayedKey("SCROLL_V", self.scroll_v_send_cmd, 200)
+
+        self.DUAL_WINDOWS_TABS = LockableDelayedKey(
+                "DUAL_WINDOWS_TABS", 
+                lambda v: self.run_function("next_window") if v else self.run_function("previous_window"), 
+                lambda v: self.run_function("next_tab") if v else self.run_function("previous_tab"),
+                800) # lockable1
+        
+        self.DUAL_UNDO_VOLUME  = LockableDelayedKey(
+                "DUAL_UNDO_VOLUME",  
+                lambda v: self.run_function("redo") if v else self.run_function("undo"),
+                lambda v: self.run_function("volume_up") if v else self.run_function("volume_down"), 
+                500) # lockable2
+    
+    def on_login_changed(self, topic_name, event):
+        self.username, self.userdisplay = (None, None) if len(event) == 0 else event[0]
+
+        log.info(f"Shadow {self.name} received a login changed event: username={self.username}, display={self.userdisplay}")
+
+    def on_window_changed(self, topic_name, event):
+        window_class, app_name, window_name = event
+        log.info(f"Reflex {self.name} received a window changed event: window_class={window_class}, app_name={app_name}, window_name={window_name}")
+        self.update_functions(app_name)
+    
+    def update_functions(self, app_name):
+        for intent_name, options in self.preferences.items():
+            if app_name in options:
+                callback = options[app_name]
+                self.functions[intent_name] = callback
+
+            elif "default" in options:
+                callback = options["default"]
+                self.functions[intent_name] = callback
+
+            else:
+                log.error("No default function for intent %s", intent_name)
+    
+    def init_preferences(self):
+        raw_preferences = {
             "next_window": {
                 "default": [{
                     "type": "keyboard",
@@ -290,117 +430,24 @@ class SmartOutput(VirtualDeviceReflex):
 
         # Convert list of names to single names
 
-        self.preferences = {}
-        for function_name, options in preferences.items():
-            self.preferences[function_name] = {}
+        preferences = {}
+        
+        for function_name, options in raw_preferences.items():
+            preferences[function_name] = {}
             for app_name_or_list, events in options.items():
                 if isinstance(app_name_or_list, tuple):
                     for app_name in app_name_or_list:
-                        self.preferences[function_name][app_name] = events
+                        preferences[function_name][app_name] = events
                 else:
-                    self.preferences[function_name][app_name_or_list] = events
+                    preferences[function_name][app_name_or_list] = events
         
-        # Configure initial current functions as the default function
-
-        for k, v in self.preferences.items():
-            if "default" in v:
-                self.functions[k] = v["default"]
-            else:
-                log.error("No default function for", k)
-
-        # Configure listeners
-
-        self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
-        self.add_listener(TOPIC_WINDOW_CHANGED, self.on_window_changed)
-        self.add_listener(TOPIC_SMARTOUTPUT_EVENT, self.on_event)
-
-    def run(self, function_name, *args):
-        # log.info("inside run. Looking for", function_name)
-        
-        if not function_name in self.functions:
-            log.error("Unknown function: %s", function_name)
-            return
-        
-        function = self.functions[function_name]
-
-        if isinstance(function, list):
-            # log.info(f"Running function {function_name} as list of events")
-            
-            for f in function:
-                log.info(f["type"])
-                if f["type"] == "keyboard":
-                    VirtualEvent = VirtualKeyboardEvent
-                elif f["type"] == "mouse":
-                    VirtualEvent = VirtualMouseEvent
-                else:
-                    log.error(f"Unknown function type: {f['type']}")
-                    continue
-                
-                with VirtualEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
-                    for key in f["sequence"]:
-                        log.info("key:", key)
-                        if isinstance(key, (int, float)):
-                            eb.sleep(key)
-                        elif key.startswith("+"):
-                            eb.press(key[1:])
-                        elif key.startswith("-"):
-                            eb.release(key[1:])
-                        else:
-                            eb.press(key)
-                            eb.release(key)
-
-        elif isinstance(function, str):
-            if hasattr(self, function):
-                getattr(self, function)(*args)
-            else:
-                log.error(f"Unknown function: {function}")
-
-        else:
-            # log.info(f"Running function {function_name} as instance method")
-            function(*args)
-
-    def init_keys(self):
-
-        self.SCROLL_VOLUME  = DelayedKey("SCROLL_VOLUME",  lambda v: self.run("volume_up") if v else self.run("volume_down"), 200)
-        self.SCROLL_TABS    = DelayedKey("SCROLL_TABS",    lambda v: self.run("next_tab") if v else self.run("previous_tab"), 500)
-        self.SCROLL_WINDOWS = DelayedKey("SCROLL_WINDOWS", lambda v: self.run("next_window") if v else self.run("previous_window"), 500)
-        self.SCROLL_ZOOM    = DelayedKey("SCROLL_ZOOM",    lambda v: self.run("zoom_in") if v else self.run("zoom_out"), 200)
-        self.SCROLL_UNDO    = DelayedKey("SCROLL_UNDO",    lambda v: self.run("undo") if v else self.run("redo"), 200)
-
-        self.SCROLL_H = DelayedKey("SCROLL_H", self.scroll_h_send_cmd, 200)
-        self.SCROLL_V = DelayedKey("SCROLL_V", self.scroll_v_send_cmd, 200)
-
-        self.DUAL_WINDOWS_TABS = LockableDelayedKey(
-                "DUAL_WINDOWS_TABS", 
-                lambda v: self.run("next_window") if v else self.run("previous_window"), 
-                lambda v: self.run("next_tab") if v else self.run("previous_tab"),
-                800) # lockable1
-        
-        self.DUAL_UNDO_VOLUME  = LockableDelayedKey(
-                "DUAL_UNDO_VOLUME",  
-                lambda v: self.run("redo") if v else self.run("undo"),
-                lambda v: self.run("volume_up") if v else self.run("volume_down"), 
-                500) # lockable2
+        return preferences
     
-    def on_login_changed(self, topic_name, event):
-        self.username, self.userdisplay = (None, None) if len(event) == 0 else event[0]
-        log.info("login changed received", self.username, self.userdisplay)
 
-    def on_window_changed(self, topic_name, event):
-        window_class, app_name, window_name = event
+    ######################################################################################
+    # Advanced functions not easily mapped to keys
+    ######################################################################################
 
-        for intent_name, options in self.preferences.items():
-            if app_name in options:
-                callback = options[app_name]
-                self.functions[intent_name] = callback
-
-            elif "default" in options:
-                callback = options["default"]
-                self.functions[intent_name] = callback
-
-            else:
-                log.error("No default function for intent %s", intent_name)
-    
     def search_selection_1(self):
         log.info("Running search selection 1")
         
@@ -465,6 +512,7 @@ class SmartOutput(VirtualDeviceReflex):
             eb.release(key)
     
 
-def on_load(shadow):
-    SmartOutput(shadow)
+class SmartOutput(Shadow):
+    def on_configure(self):
+        self.add_reflex(SmartOutputReflex(autostart=True))
 

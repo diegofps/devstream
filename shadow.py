@@ -11,7 +11,7 @@ class Shadow:
         self.active = False
         self.mind = None
 
-        log.info(f"Creating shadow name={self.name}")
+        log.info(f"Creating shadow {self.name}")
 
     def add_reflex(self, reflex):
         assert not reflex.name in self.reflexes, f"Shadow {self.name} already contains a reflex with the name {reflex.name}"
@@ -65,10 +65,10 @@ class Shadow:
 
         self.on_activate()
     
-    def activate_reflex(self, reflex_name, priority):
-        log.debug(f"Shifting to reflex {reflex_name} within shadow {self.name} with priority {priority}")
+    def shift_reflex(self, reflex_name, *args, **kwargs):
+        log.debug(f"Shifting to reflex {reflex_name}, args={args}m kwargs={kwargs} within shadow {self.name}")
         assert self.is_attached(), "Needs to be attached to use activate_reflex"
-        self.mind.emit(self.state_name, reflex_name, priority)
+        self.mind.emit(self.state_name, (reflex_name, args, kwargs), 50)
     
     def deactivate(self):
         log.debug(f"Deactivating shadow {self.name}")
@@ -104,15 +104,29 @@ class Shadow:
 
     def on_state_changed(self, topic_name, event):
         log.info(f"Received an state changed event at shadow {self.name}: topic={topic_name}, event={event}")
-        
-        for reflex in self.reflexes.values():
-            if reflex.name == event:
-                if not reflex.is_activated():
-                    reflex.activate()
-            else:
-                if reflex.is_activated():
-                    reflex.deactivate()
 
+        reflex_name, args, kwargs = event
+        target_reflex = None
+
+        for reflex in self.reflexes.values():
+            if reflex.name == reflex_name:
+                target_reflex = reflex
+                break
+        
+        if target_reflex is None:
+            log.warn(f"Shadow {self.name} if trying to shift reflexes but couldn't find the target reflex {reflex_name}, args={args}, kwargs={kwargs}")
+
+        elif target_reflex.is_activated():
+            log.warn(f"Shadow {self.name} if trying to shift reflexes but the target reflex {reflex_name} is already activated, args={args}, kwargs={kwargs}")
+        
+        else:
+            for reflex in self.reflexes.values():
+                if reflex != target_reflex:
+                    if reflex.is_activated():
+                        reflex.deactivate()
+            
+            target_reflex.activate(*args, **kwargs)
+        
         # clean = True
         
         # if event[-1] == '*':

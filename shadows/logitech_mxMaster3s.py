@@ -7,24 +7,27 @@ from shadow import Shadow
 
 import log
 
+
 REQUIRED_DEVICES = [
     "Logitech MX Master 3S",
     "LogiOps Virtual Input"
 ]
 
-TOPIC_DEVICE_MXMASTER3S    = [f"DeviceReader:{x}" for x in REQUIRED_DEVICES]
-TOPIC_MXMASTER3S_STATE     = "MXMaster3S:State"
 SOURCE_LOGITECH_MXMASTER3S = "Logi MX Master 3S"
 
 
 class BaseMXMaster3SNode(Reflex):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.clean = True
+    
     def on_configure(self):
         for x in REQUIRED_DEVICES:
             self.add_listener(f"DeviceReader:{x}", self.on_event)
 
     def on_event(self, device_name, event):
-        log.debug(f"Event received from {device_name}: {event}")
+        # log.debug(f"Event received from {device_name}: {event}")
 
         if event.type == e.EV_KEY:
 
@@ -71,13 +74,12 @@ class BaseMXMaster3SNode(Reflex):
                 event.value = -event.value
                 self.on_scroll_h(event)
 
-    def on_activate(self):
-        log.debug(f"{self.__class__.__name__} is activating")
-        pass
+    def on_activate(self, clean=True):
+        log.debug(f"{self.name} is activating, clean={clean}")
+        self.clean = clean
 
     def on_deactivate(self):
-        log.debug(f"{self.__class__.__name__} is deactivating")
-        pass
+        log.debug(f"{self.name} is deactivating")
 
 
 class MXMaster3S_N(BaseMXMaster3SNode): # Normal
@@ -96,15 +98,16 @@ class MXMaster3S_N(BaseMXMaster3SNode): # Normal
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_H", 50)
+            self.shift_reflex("MXMaster3S_H")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_G", 50)
+            self.shift_reflex("MXMaster3S_G")
+            # self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_G", 50)
     
     def on_side_ground_click(self, event): # F
         if event.value == 1: # +F
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_F", 50)
+            self.shift_reflex("MXMaster3S_F")
     
     def on_scroll(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
@@ -125,10 +128,6 @@ class MXMaster3S_N(BaseMXMaster3SNode): # Normal
 
 class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
 
-    def __init__(self, name=None):
-        super().__init__(name)
-        self.clean = True
-    
     def on_left_click(self, event): # A
         self.clean = False
 
@@ -158,12 +157,12 @@ class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                     eb.function("navigate_forward")
             
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
+            self.shift_reflex("MXMaster3S_N")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MXMaster3S_H, clean is", self.clean)
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_HG", 50)
+            self.shift_reflex("MXMaster3S_HG")
     
     def on_side_ground_click(self, event): # F
         pass
@@ -187,10 +186,6 @@ class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
 
 class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
 
-    def __init__(self, name=None):
-        super().__init__(name)
-        self.clean = True
-    
     def on_deactivate(self):
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.function("select_window")
@@ -219,7 +214,7 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
             log.debug("Pressing H from MXMaster3S_H, clean is", self.clean)
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_HG", 50)
+            self.shift_reflex("MXMaster3S_HG")
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
@@ -228,8 +223,8 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
             if self.clean:
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                     eb.function("navigate_back")
-
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
+            
+            self.shift_reflex("MXMaster3S_N")
     
     def on_side_ground_click(self, event): # F
         pass
@@ -252,10 +247,6 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
 
 
 class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
-
-    def __init__(self, name=None):
-        super().__init__(name)
-        self.clean = True
     
     def on_left_click(self, event): # A
         self.clean = False
@@ -276,7 +267,8 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
         if event.value == 0: # -H
             log.debug("Releasing H from MXMaster3S_HG, clean is", self.clean)
 
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_G*", 50)
+            self.shift_reflex("MXMaster3S_G", clean=False)
+            # self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_G*", 50) # * means a non clean state
 
             with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                 if self.clean:
@@ -289,7 +281,8 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
         if event.value == 0: # -G
             log.debug("Releasing G from MXMaster3S_HG, clean is", self.clean)
 
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_H*", 50)
+            self.shift_reflex("MXMaster3S_H", clean=False)
+            # self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_H*", 50)
 
             with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                 if self.clean:
@@ -321,10 +314,6 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
 
 
 class MXMaster3S_F(BaseMXMaster3SNode): # Editor
-
-    def __init__(self, name=None):
-        super().__init__(name)
-        self.clean = True
     
     def on_left_click(self, event): # A
         self.clean = False
@@ -359,7 +348,8 @@ class MXMaster3S_F(BaseMXMaster3SNode): # Editor
                     eb.press("KEY_LEFTMETA")
                     eb.release("KEY_LEFTMETA")
 
-            self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
+            self.shift_reflex("MXMaster3S_N")
+            # self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
     
     def on_scroll(self, event): # E
         self.clean = False

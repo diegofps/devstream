@@ -61,7 +61,7 @@ class Reflex:
     def is_activated(self):
         return self.active
 
-    def activate(self):
+    def activate(self, *args, **kwargs):
         assert self.is_attached(), f"Attempting to activate a reflex that is not attached"
         assert self.shadow.is_activated(), "Can't start a reflex if its shadow is not activated"
 
@@ -78,7 +78,7 @@ class Reflex:
             self.daemon = Daemon(self.run)
             self.daemon.start()
 
-        self.on_activate()
+        self.on_activate(*args, **kwargs)
 
     def deactivate(self):
         assert self.is_attached(), f"Attempting to deactivate a reflex that is not attached"
@@ -115,7 +115,10 @@ class Reflex:
             except ValueError:
                 traceback.print_stack()
                 log.debug("Attempting to remove a topic callback that is not present", topic_name=topic_name, listener=self.name)
-                pass
+    
+    def shift_reflex(self, reflex_name, *args, **kwargs):
+        if self.is_activated():
+            self.shadow.shift_reflex(reflex_name, *args, **kwargs)
     
     def debug_event(self, topic_name, evt):
         code  = e.bytype[evt.type][evt.code]
@@ -139,7 +142,7 @@ class Reflex:
         # log.debug(f"Inside default on_dettach for reflex {self.name}")
         pass
     
-    def on_activate(self):
+    def on_activate(self, *args):
         # log.debug(f"Inside default on_activate for reflex {self.name}")
         pass
 

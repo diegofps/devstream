@@ -18,11 +18,11 @@ class VirtualMouseEvent(VirtualDeviceEvent):
 
 class VirtualMouseReflex(VirtualDeviceReflex):
 
-    def __init__(self):
-        
-        super().__init__("devstream_mouse", vendor=0x951, product=0x16c6, version=0x111, bustype=0x11)
-        
+    def __init__(self, *args, **kwargs):
+        super().__init__(name="devstream_mouse", vendor=0x951, product=0x16c6, version=0x111, bustype=0x11, *args, **kwargs)
         self.init_keys()
+        
+    def on_configure(self):
         self.add_listener(TOPIC_VIRTUALMOUSE_EVENT, self.on_event)
 
     def get_capabilities(self):
@@ -67,7 +67,7 @@ class VirtualMouseReflex(VirtualDeviceReflex):
 
 class VirtualMouse(Shadow):
     def on_configure(self):
-        self.add_reflex(VirtualMouseReflex())
+        self.add_reflex(VirtualMouseReflex(autostart=True))
 
 # def on_load(shadow):
 #     VirtualMouseReflex(shadow)

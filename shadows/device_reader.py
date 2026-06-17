@@ -44,7 +44,7 @@ class DeviceReaderReflex(Reflex):
         if self.dev is not None:
             self.dev.close()
         
-        log.debug(self.name, "thread ended. Done =", self.done)
+        log.debug(f"Reflex {self.name}'s daemon thread is ending, daemon.done={daemon.done}")
 
 class DeviceReader(Shadow):
 

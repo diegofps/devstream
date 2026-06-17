@@ -1,34 +1,35 @@
 from subprocess import Popen, PIPE
 from reflex import Reflex
+from shadow import Shadow
 
 import shlex
 import time
 import log
 
+
 TOPIC_LOGIN_CHANGED = "LoginChanged"
 
 
-class WatchLogin(Reflex):
+class WatchLoginReflex(Reflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.start()
+    def on_configure(self):
+        self.require_daemon()
 
-    def run(self):
-        self.done = False
-
+    def run(self, daemon):
         logins = self.get_logins()
         self.mind.emit(TOPIC_LOGIN_CHANGED, logins)
 
-        while not self.done:
+        while not daemon.done:
             try:
                 cmd = shlex.split("inotifywait -m /var/run/utmp")
-                # debug("WatchLogin event, cmd:", cmd)
                 proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
                 
                 while True:
                     line = proc.stdout.readline().decode("utf-8")
                     # debug("WatchLogin event, line:", line)
+
+                    if daemon.done:
+                        break
 
                     if line is None or line == "":
                         error_msg = proc.stderr.readlines()
@@ -61,10 +62,10 @@ class WatchLogin(Reflex):
                 if ":" in display:
                     logins.append((username, display))
         
-        # log.debug(logins)
         return logins
 
 
-def on_load(shadow):
-    WatchLogin(shadow)
+class WatchLogin(Shadow):
+    def on_configure(self):
+        self.add_reflex(WatchLoginReflex(autostart=True))
 

@@ -1,6 +1,7 @@
 
 from subprocess import Popen, PIPE
 from reflex import Reflex
+from shadow import Shadow
 
 import shlex
 import time
@@ -10,26 +11,30 @@ import log
 TOPIC_WINDOW_CHANGED = "WindowChanged"
 
 
-class WatchWindows(Reflex):
+class WatchWindowsReflex(Reflex):
 
-    def __init__(self, shadow, username, display):
-        super().__init__(shadow)
+    def __init__(self, username, display, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.username = username
         self.display = display
-        self.start()
 
-        log.info("Starting WatchWindows => Username:", username, "Display:", display)
+        log.info(f"Creating {self.name}: username={username}, display={display}")
+    
+    def on_configure(self):
+        self.require_daemon()
 
-    def run(self):
-        self.done = False
+    def run(self, daemon):
 
-        while not self.done:
+        while not daemon.done:
             try:
                 cmd  = shlex.split("su %s -c 'xprop -spy -root _NET_ACTIVE_WINDOW -display %s'" % (self.username, self.display))
                 proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
                 
                 while True:
                     line = proc.stdout.readline().decode("utf-8")
+
+                    if daemon.done:
+                        break
 
                     if line is None or line == "":
                         error_msg = proc.stderr.readlines()
@@ -91,5 +96,17 @@ class WatchWindows(Reflex):
         return props
 
 
-def on_load(shadow, username, display):
-    WatchWindows(shadow, username, display)
+class WatchWindows(Shadow):
+
+    def __init__(self, username, display, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.username = username
+        self.display = display
+    
+    def on_configure(self):
+        self.add_reflex(WatchWindowsReflex(self.username, self.display, autostart=True))
+
+
+# def on_load(shadow, username, display):
+#     WatchWindowsReflex(shadow, username, display)
+

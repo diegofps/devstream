@@ -1,6 +1,8 @@
 from shadows.watch_devices import TOPIC_DEVICE_CONNECTED, TOPIC_DEVICE_DISCONNECTED
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
 from shadows.device_reader import DeviceReader
+from shadows.watch_windows import WatchWindows
+
 from evdev import InputDevice
 from reflex import Reflex
 from shadow import Shadow
@@ -17,9 +19,10 @@ This class has three responsibilities:
 class DispatcherReflex(Reflex):
 
     def on_configure(self):
-        self.username = None
-        self.display = None
-        self.devices = {}
+        # self.username = None
+        # self.display = None
+        self.device_readers = {}
+        self.watch_windows = None
 
         self.add_listener(TOPIC_DEVICE_DISCONNECTED, self.on_device_disconnected)
         self.add_listener(TOPIC_DEVICE_CONNECTED, self.on_device_connected)
@@ -39,7 +42,7 @@ class DispatcherReflex(Reflex):
                     log.info(f"Device is required, starting DeviceReader for \"{dev.name}\"")
                     shadow = DeviceReader(dev=dev, name=f"DeviceReader:{dev.name}")
                     self.mind.add_shadow(shadow)
-                    self.devices[device_path] = (shadow.name, shadow)
+                    self.device_readers[device_path] = (shadow.name, shadow)
                     log.debug(f"DeviceReader shadow started from dispatcher! name={shadow.name}")
                 else:
                     log.info(f"Device is not required, skipping \"{dev.name}\", path=\"{dev.path}\"")
@@ -49,29 +52,35 @@ class DispatcherReflex(Reflex):
     def on_device_disconnected(self, topic_name, event):
         for device_path in event:
             log.info("Device disconnected:", device_path)
-            log.debug(",".join(self.devices.keys()))
+            log.debug(",".join(self.device_readers.keys()))
 
-            if device_path in self.devices:
-                shadow_name, _ = self.devices[device_path]
+            if device_path in self.device_readers:
+                shadow_name, _ = self.device_readers[device_path]
                 self.mind.remove_shadow(shadow_name)
-                del self.devices[device_path]
+                del self.device_readers[device_path]
                 log.debug(f"DeviceReader shadow stoped from dispatcher! name={shadow_name}")
 
     def on_login_changed(self, topic_name, event):
         log.info("Dispatcher has detected a login change: ", event)
 
-        if self.username is None and self.display is None:
-            if len(event) != 0:
-                self.username, self.display = event[0]
-                log.info(f"User is now identified by name '{self.username}' and display '{self.display}'. Starting WatchWindows.")
-                self.mind.add_shadow("watch_windows", self.username, self.display)
+        if self.watch_windows is None:
+            if len(event) == 0:
+                log.warn(f"Unexpected login event with empty length. WatchWindows is not active and event={event}")
+            else:
+                username, display = event[0]
+                log.info(f"User is now identified by name '{username}' and display '{display}'. Starting WatchWindows.")
+                self.watch_windows = WatchWindows(username, display)
+                self.mind.add_shadow(self.watch_windows)
 
         else:
             if len(event) == 0:
                 log.info("User is now inactive. Stoping WatchWindows.")
-                self.mind.remove_shadow("watch_windows")
-                self.username = None
-                self.display = None
+                if self.watch_windows is not None:
+                    self.mind.remove_shadow(self.watch_windows.name)
+                    self.watch_windows = None
+            else:
+                log.warn(f"Unexpected login event with non-empty length. WatchWindows is active and event={event}")
+
 
 class Dispatcher(Shadow):
     def on_configure(self):
