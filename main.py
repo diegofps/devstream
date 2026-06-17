@@ -5,7 +5,7 @@ import log
 import os
 
 from mind import Mind
-from shadows import VirtualMouse, VirtualKeyboard, LogitechMXMaster3S, WatchDevices, Dispatcher, BasicKeyboards, WatchLogin, SmartOutput
+from shadows import VirtualMouse, VirtualKeyboard, LogitechMXMaster3S, WatchDevices, Dispatcher, BasicKeyboards, WatchLogin, SmartOutput, MacroKeyboard
 
 
 os.nice(-20)
@@ -25,7 +25,7 @@ mind.add_shadow(VirtualMouse())
 # mind.add_shadow("logitech_marble")
 # mind.add_shadow("vostro_keyboard")
 mind.add_shadow(BasicKeyboards())
-# mind.add_shadow("macro_keyboard")
+mind.add_shadow(MacroKeyboard()) # mind.add_shadow("macro_keyboard")
 # mind.add_shadow("logitech_mx2s")
 mind.add_shadow(LogitechMXMaster3S())
 # mind.add_shadow("nulea_m512")

@@ -8,6 +8,7 @@ from shadows.virtual_pen import VirtualPenEvent
 from threading import Thread, Lock
 from evdev import ecodes as e
 from reflex import Reflex
+from shadow import Shadow
 
 # from .libeye.eye import Eye, EyeException
 
@@ -417,12 +418,11 @@ class MacroPlayer:
         self.consumer.release()
 
 
-class MacroKeyboard(Reflex):
+class MacroKeyboardReflex(Reflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
+    def on_configure(self):
 
-        self.macro_player = MacroPlayer(self.mind)
+        self.macro_player = None
         self.userdisplay = None
         self.username = None
         self.recorded = {}
@@ -433,15 +433,19 @@ class MacroKeyboard(Reflex):
         # Monitor current user name and display - needed to open the help screen
         self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
 
-        # Monitor output keys sent to virtual output device - needed to record macros
+        # Monitor output keys sent to virtual output device - needed to record macros from any keyboard or smart output
         self.add_listener(TOPIC_VIRTUALKEYBOARD_EVENT, self.on_output_event)
 
         # Monitor macro keyboards - needed to receive macro keys
         for device_name in MACRO_KEYBOARDS.keys():
             self.add_listener("DeviceReader:" + device_name, self.on_macro_event)
 
-    def on_remove(self):
-        super().on_remove()
+    def on_activate(self, *args, **kwargs):
+        super().on_activate(*args, **kwargs)
+        self.macro_player = MacroPlayer(self.mind)
+
+    def on_deactivate(self):
+        super().on_deactivate()
         self.macro_player.terminate()
     
     def on_login_changed(self, topic_name, event):
@@ -674,6 +678,11 @@ class MacroKeyboard(Reflex):
             # self.export_macros()
 
 
-def on_load(shadow):
-    MacroKeyboard(shadow)
-    shadow.require_device(list(MACRO_KEYBOARDS.keys()))
+class MacroKeyboard(Shadow):
+    def on_configure(self):
+        self.add_reflex(MacroKeyboardReflex(autostart=True))
+        self.require_device(list(MACRO_KEYBOARDS.keys()))
+
+# def on_load(shadow):
+#     MacroKeyboardReflex(shadow)
+#     shadow.require_device(list(MACRO_KEYBOARDS.keys()))

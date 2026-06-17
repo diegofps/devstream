@@ -142,7 +142,7 @@ class Reflex:
         # log.debug(f"Inside default on_dettach for reflex {self.name}")
         pass
     
-    def on_activate(self, *args):
+    def on_activate(self, *args, **kwargs):
         # log.debug(f"Inside default on_activate for reflex {self.name}")
         pass
 

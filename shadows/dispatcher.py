@@ -19,8 +19,6 @@ This class has three responsibilities:
 class DispatcherReflex(Reflex):
 
     def on_configure(self):
-        # self.username = None
-        # self.display = None
         self.device_readers = {}
         self.watch_windows = None
 
@@ -32,10 +30,7 @@ class DispatcherReflex(Reflex):
         log.debug("Dispatcher received a device connected event", topic_name, event)
 
         for device_path in event:
-            # log.debug("Checking device at", device_path)
-            
             try:
-                # log.debug("Device connected:", device_path)
                 dev = InputDevice(device_path)
 
                 if dev.name in self.mind.required_devices:
@@ -43,7 +38,7 @@ class DispatcherReflex(Reflex):
                     shadow = DeviceReader(dev=dev, name=f"DeviceReader:{dev.name}")
                     self.mind.add_shadow(shadow)
                     self.device_readers[device_path] = (shadow.name, shadow)
-                    log.debug(f"DeviceReader shadow started from dispatcher! name={shadow.name}")
+                    log.debug(f"DeviceReader started from dispatcher, name={shadow.name}")
                 else:
                     log.info(f"Device is not required, skipping \"{dev.name}\", path=\"{dev.path}\"")
             except Exception as e:
@@ -52,13 +47,12 @@ class DispatcherReflex(Reflex):
     def on_device_disconnected(self, topic_name, event):
         for device_path in event:
             log.info("Device disconnected:", device_path)
-            log.debug(",".join(self.device_readers.keys()))
 
             if device_path in self.device_readers:
                 shadow_name, _ = self.device_readers[device_path]
                 self.mind.remove_shadow(shadow_name)
                 del self.device_readers[device_path]
-                log.debug(f"DeviceReader shadow stoped from dispatcher! name={shadow_name}")
+                log.debug(f"DeviceReader stopped from dispatcher, name={shadow_name}")
 
     def on_login_changed(self, topic_name, event):
         log.info("Dispatcher has detected a login change: ", event)

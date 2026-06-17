@@ -1,7 +1,10 @@
 from .virtual_mouse import VirtualMouse
+from .virtual_keyboard import VirtualKeyboard
 from .logitech_mxMaster3s import LogitechMXMaster3S
 from .watch_devices import WatchDevices
 from .dispatcher import Dispatcher
 from .device_reader import DeviceReader
-
-# from basic_keyboards import BasicKeyboards
+from .basic_keyboards import BasicKeyboards
+from .watch_login import WatchLogin
+from .smart_output import SmartOutput
+from .macro_keyboard import MacroKeyboard
