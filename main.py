@@ -5,7 +5,7 @@ import log
 import os
 
 from mind import Mind
-from shadows import VirtualMouse, LogitechMXMaster3S
+from shadows import VirtualMouse, LogitechMXMaster3S, WatchDevices, Dispatcher
 
 
 os.nice(-20)
@@ -17,7 +17,7 @@ mind = Mind()
 # Output shadows
 
 # mind.add_shadow("virtual_keyboard")
-mind.add_shadow(VirtualMouse())
+# mind.add_shadow(VirtualMouse())
 # mind.add_shadow("virtual_pen")
 
 # Input shadows
@@ -33,9 +33,9 @@ mind.add_shadow(LogitechMXMaster3S()) # mind.add_shadow("logitech_mxMaster3s")
 
 # System shadows
 
-# mind.add_shadow("dispatcher")
+mind.add_shadow(Dispatcher()) # mind.add_shadow("dispatcher")
 # mind.add_shadow("watch_login")
-# mind.add_shadow("watch_devices")
+mind.add_shadow(WatchDevices()) # mind.add_shadow("watch_devices")
 
 # Intelligence shadows
 

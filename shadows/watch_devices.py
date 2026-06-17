@@ -1,35 +1,41 @@
 from subprocess import Popen, PIPE
 from reflex import Reflex
+from shadow import Shadow
 
 import shlex
 import time
 import log
 import os
 
+
 TOPIC_DEVICE_CONNECTED = "DeviceConnected"
 TOPIC_DEVICE_DISCONNECTED = "DeviceDisconnected"
 
-class WatchDevices2(Reflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
+class WatchDevicesReflex(Reflex):
+
+    def on_configure(self):
+        log.debug(f"Inside on_configure for reflex {self.name}")
 
         self.target_folder = "/dev/input/"
         devices = [os.path.join(self.target_folder, x) for x in os.listdir(self.target_folder)]
         devices = [x for x in devices if not os.path.isdir(x)]
         self.devices = set(devices)
-        self.start()
+        self.require_daemon()
 
-    def run(self):
-        self.done = False
+    def run(self, daemon):
+        log.debug(f"Inside daemon thread for reflex {self.name}")
         self.mind.emit(TOPIC_DEVICE_CONNECTED, list(self.devices))
 
-        while not self.done:
+        while not daemon.done:
             try:
                 with Popen(shlex.split(f"inotifywait -m {self.target_folder} -e CREATE -e DELETE"), stdout=PIPE, stderr=PIPE) as proc:
                     while True:
                         line = proc.stdout.readline()[:-1].decode("utf-8")
                         
+                        if daemon.done:
+                            break
+
                         if line is None or line == "":
                             error_msg = proc.stderr.readlines()
                             log.error(f"inotifywait returned an empty line, returncode={proc.returncode}, error_msg={error_msg}")
@@ -59,8 +65,11 @@ class WatchDevices2(Reflex):
                 log.error("Fail during device monitoring, retrying in 3s...", e)
             
             time.sleep(3)
+        
+        log.debug(f"Ending watch devices daemon thread")
 
 
-def on_load(shadow):
-    WatchDevices2(shadow)
-
+class WatchDevices(Shadow):
+    def on_configure(self):
+        log.debug(f"Inside on_configure for shadow {self.name}")
+        self.add_reflex(WatchDevicesReflex(autostart=True))

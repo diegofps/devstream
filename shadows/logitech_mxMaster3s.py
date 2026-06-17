@@ -24,7 +24,7 @@ class BaseMXMaster3SNode(Reflex):
             self.add_listener(f"DeviceReader:{x}", self.on_event)
 
     def on_event(self, device_name, event):
-        # log.debug(f"event received from {device_name}: {event}")
+        log.debug(f"Event received from {device_name}: {event}")
 
         if event.type == e.EV_KEY:
 
@@ -82,9 +82,6 @@ class BaseMXMaster3SNode(Reflex):
 
 class MXMaster3S_N(BaseMXMaster3SNode): # Normal
 
-    def __init__(self, name=None):
-        super().__init__(name)
-    
     def on_left_click(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("BTN_LEFT", event.value)
@@ -387,14 +384,14 @@ class LogitechMXMaster3S(Shadow):
         # journalctl command: sudo journalctl --lines 1 -u logid
         # target line for regex: Jun 03 13:54:57 ncc2501 logid[3187]: [WARN] Failed to add device /dev/hidraw3 after 5 tries. Treating as failure.
 
-        self.add_reflex(MXMaster3S_N())
+        self.add_reflex(MXMaster3S_N(autostart=True))
         self.add_reflex(MXMaster3S_G())
         self.add_reflex(MXMaster3S_H())
         self.add_reflex(MXMaster3S_F())
         self.add_reflex(MXMaster3S_HG())
     
         self.require_device(REQUIRED_DEVICES)
-        self.activate_reflex("MXMaster3S_N", 50)
+        # self.activate_reflex("MXMaster3S_N", 50)
 
 # def on_load(shadow):
 

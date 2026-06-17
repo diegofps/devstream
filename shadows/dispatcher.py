@@ -1,7 +1,9 @@
 from shadows.watch_devices import TOPIC_DEVICE_CONNECTED, TOPIC_DEVICE_DISCONNECTED
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
+from shadows.device_reader import DeviceReader
 from evdev import InputDevice
 from reflex import Reflex
+from shadow import Shadow
 
 import log
 
@@ -12,11 +14,9 @@ This class has three responsibilities:
 - Monitor newly removed devices and stop the DeviceReader if it was active. (receiving events from WatchDevices)
 - Monitor the user's login state and start / stop the shadow WatchWindows. (receiving events from WatchLogin)
 """
-class Dispatcher(Reflex):
+class DispatcherReflex(Reflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        
+    def on_configure(self):
         self.username = None
         self.display = None
         self.devices = {}
@@ -29,22 +29,22 @@ class Dispatcher(Reflex):
         log.debug("Dispatcher received a device connected event", topic_name, event)
 
         for device_path in event:
-            log.debug("Checking device at", device_path)
+            # log.debug("Checking device at", device_path)
             
             try:
-                log.info("Device connected:", device_path)
+                # log.debug("Device connected:", device_path)
                 dev = InputDevice(device_path)
 
                 if dev.name in self.mind.required_devices:
-                    log.debug(f"{dev.name} is a device with interest, starting device_reader shadow ...")
-                    shadow_name = f"device_reader:{dev.name}"
-                    shadow = self.mind.load_shadow(shadow_name, dev)
-                    self.devices[device_path] = (shadow_name, shadow)
-                    log.debug("Shadow started from dispatcher!")
+                    log.info(f"Device is required, starting DeviceReader for \"{dev.name}\"")
+                    shadow = DeviceReader(dev=dev, name=f"DeviceReader:{dev.name}")
+                    self.mind.add_shadow(shadow)
+                    self.devices[device_path] = (shadow.name, shadow)
+                    log.debug(f"DeviceReader shadow started from dispatcher! name={shadow.name}")
                 else:
-                    log.debug(f"Device is not in required list, skipping: name=\"{dev.name}\", path=\"{dev.path}\"")
+                    log.info(f"Device is not required, skipping \"{dev.name}\", path=\"{dev.path}\"")
             except Exception as e:
-                log.warn("Device reading failure:", e)
+                log.warn(f"Device reading failure for {device_path}:", e)
     
     def on_device_disconnected(self, topic_name, event):
         for device_path in event:
@@ -55,6 +55,7 @@ class Dispatcher(Reflex):
                 shadow_name, _ = self.devices[device_path]
                 self.mind.remove_shadow(shadow_name)
                 del self.devices[device_path]
+                log.debug(f"DeviceReader shadow stoped from dispatcher! name={shadow_name}")
 
     def on_login_changed(self, topic_name, event):
         log.info("Dispatcher has detected a login change: ", event)
@@ -72,5 +73,7 @@ class Dispatcher(Reflex):
                 self.username = None
                 self.display = None
 
-def on_load(shadow):
-    Dispatcher(shadow)
+class Dispatcher(Shadow):
+    def on_configure(self):
+        self.add_reflex(DispatcherReflex(autostart=True))
+

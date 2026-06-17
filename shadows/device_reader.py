@@ -1,32 +1,36 @@
 from reflex import Reflex
+from shadow import Shadow
 
 import time
 import log
 
 
-class DeviceReader(Reflex):
+class DeviceReaderReflex(Reflex):
 
-    def __init__(self, name, dev):
-        super().__init__(name, dev.name)
-
-        self.done = False
+    def __init__(self, topic_name, dev, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.topic_name = topic_name
         self.dev = dev
 
+    def on_configure(self):
         self.dev.grab()
-        self.start()
+        self.require_daemon()
         
-    def run(self):
-        self.done = False
+    def run(self, daemon):
 
-        while not self.done:
+        while not daemon.done:
             try:
                 if self.dev is None:
-                    log.warn(self.dev.name, "not found, retrying in 3s...")
+                    log.warn("Dev is None not found, retrying in 3s...")
                     time.sleep(3)
                 
                 else:
                     for event in self.dev.read_loop():
-                        self.mind.emit(self.name, event)
+                        if daemon.done:
+                            break
+
+                        # log.debug(f"{self.name} is emiting event {event} in topic {self.topic_name}")
+                        self.mind.emit(self.topic_name, event)
                 
             except OSError as e:
                 log.error("OSError, resuming in 3s -", e)
@@ -42,6 +46,15 @@ class DeviceReader(Reflex):
         
         log.debug(self.name, "thread ended. Done =", self.done)
 
-def on_load(shadow, device):
-    DeviceReader(shadow, device)
-    shadow.name = shadow.name + ":" + device.path
+class DeviceReader(Shadow):
+
+    def __init__(self, dev, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dev = dev
+
+    def on_configure(self):
+        self.add_reflex(DeviceReaderReflex(self.name, self.dev, autostart=True))
+
+# def on_load(shadow, device):
+#     DeviceReaderReflex(shadow, device)
+#     shadow.name = shadow.name + ":" + device.path

@@ -3,23 +3,39 @@ from threading import Thread
 import traceback
 import log
 
+class Daemon(Thread):
+
+    def __init__(self, target):
+        super().__init__(target=self.run, daemon=True)
+        self.target = target
+        self.done = False
+    
+    def terminate(self):
+        self.done = True
+    
+    def run(self):
+        self.target(self)
+
 
 class Reflex:
 
-    def __init__(self, name=None):
+    def __init__(self, autostart=False, name=None):
         self.name = type(self).__name__ if name is None else name
-        self.mind = None
-        self.shadow = None
-        self.listeners = []
-        self.active = False
+        self.must_run_daemon = False
+        self.autostart = autostart
         self.devices_events = None
         self.state_topic = None
+        self.listeners = []
+        self.active = False
+        self.daemon = None
+        self.shadow = None
+        self.mind = None
 
-        log.info("Starting reflex", self.name, "...")
+        log.info("Creating reflex", self.name, "...")
     
     def attach(self, shadow):
         assert not self.is_attached(), f"Attempting to attach a reflex that is already attached"
-        log.info("Attaching reflex", self.name, "...")
+        log.info(f"Attaching reflex {self.name} to shadow {shadow.name}")
         
         self.mind = shadow.mind
         self.shadow = shadow
@@ -29,7 +45,7 @@ class Reflex:
 
     def dettach(self):
         assert self.is_attached(), f"Attempting to dettach a reflex that is not attached"
-        log.info("Dettaching reflex", self.name, "...")
+        log.info(f"Dettaching reflex {self.name} from {self.shadow.name}")
 
         if self.active:
             self.deactivate()
@@ -47,7 +63,9 @@ class Reflex:
 
     def activate(self):
         assert self.is_attached(), f"Attempting to activate a reflex that is not attached"
-        log.debug(f"Inside Reflex::activate")
+        assert self.shadow.is_activated(), "Can't start a reflex if its shadow is not activated"
+
+        log.debug(f"Inside activate for reflex {self.name}")
 
         self.active = True
 
@@ -55,15 +73,25 @@ class Reflex:
             log.debug(f"Adding listener for topic {topic_name}")
             self.mind.add_listener(topic_name, callback)
 
-        log.debug(f"Calling on_activate")
+        if self.must_run_daemon:
+            log.debug(f"Starting daemon at reflex {self.name}")
+            self.daemon = Daemon(self.run)
+            self.daemon.start()
+
         self.on_activate()
-        log.debug(f"Leaving Reflex::activate")
 
     def deactivate(self):
         assert self.is_attached(), f"Attempting to deactivate a reflex that is not attached"
         assert self.is_activated(), f"Attempting to deactivate a reflex that is not active"
 
+        log.debug(f"Inside deactivate for reflex {self.name}")
+
         self.active = False
+
+        if self.daemon is not None:
+            log.debug(f"Terminating daemon at reflex {self.name}")
+            self.daemon.terminate()
+            self.daemon = None
         
         for topic_name, callback in self.listeners:
             self.mind.remove_listener(topic_name, callback)
@@ -100,17 +128,29 @@ class Reflex:
         self.debug_event(topic_name, evt)
     
     def on_configure(self):
+        # log.debug(f"Inside default on_configure for reflex {self.name}")
         pass
 
     def on_attach(self):
+        # log.debug(f"Inside default on_attach for reflex {self.name}")
         pass
 
     def on_dettach(self):
+        # log.debug(f"Inside default on_dettach for reflex {self.name}")
         pass
     
     def on_activate(self):
+        # log.debug(f"Inside default on_activate for reflex {self.name}")
         pass
 
     def on_deactivate(self):
+        # log.debug(f"Inside default on_deactivate for reflex {self.name}")
         pass
     
+    def require_daemon(self, value=True):
+        # log.debug(f"Inside require_daemon for reflex {self.name}, value={value}")
+        self.must_run_daemon = value
+    
+    def run(self):
+        # log.debug(f"Inside default daemon run for reflex {self.name}")
+        pass

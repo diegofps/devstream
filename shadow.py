@@ -4,14 +4,14 @@ import log
 class Shadow:
 
     def __init__(self, name=None):
-        log.info(f"Creating shadow from class {type(self).__name__}, name={name}")
-    
         self.name = type(self).__name__ if name is None else name
         self.state_name = f"{self.name}>STATE"
         self.required_devices = set()
         self.reflexes = {}
         self.active = False
         self.mind = None
+
+        log.info(f"Creating shadow name={self.name}")
 
     def add_reflex(self, reflex):
         assert not reflex.name in self.reflexes, f"Shadow {self.name} already contains a reflex with the name {reflex.name}"
@@ -50,19 +50,29 @@ class Shadow:
         self.mind = None
     
     def activate(self):
+        log.debug(f"Inside activate for shadow {self.name}")
+
         assert self.is_attached(), "This shadow is not attached"
         assert not self.is_activated(), "This shadow is already activated"
 
         self.active = True
         self.mind.add_listener(self.state_name, self.on_state_changed)
         self.mind.require_device(self.required_devices)
+
+        for reflex in self.reflexes.values():
+            if reflex.autostart:
+                reflex.activate()
+
         self.on_activate()
     
     def activate_reflex(self, reflex_name, priority):
+        log.debug(f"Shifting to reflex {reflex_name} within shadow {self.name} with priority {priority}")
         assert self.is_attached(), "Needs to be attached to use activate_reflex"
         self.mind.emit(self.state_name, reflex_name, priority)
     
     def deactivate(self):
+        log.debug(f"Deactivating shadow {self.name}")
+
         assert self.is_attached(), "This shadow is not attached"
         assert self.is_activated(), "This shadow is not activated"
         
@@ -93,7 +103,7 @@ class Shadow:
         pass
 
     def on_state_changed(self, topic_name, event):
-        log.info(f"Received an state changed event at {self.name}, topic={topic_name}, event={event}")
+        log.info(f"Received an state changed event at shadow {self.name}: topic={topic_name}, event={event}")
         
         for reflex in self.reflexes.values():
             if reflex.name == event:
