@@ -8,3 +8,4 @@ from .basic_keyboards import BasicKeyboards
 from .watch_login import WatchLogin
 from .smart_output import SmartOutput
 from .macro_keyboard import MacroKeyboard
+from .nulea_m512 import NuleaM512
