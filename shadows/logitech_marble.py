@@ -1,10 +1,11 @@
 
-from shadows.smart_output import SmartOutputEvent
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
+from shadows.smart_output import SmartOutputEvent
 
 from evdev import ecodes as e
 from reflex import Reflex
+from shadow import Shadow
 
 import log
 
@@ -13,16 +14,18 @@ REQUIRED_DEVICES = [
     "Logitech USB Trackball"
 ]
 
-TOPIC_DEVICE_MARBLE = "DeviceReader:Logitech USB Trackball"
-TOPIC_MARBLE_STATE = "Marble:State"
-
 SOURCE_LOGITECH_MARBLE = "Logitech Marble"
 
-class BaseMarbleNode(Reflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.configure_states(TOPIC_MARBLE_STATE, TOPIC_DEVICE_MARBLE)
+class BaseMarbleReflex(Reflex):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.clean = True
+    
+    def on_configure(self):
+        for x in REQUIRED_DEVICES:
+            self.add_listener(f"DeviceReader:{x}", self.on_event)
 
     def on_event(self, topic_name, event):
         # log.debug("Processing marble event", self.name, event)
@@ -55,19 +58,16 @@ class BaseMarbleNode(Reflex):
             elif event.code == e.REL_Y:
                 self.on_move_rel_y(event)
     
-    def on_activate(self):
-        pass
+    def on_activate(self, clean=True):
+        log.debug(f"{self.name} is activating, clean={clean}")
+        self.clean = clean
 
     def on_deactivate(self):
-        pass
+        log.debug(f"{self.name} is deactivating")
 
 
-class Marble_N(BaseMarbleNode): # N
+class Marble_N(BaseMarbleReflex): # N
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.counter = 0
-    
     def on_left_click(self, event): # A
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             eb.update("BTN_LEFT", event.value)
@@ -75,17 +75,18 @@ class Marble_N(BaseMarbleNode): # N
     def on_down_click(self, event): # B
         log.debug("N: on_down_click " + str(event.value))
         if event.value == 1: # +B
-            log.debug("\n\n\nN: Entering state B " + str(self.counter))
-            self.counter += 1
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_B", 50)
+            self.shift_reflex("Marble_B")
+            # self.mind.emit(TOPIC_MARBLE_STATE, "Marble_B", 50)
     
     def on_up_click(self, event): # C
         if event.value == 1: # +C
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_C", 50)
+            self.shift_reflex("Marble_C")
+            # self.mind.emit(TOPIC_MARBLE_STATE, "Marble_C", 50)
 
     def on_right_click(self, event): # D
         if event.value == 1: # +D
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_D", 50)
+            self.shift_reflex("Marble_D")
+            # self.mind.emit(TOPIC_MARBLE_STATE, "Marble_D", 50)
     
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
@@ -114,18 +115,7 @@ class Marble_N(BaseMarbleNode): # N
             return int(value * ((abs_value - threshold1) / (threshold2 - threshold1) * (multiply2 - multiply1) + multiply1))
 
 
-class Marble_B(BaseMarbleNode):
-
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.clean = True
-    
-    def on_activate(self):
-        super().on_activate()
-        self.clean = True
-    
-    def on_deactivate(self):
-        super().on_deactivate()
+class Marble_B(BaseMarbleReflex):
 
     def on_left_click(self, event): # A
         self.clean = False
@@ -149,7 +139,8 @@ class Marble_B(BaseMarbleNode):
             else:
                 log.debug("Ended state B with clean = false")
             
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
+            self.shift_reflex("Marble_N")
+            # self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
     
     def on_up_click(self, event): # C
         self.clean = False
@@ -179,15 +170,8 @@ class Marble_B(BaseMarbleNode):
 
 
 
-class Marble_C(BaseMarbleNode):
+class Marble_C(BaseMarbleReflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.clean = True
-    
-    def on_activate(self):
-        self.clean = True
-    
     def on_left_click(self, event): # A
         self.clean = False
         
@@ -214,7 +198,8 @@ class Marble_C(BaseMarbleNode):
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.unlock("DUAL_UNDO_VOLUME")
             
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
+            self.shift_reflex("Marble_N")
+            # self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
 
     def on_right_click(self, event): # D
         self.clean = False
@@ -234,16 +219,10 @@ class Marble_C(BaseMarbleNode):
             eb.update_v("DUAL_UNDO_VOLUME", -event.value * 5)
 
 
-class Marble_D(BaseMarbleNode):
-
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.clean = True
-    
-    def on_activate(self):
-        self.clean = True
+class Marble_D(BaseMarbleReflex):
     
     def on_deactivate(self):
+        super().on_deactivate()
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
             eb.function("select_window")
     
@@ -268,9 +247,6 @@ class Marble_D(BaseMarbleNode):
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.function("advanced_search")
     
-        # if event.value == 0:
-        #     os.system("su diego -c 'gnome-session-quit --power-off'")
-    
     def on_right_click(self, event): # D
         if event.value == 0:
 
@@ -282,7 +258,8 @@ class Marble_D(BaseMarbleNode):
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                 eb.unlock("DUAL_WINDOWS_TABS")
 
-            self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
+            self.shift_reflex("Marble_N")
+            # self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
     
     def on_move_rel_x(self, event):
         self.clean = False
@@ -295,13 +272,10 @@ class Marble_D(BaseMarbleNode):
             eb.update_v("DUAL_WINDOWS_TABS", -event.value * 5)
 
 
-def on_load(shadow):
-
-    Marble_N(shadow)
-    Marble_B(shadow)
-    Marble_C(shadow)
-    Marble_D(shadow)
-
-    shadow.require_device(REQUIRED_DEVICES)
-    shadow.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
-
+class LogitechMarble(Shadow):
+    def on_configure(self):
+        self.add_reflex(Marble_N(autostart=True))
+        self.add_reflex(Marble_B())
+        self.add_reflex(Marble_C())
+        self.add_reflex(Marble_D())
+        self.require_device(REQUIRED_DEVICES)

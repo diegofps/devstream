@@ -19,7 +19,6 @@ SOURCE_LOGITECH_MXMASTER3S = "Logi MX Master 3S"
 class MXMaster3S_LogidMonitor(Reflex):
 
     def on_configure(self):
-        log.debug(f"Configuring LogidMonitor")
         self.require_daemon()
     
     def run(self, daemon):
@@ -33,16 +32,14 @@ class MXMaster3S_LogidMonitor(Reflex):
         while not daemon.done:
             try:
                 cmd = shlex.split("journalctl --lines 1 -u logid")
+
                 with Popen(cmd, stdout=PIPE) as proc:
                     lines = proc.stdout.readlines()
 
-                # log.debug(f"LogidMonitor lines: {lines}")
                 if lines and lines[0].decode('utf-8').endswith('after 5 tries. Treating as failure.\n'):
                     log.info('Detected logid is in a failure state, restarting the service')
                     os.system('service logid restart')
                 
-                # journalctl command: sudo journalctl --lines 1 -u logid
-                # target line for regex: Jun 03 13:54:57 ncc2501 logid[3187]: [WARN] Failed to add device /dev/hidraw3 after 5 tries. Treating as failure.
             except Exception as e:
                 log.error(f"Failed to monitor logid service: {e}")
             
@@ -348,25 +345,25 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
             eb.function("scroll_v", event.value * 2.00)
 
 
-class MXMaster3S_F(BaseMXMaster3SNode): # Editor
+class MXMaster3S_F(BaseMXMaster3SNode): # System
     
     def on_left_click(self, event): # A
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("copy")
+                eb.function("logout")
 
     def on_middle_click(self, event): # B
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("cut")
+                eb.function("poweroff")
         
     def on_right_click(self, event): # C
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("paste")
+                eb.function("reboot")
 
     def on_side_up_click(self, event): # H
         pass

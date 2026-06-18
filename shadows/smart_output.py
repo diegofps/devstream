@@ -57,8 +57,9 @@ class SmartOutputReflex(Reflex):
         
     def on_configure(self):
 
-        self.username = None
         self.userdisplay = None
+        self.username = None
+        self.userid = None
         self.functions = {}
         
         self.init_keys()
@@ -155,7 +156,9 @@ class SmartOutputReflex(Reflex):
                 500) # lockable2
     
     def on_login_changed(self, topic_name, event):
+        import pwd
         self.username, self.userdisplay = (None, None) if len(event) == 0 else event[0]
+        self.userid = None if self.username is None else pwd.getpwnam(self.username).pw_uid
         # log.info(f"Shadow {self.name} received a login changed event: username={self.username}, display={self.userdisplay}")
 
     def on_window_changed(self, topic_name, event):
@@ -425,6 +428,15 @@ class SmartOutputReflex(Reflex):
                 "Google-chrome": self.scroll_v_3,
                 "Eog": self.scroll_v_4,
             },
+            "logout": {
+                "default": self.logout,
+            },
+            "reboot": {
+                "default": self.reboot,
+            },
+            "poweroff": {
+                "default": self.poweroff,
+            },
         }
 
         # Convert list of names to single names
@@ -509,6 +521,26 @@ class SmartOutputReflex(Reflex):
         with VirtualKeyboardEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
             eb.press(key)
             eb.release(key)
+    
+    def logout(self):
+        log.debug(f"logout {self.username} {self.userdisplay} {self.userid}")
+        self._session_quit('logout')
+    
+    def reboot(self):
+        log.debug("reboot")
+        self._session_quit('reboot')
+    
+    def poweroff(self):
+        log.debug(f"poweroff")
+        self._session_quit('power-off')
+    
+    def _session_quit(self, action):
+        if self.username is None:
+            log.error("Could not find a current user session to initiate the logout command")
+
+        else:
+            cmd = f"su {self.username} -c 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{self.userid}/bus DISPLAY={self.userdisplay} gnome-session-quit --{action}'"
+            Popen(shlex.split(cmd))
     
 
 class SmartOutput(Shadow):

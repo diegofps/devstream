@@ -72,11 +72,12 @@ class BaseMX2SReflex(Reflex):
                     event.value = 0
                     self.on_scroll_left_click(event)
 
-    def on_activate(self):
-        pass
+    def on_activate(self, clean=True):
+        log.debug(f"{self.name} is activating, clean={clean}")
+        self.clean = clean
 
     def on_deactivate(self):
-        pass
+        log.debug(f"{self.name} is deactivating")
 
 
 class MX2S_N(BaseMX2SReflex): # Normal
@@ -198,6 +199,7 @@ class MX2S_H(BaseMX2SReflex): # Navigator (H:side-up)
 class MX2S_G(BaseMX2SReflex): # System (G:side-down)
 
     def on_deactivate(self):
+        super().on_deactivate()
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.function("select_window")
     
@@ -320,39 +322,20 @@ class MX2S_HG(BaseMX2SReflex): # Multimedia
             eb.update("KEY_PREVIOUSSONG", event.value)
     
     def on_move_rel_x(self, event):
-        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-        #     eb.update("REL_X", event.value)
-
-        # log.debug("Moving x in state B " + str(event.value))
         self.clean = False
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.function("scroll_h", event.value * 1.50)
 
     def on_move_rel_y(self, event):
-        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-        #     eb.update("REL_Y", event.value)
-
         self.clean = False
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.function("scroll_v", event.value * 2.00)
 
 
 class LogitechMX2S(Shadow):
-
     def on_configure(self):
         self.add_reflex(MX2S_N(autostart=True))
         self.add_reflex(MX2S_G())
         self.add_reflex(MX2S_H())
         self.add_reflex(MX2S_HG())
         self.require_device(REQUIRED_DEVICES)
-
-# def on_load(shadow):
-
-#     MX2S_N(shadow)
-#     MX2S_G(shadow)
-#     MX2S_H(shadow)
-#     MX2S_HG(shadow)
-    
-#     shadow.require_device(REQUIRED_DEVICES)
-#     shadow.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
-

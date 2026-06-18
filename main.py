@@ -23,10 +23,10 @@ mind.add_shadow(shadows.VirtualMouse())
 
 # Input shadows
 
-# mind.add_shadow("logitech_marble")
 # mind.add_shadow("vostro_keyboard")
 mind.add_shadow(shadows.BasicKeyboards())
 mind.add_shadow(shadows.MacroKeyboard())
+# mind.add_shadow("logitech_marble")
 mind.add_shadow(shadows.LogitechMX2S())
 mind.add_shadow(shadows.LogitechMXMaster3S())
 mind.add_shadow(shadows.NuleaM512())
