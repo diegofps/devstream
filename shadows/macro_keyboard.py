@@ -473,17 +473,16 @@ class MacroKeyboardReflex(Reflex):
         # group = MACRO_KEYBOARDS[device_name]["mem"]["group"]
         state = MACRO_KEYBOARDS[device_name]["mem"]["state"]
         actions = MACRO_KEYBOARDS[device_name]["actions"][state]
-        action = (event.code, event.value)
+        action_key = (event.code, event.value)
 
         # log.debug(f"Processing a macro keyboard key:", e.keys[action[0]], action[1], state, group)
 
-        if action in actions:
+        if action_key in actions:
 
-            for action in actions[action]:
+            for action in actions[action_key]:
                 log.info(f"Parsing action: {action[0]}")
 
                 try:
-
                     if action[0] == "set":
                         self.set_var(device_name, action[1], action[2])
 

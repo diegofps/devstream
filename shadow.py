@@ -60,7 +60,8 @@ class Shadow:
         self.mind.require_device(self.required_devices)
 
         for reflex in self.reflexes.values():
-            if reflex.autostart:
+            if reflex.autostart or reflex.keepalive:
+                log.debug(f"Shadow {self.name} is activating reflex {reflex.name}")
                 reflex.activate()
 
         self.on_activate()
@@ -121,27 +122,9 @@ class Shadow:
         
         else:
             for reflex in self.reflexes.values():
-                if reflex != target_reflex:
+                if reflex != target_reflex and not reflex.keepalive:
                     if reflex.is_activated():
                         reflex.deactivate()
             
             target_reflex.activate(*args, **kwargs)
         
-        # clean = True
-        
-        # if event[-1] == '*':
-        #     event = event[:-1]
-        #     clean = False
-        
-        # if self.active:
-        #     if self.name != event:
-        #         self.deactivate()
-        
-        # else:
-        #     if self.name == event:
-        #         if self.devices_events is not None:
-        #             self.add_listener(self.devices_events, self.on_event)
-        #         self.clean = clean
-
-        #         self.active = True
-        #         self.on_activate()

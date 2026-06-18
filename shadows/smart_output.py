@@ -71,7 +71,7 @@ class SmartOutputReflex(Reflex):
         self.add_listener(TOPIC_SMARTOUTPUT_EVENT, self.on_event)
 
     def on_event(self, topic_name, event):
-        log.debug(f"Reflex {self.name} for a new event, topic_name={topic_name}, event={event}")
+        # log.debug(f"Reflex {self.name} for a new event, topic_name={topic_name}, event={event}")
         sequence, source = event
 
         for event_type, name, args in sequence:
@@ -156,12 +156,11 @@ class SmartOutputReflex(Reflex):
     
     def on_login_changed(self, topic_name, event):
         self.username, self.userdisplay = (None, None) if len(event) == 0 else event[0]
-
-        log.info(f"Shadow {self.name} received a login changed event: username={self.username}, display={self.userdisplay}")
+        # log.info(f"Shadow {self.name} received a login changed event: username={self.username}, display={self.userdisplay}")
 
     def on_window_changed(self, topic_name, event):
         window_class, app_name, window_name = event
-        log.info(f"Reflex {self.name} received a window changed event: window_class={window_class}, app_name={app_name}, window_name={window_name}")
+        # log.info(f"Reflex {self.name} received a window changed event: window_class={window_class}, app_name={app_name}, window_name={window_name}")
         self.update_functions(app_name)
     
     def update_functions(self, app_name):

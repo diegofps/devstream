@@ -19,10 +19,11 @@ class Daemon(Thread):
 
 class Reflex:
 
-    def __init__(self, autostart=False, name=None):
+    def __init__(self, autostart=False, keepalive=False, name=None):
         self.name = type(self).__name__ if name is None else name
         self.must_run_daemon = False
         self.autostart = autostart
+        self.keepalive = keepalive
         self.devices_events = None
         self.state_topic = None
         self.listeners = []

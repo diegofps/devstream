@@ -1,4 +1,4 @@
-from evdev import AbsInfo, UInput, ecodes as e
+from evdev import UInput, ecodes as e
 from evdev import ecodes as e
 from reflex import Reflex
 from keys import Key

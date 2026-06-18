@@ -9,3 +9,4 @@ from .watch_login import WatchLogin
 from .smart_output import SmartOutput
 from .macro_keyboard import MacroKeyboard
 from .nulea_m512 import NuleaM512
+from .logitech_mx2s import LogitechMX2S

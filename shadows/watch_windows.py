@@ -51,18 +51,18 @@ class WatchWindowsReflex(Reflex):
                         time.sleep(2)
                         break
 
-                    name1 = ""
-                    name2 = ""
-                    name3 = ""
+                    window_class = ""
+                    app_name = ""
+                    window_name = ""
 
                     if "WM_CLASS(STRING)" in props:
-                        name1, name2 = props["WM_CLASS(STRING)"].replace("\"", "").split(", ")
+                        window_class, app_name = props["WM_CLASS(STRING)"].replace("\"", "").split(", ")
                     
                     if "WM_NAME(STRING)" in props:
-                        name3 = props["WM_NAME(STRING)"]
+                        window_name = props["WM_NAME(STRING)"]
                     
-                    log.info("Window changed '%s' '%s' '%s'" % (name1, name2, name3))
-                    self.mind.emit(TOPIC_WINDOW_CHANGED, (name1, name2, name3))
+                    log.info(f"Window focused: window_class='{window_class}', app_name='{app_name}', window_name='{window_name}'")
+                    self.mind.emit(TOPIC_WINDOW_CHANGED, (window_class, app_name, window_name))
             except Exception as e:
                 log.error("Fail during window monitoring, retrying in 3s...", e)
                 time.sleep(3)

@@ -4,6 +4,7 @@ from shadows.smart_output import SmartOutputEvent
 
 from evdev import ecodes as e
 from reflex import Reflex
+from shadow import Shadow
 
 import log
 
@@ -12,16 +13,17 @@ REQUIRED_DEVICES = [
     "Logitech MX Anywhere 2S"
 ]
 
-TOPIC_DEVICE_MX2S = "DeviceReader:Logitech MX Anywhere 2S"
-TOPIC_MX2S_STATE  = "MX2S:State"
-
 SOURCE_LOGITECH_MX2S = "Logitech MX2S"
 
-class BaseMX2SNode(Reflex):
+class BaseMX2SReflex(Reflex):
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.configure_states(TOPIC_MX2S_STATE, TOPIC_DEVICE_MX2S)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.clean = True
+    
+    def on_configure(self):
+        for x in REQUIRED_DEVICES:
+            self.add_listener(f"DeviceReader:{x}", self.on_event)
 
     def on_event(self, device_name, event):
         # log.debug(f"event received from {device_name}: {event}")
@@ -77,11 +79,8 @@ class BaseMX2SNode(Reflex):
         pass
 
 
-class MX2S_N(BaseMX2SNode): # Normal
+class MX2S_N(BaseMX2SReflex): # Normal
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-    
     def on_left_click(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.update("BTN_LEFT", event.value)
@@ -97,12 +96,14 @@ class MX2S_N(BaseMX2SNode): # Normal
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
             log.debug("Pressing H from MX2S_N")
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H", 50)
+            self.shift_reflex("MX2S_H")
+            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MX2S_N")
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G", 50)
+            self.shift_reflex("MX2S_G")
+            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G", 50)
     
     def on_scroll(self, event):
         log.debug(f"Sending scroll event: {event}")
@@ -126,11 +127,8 @@ class MX2S_N(BaseMX2SNode): # Normal
             eb.update("REL_Y", event.value)
 
 
-class MX2S_H(BaseMX2SNode): # Navigator (H:side-up)
+class MX2S_H(BaseMX2SReflex): # Navigator (H:side-up)
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-    
     def on_left_click(self, event): # A
         self.clean = False
 
@@ -160,12 +158,14 @@ class MX2S_H(BaseMX2SNode): # Navigator (H:side-up)
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("navigate_forward")
             
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
+            self.shift_reflex("MX2S_N")
+            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MX2S_H, clean is", self.clean)
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG", 50)
+            self.shift_reflex("MX2S_HG")
+            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG", 50)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -195,12 +195,8 @@ class MX2S_H(BaseMX2SNode): # Navigator (H:side-up)
             eb.update("REL_Y", event.value)
 
 
-class MX2S_G(BaseMX2SNode): # System (G:side-down)
+class MX2S_G(BaseMX2SReflex): # System (G:side-down)
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.clean = True
-    
     def on_deactivate(self):
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.function("select_window")
@@ -229,7 +225,8 @@ class MX2S_G(BaseMX2SNode): # System (G:side-down)
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
             log.debug("Pressing H from MX2S_H, clean is", self.clean)
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG", 50)
+            self.shift_reflex("MX2S_HG")
+            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
@@ -239,7 +236,8 @@ class MX2S_G(BaseMX2SNode): # System (G:side-down)
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("navigate_back")
 
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
+            self.shift_reflex("MX2S_N")
+            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -261,12 +259,8 @@ class MX2S_G(BaseMX2SNode): # System (G:side-down)
             eb.update("REL_Y", event.value)
 
 
-class MX2S_HG(BaseMX2SNode): # Multimedia
+class MX2S_HG(BaseMX2SReflex): # Multimedia
 
-    def __init__(self, shadow):
-        super().__init__(shadow)
-        self.clean = True
-    
     def on_left_click(self, event): # A
         self.clean = False
         with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
@@ -286,7 +280,8 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
         if event.value == 0: # -H
             log.debug("Releasing H from MX2S_HG, clean is", self.clean)
 
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G*", 50)
+            self.shift_reflex("MX2S_G", clean=False)
+            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G*", 50)
 
             with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 if self.clean:
@@ -299,7 +294,8 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
         if event.value == 0: # -G
             log.debug("Releasing G from MX2S_HG, clean is", self.clean)
 
-            self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H*", 50)
+            self.shift_reflex("MX2S_H", clean=False)
+            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H*", 50)
 
             with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 if self.clean:
@@ -340,13 +336,23 @@ class MX2S_HG(BaseMX2SNode): # Multimedia
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
             eb.function("scroll_v", event.value * 2.00)
 
-def on_load(shadow):
 
-    MX2S_N(shadow)
-    MX2S_G(shadow)
-    MX2S_H(shadow)
-    MX2S_HG(shadow)
+class LogitechMX2S(Shadow):
+
+    def on_configure(self):
+        self.add_reflex(MX2S_N(autostart=True))
+        self.add_reflex(MX2S_G())
+        self.add_reflex(MX2S_H())
+        self.add_reflex(MX2S_HG())
+        self.require_device(REQUIRED_DEVICES)
+
+# def on_load(shadow):
+
+#     MX2S_N(shadow)
+#     MX2S_G(shadow)
+#     MX2S_H(shadow)
+#     MX2S_HG(shadow)
     
-    shadow.require_device(REQUIRED_DEVICES)
-    shadow.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
+#     shadow.require_device(REQUIRED_DEVICES)
+#     shadow.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
 
