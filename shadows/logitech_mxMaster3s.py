@@ -196,7 +196,7 @@ class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
             log.debug("Pressing G from MXMaster3S_H, clean is", self.clean)
             self.shift_reflex("MXMaster3S_HG")
     
-    def on_side_ground_click(self, event): # F
+    def on_side_ground_click(self, event): # D
         pass
 
     def on_scroll(self, event): # E
@@ -258,7 +258,7 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
             
             self.shift_reflex("MXMaster3S_N")
     
-    def on_side_ground_click(self, event): # F
+    def on_side_ground_click(self, event): # D
         pass
 
     def on_scroll(self, event): # E
@@ -266,7 +266,7 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("SCROLL_WINDOWS", event.value)
     
-    def on_scroll_h(self, event):
+    def on_scroll_h(self, event): # F
         pass
         
     def on_move_rel_x(self, event):
@@ -323,7 +323,7 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
                 
                 eb.release("KEY_LEFTALT")
     
-    def on_side_ground_click(self, event): # F
+    def on_side_ground_click(self, event): # D
         pass
     
     def on_scroll(self, event): # E
@@ -345,33 +345,39 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Multimedia
             eb.function("scroll_v", event.value * 2.00)
 
 
-class MXMaster3S_F(BaseMXMaster3SNode): # System
+class MXMaster3S_D(BaseMXMaster3SNode): # System
     
     def on_left_click(self, event): # A
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("logout")
+                eb.function("ctrl_c")
 
     def on_middle_click(self, event): # B
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("poweroff")
+                eb.function("lock")
         
     def on_right_click(self, event): # C
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("reboot")
+                eb.function("ctrl_d")
 
     def on_side_up_click(self, event): # H
-        pass
+        self.clean = False
+        if event.value == 0:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                eb.function("reboot")
     
     def on_side_down_click(self, event): # G
-        pass
+        self.clean = False
+        if event.value == 0:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                eb.function("poweroff")
     
-    def on_side_ground_click(self, event): # F
+    def on_side_ground_click(self, event): # D
         if event.value == 0: # -F
             log.debug("Releasing F from MXMaster3S_F, clean is", self.clean)
 
@@ -400,34 +406,12 @@ class MXMaster3S_F(BaseMXMaster3SNode): # System
 
 
 class LogitechMXMaster3S(Shadow):
-
     def on_configure(self):
-        # TODO: Monitor logid's log and restart its service when you detect the 5 tries giving up failure
-        # journalctl command: sudo journalctl --lines 1 -u logid
-        # target line for regex: Jun 03 13:54:57 ncc2501 logid[3187]: [WARN] Failed to add device /dev/hidraw3 after 5 tries. Treating as failure.
-
         self.add_reflex(MXMaster3S_LogidMonitor(keepalive=True))
         self.add_reflex(MXMaster3S_N(autostart=True))
-        self.add_reflex(MXMaster3S_G())
         self.add_reflex(MXMaster3S_H())
-        self.add_reflex(MXMaster3S_F())
+        self.add_reflex(MXMaster3S_G())
         self.add_reflex(MXMaster3S_HG())
-    
+        self.add_reflex(MXMaster3S_D())
         self.require_device(REQUIRED_DEVICES)
-        # self.activate_reflex("MXMaster3S_N", 50)
-
-# def on_load(shadow):
-
-#     # TODO: Monitor logid's log and restart its service when you detect the 5 tries giving up failure
-#     # journalctl command: sudo journalctl --lines 1 -u logid
-#     # target line for regex: Jun 03 13:54:57 ncc2501 logid[3187]: [WARN] Failed to add device /dev/hidraw3 after 5 tries. Treating as failure.
-
-#     MXMaster3S_N(shadow)
-#     MXMaster3S_G(shadow)
-#     MXMaster3S_H(shadow)
-#     MXMaster3S_F(shadow)
-#     MXMaster3S_HG(shadow)
-    
-#     self.require_device(REQUIRED_DEVICES)
-#     self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_N", 50)
 

@@ -100,8 +100,14 @@ class NuleaM512_N(BaseNuleaM512Reflex):
         self.btn_right = 0
         self.btn_left = 0
         self.counter = 0
-        
-    def on_top_right_click(self, event): # menu
+    
+    def on_top_left_click(self, event): # A
+        self.btn_middle = event.value
+
+        with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
+            eb.update("BTN_MIDDLE", event.value)
+    
+    def on_top_right_click(self, event): # B
         if event.value == 1:
             if self.btn_left != 0 or self.btn_right != 0 or self.btn_middle != 0:
                 return
@@ -110,19 +116,13 @@ class NuleaM512_N(BaseNuleaM512Reflex):
             self.counter += 1
             self.shift_reflex("NuleaM512_ALT")
     
-    def on_top_left_click(self, event): # middle
-        self.btn_middle = event.value
-
-        with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
-            eb.update("BTN_MIDDLE", event.value)
-
-    def on_bottom_right_click(self, event): # right
+    def on_bottom_right_click(self, event): # C
         self.btn_right = event.value
 
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
             eb.update("BTN_RIGHT", event.value)
     
-    def on_bottom_left_click(self, event): # left
+    def on_bottom_left_click(self, event): # D
         self.btn_left = event.value
 
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
@@ -130,26 +130,26 @@ class NuleaM512_N(BaseNuleaM512Reflex):
     
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
-            value = self.smooth(event.value, 0.2, 0.5, 1, 20)
+            value = self._smooth(event.value, 0.2, 0.5, 1, 20)
             eb.update("REL_X", value)
         
     def on_move_rel_y(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
-            value = self.smooth(event.value, 0.2, 0.5, 1, 20)
+            value = self._smooth(event.value, 0.2, 0.5, 1, 20)
             eb.update("REL_Y", value)
     
-    def on_wheel_left(self, event):
+    def on_wheel_left(self, event): # E
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
             if event.value > 0:
                 eb.function("next_tab", event.value)
             else:
                 eb.function("previous_tab", event.value)
         
-    def on_wheel_right(self, event):
+    def on_wheel_right(self, event): # F
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
             eb.update("SCROLL_VOLUME", event.value)
         
-    def smooth(self, value, multiply1, multiply2, threshold1, threshold2):
+    def _smooth(self, value, multiply1, multiply2, threshold1, threshold2):
         
         abs_value = abs(value)
 
@@ -185,15 +185,15 @@ class NuleaM512_ALT(BaseNuleaM512Reflex):
             with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
                 eb.function("select_window")
 
-    def on_top_right_click(self, event): # B
-        if event.value == 0:
-            self.shift_reflex("NuleaM512_N")
-    
-    def on_top_left_click(self, event):
+    def on_top_left_click(self, event): # A
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
                 eb.function("close_window")
+    
+    def on_top_right_click(self, event): # B
+        if event.value == 0:
+            self.shift_reflex("NuleaM512_N")
     
     def on_bottom_left_click(self, event): # C
         self.clean = False
@@ -216,7 +216,7 @@ class NuleaM512_ALT(BaseNuleaM512Reflex):
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
             eb.function("scroll_v", event.value)
 
-    def on_wheel_left(self, event):
+    def on_wheel_left(self, event): # E
         self.selecting_window = True
         self.clean = False
 
@@ -226,7 +226,7 @@ class NuleaM512_ALT(BaseNuleaM512Reflex):
             else:
                 eb.function("previous_window")
         
-    def on_wheel_right(self, event):
+    def on_wheel_right(self, event): # F
         self.clean = False
         
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:

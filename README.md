@@ -1,4 +1,5 @@
 
+
 # What is this?
 
 These is a system service to enhance the compatibility of the Logitech Trackball Marble, Logitech MX Anywhere 2S, and other devices I may have with the Linux OS. It contains scripts that start during system boot and map the device inputs into special commands, like Back, Forward, Scrolling, Alt+Tab, macros, and so on. If a device is not present/detected it simply ignores the enhancements. It is also aware of the current focused window. For instance, "Switch Tabs" will map to different shortcuts deppending on your app.
@@ -73,7 +74,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | G + H    | Show All Windows  |
 
 
-### Browser Mode
+### Holding H (Browser Mode)
 
 | Shortcut | Action            |
 | -------- | ----------------- |
@@ -85,7 +86,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | H + F    | Zoom Out          |
 
 
-### System mode
+### Holding G (System Mode)
 
 | Shortcut | Action        |
 | -------- | ------------- |
@@ -95,7 +96,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | G + E    | Switch Window |
 
 
-### Multimedia Mode
+### Holding G + H (Multimedia Mode)
 
 | Shortcut  | Action           |
 | --------- | ---------------- |
@@ -132,7 +133,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | D   | Disabled      | No        | No           | None       |
 
 
-### Transparent/Opaque/Passthrough modes
+### Transparent/Opaque/Passthrough Modes
 
 | Key | Action                   |
 | --- | ------------------------ |
@@ -147,7 +148,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | M   | Open Menu (Planned)      |
 
 
-### Disabled mode
+### Disabled Mode
 
 | Key | Action             |
 | --- | ------------------ |
@@ -162,14 +163,142 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | M   | Right mouse click  |
 
 
+## Nulea M512
+
+![Buttons](images/keys_nuleaM512.png)
+
+### Normal Mode
+
+| Shortcut | Action          |
+| -------- | --------------- |
+| A        | Middle Click    |
+| C        | Right Click     |
+| D        | Left Click      |
+| E        | Change Tabs     |
+| F        | Change Volume   |
+| G        | Move Cursor     |
+
+
+### Holding B (ALT Mode)
+
+| Shortcut | Action                         |
+| -------- | ------------------------------ |
+| B + A    | Close Window                   |
+| B + C    | Close Tab                      |
+| B + D    | Play / Pause                   |
+| B + E    | Change Windows                 |
+| B + F    | Zoom In / Out                  |
+| B + G    | Vertical and Horizontal Scroll |
+
+
+## Logitech MX Master 3S
+
+![Buttons](images/keys_logitechMXMaster3S.png)
+
+This functionality assumes logid is installed. Check the dependencies bellow on how to configure it.
+
+
+### Normal Mode
+
+| Shortcut | Action            |
+| -------- | ----------------- |
+| A        | Left Click        |
+| B        | Middle Click      |
+| C        | Right Click       |
+| D        | Windows Key       |
+| E        | Vertical Scroll   |
+| F        | Horizontal Scroll |
+| G        | Back              |
+| H        | Forward           |
+
+
+### Holding H (Browser Mode)
+
+| Shortcut | Action            |
+| -------- | ----------------- |
+| H + A    | Go to Declaration |
+| H + B    | Close Tab         |
+| H + C    | Reopen Tab        |
+| H + E    | Switch Tabs       |
+
+
+### Holding G (System Mode)
+
+| Shortcut | Action        |
+| -------- | ------------- |
+| G + A    | Undo          |
+| G + B    | Close Window  |
+| G + C    | Redo          |
+| G + E    | Switch Window |
+
+
+### Holding G + H (Multimedia Mode)
+
+| Shortcut  | Action           |
+| --------- | ---------------- |
+| G + H + A | Play / Pause     |
+| G + H + B | Stop             |
+| G + H + C | Mute / Unmute    |
+| G + H + E | Volume Up / Down |
+
+
+### Holding D (Shortcut Mode)
+
+| Shortcut | Action        |
+| -------- | ------------- |
+| D + A    | Ctrl + C      |
+| D + B    | Lock          |
+| D + C    | Ctrl + D      |
+| D + G    | Power-off     |
+| D + H    | Reboot        |
+
+
 # Dependencies
 
-This daemon requires python3, pip, evdev, inotifywait, xclip and edid-decode. It has only been tested in Ubuntu 22.04 LTS, you can install its dependencies with the following commands.
+This daemon requires python3, pip, evdev, inotifywait, xclip, edid-decode, and logiops/logid. It has only been tested in Ubuntu 24.04 LTS, you can install its dependencies with the following commands.
 
 ```shell
 sudo apt update
 sudo apt install -yq libpython3-dev inotify-tools xclip edid-decode
 sudo pip3 install evdev
+sudo apt install logiops # Only necessary if you use Logitech MX Master 3S
+```
+
+If you are using the Logitech MX Master 3S, you need to map its upper button (G) to the keyboard key KEY_B. Example Logid config file (***/etc/logid.cfg***):
+
+```javascript
+devices: ({
+  name: "MX Master 3S";
+  hiresscroll:
+  {
+        hires: true;
+        invert: false;
+        target: false;
+  };
+  smartshift:
+  {
+    on: false;
+    threshold: 30;
+    torque: 10;
+  };
+  dpi: 2000;
+
+  buttons: (
+    {
+      cid: 0xc4;
+      action: {
+        type: "Keypress";
+        keys: ["KEY_B"];
+      };
+    },
+    {
+      cid: 0x52;
+      action = {
+        type: "ToggleSmartShift";
+      };
+    }
+  );
+});
 ```
 
 

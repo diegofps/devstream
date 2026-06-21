@@ -88,7 +88,7 @@ class SmartOutputReflex(Reflex):
             getattr(self, key_name).update(value)
     
     def run_function(self, function_name, *args):
-        log.info("inside run_function. Looking for", function_name)
+        log.info("Inside run_function. Looking for", function_name)
         
         if not function_name in self.functions:
             log.error("Unknown function: %s", function_name)
@@ -427,6 +427,24 @@ class SmartOutputReflex(Reflex):
                 ("Dia", "Inkscape"): self.scroll_v_2,
                 "Google-chrome": self.scroll_v_3,
                 "Eog": self.scroll_v_4,
+            },
+            "ctrl_c": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_C", "-KEY_C", "-KEY_LEFTCTRL"],
+                }],
+            },
+            "ctrl_d": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_D", "-KEY_D", "-KEY_LEFTCTRL"],
+                }],
+            },
+            "lock": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "+KEY_L", "-KEY_L", "-KEY_LEFTMETA"],
+                }],
             },
             "logout": {
                 "default": self.logout,

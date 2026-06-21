@@ -12,7 +12,6 @@ from shadow import Shadow
 
 # from .libeye.eye import Eye, EyeException
 
-import subprocess
 import traceback
 import threading
 import pickle
@@ -21,9 +20,9 @@ import sys
 import log
 import os
 
+
 SOURCE_MACRO_KEYBOARD  = "Macro Keyboard"
 FIND_TIMEOUT = 30.0
-
 
 IGNORE_SOURCE = set([
     "Macro Keyboard"
