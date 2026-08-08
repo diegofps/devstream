@@ -224,12 +224,12 @@ This functionality assumes logid is installed. Check the dependencies bellow on 
 
 ### Holding G (System Mode)
 
-| Shortcut | Action        |
-| -------- | ------------- |
-| G + A    | Undo          |
-| G + B    | Close Window  |
-| G + C    | Redo          |
-| G + E    | Switch Window |
+| Shortcut | Action             |
+| -------- | ------------------ |
+| G + A    | Previous Workspace |
+| G + B    | Close Window       |
+| G + C    | Next Workspace     |
+| G + E    | Switch Window      |
 
 
 ### Holding G + H (Multimedia Mode)

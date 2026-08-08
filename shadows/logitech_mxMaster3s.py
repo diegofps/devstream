@@ -227,7 +227,8 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
 
         if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("undo")
+                # eb.function("undo")
+                eb.function("previous_workspace")
 
     def on_middle_click(self, event): # B
         self.clean = False
@@ -241,7 +242,8 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
         
         if event.value != 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("redo")
+                # eb.function("redo")
+                eb.function("next_workspace")
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H

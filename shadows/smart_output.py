@@ -191,6 +191,16 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTALT", "+KEY_LEFTSHIFT", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTSHIFT"]}],
             },
+            "next_workspace": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTALT", "+KEY_RIGHT", "-KEY_RIGHT", "-KEY_LEFTALT", "-KEY_LEFTCTRL"]}],
+            },
+            "previous_workspace": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTALT", "+KEY_LEFT", "-KEY_LEFT", "-KEY_LEFTALT", "-KEY_LEFTCTRL"]}],
+            },
             "select_window": {
                 "default": [{
                     "type": "keyboard",
