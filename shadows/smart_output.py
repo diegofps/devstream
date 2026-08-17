@@ -201,6 +201,16 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTALT", "+KEY_LEFT", "-KEY_LEFT", "-KEY_LEFTALT", "-KEY_LEFTCTRL"]}],
             },
+            "move_window_to_next_workspace": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTALT", "+KEY_LEFTSHIFT", "+KEY_RIGHT", "-KEY_RIGHT", "-KEY_LEFTSHIFT", "-KEY_LEFTALT", "-KEY_LEFTCTRL"]}],
+            },
+            "move_window_to_previous_workspace": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTALT", "+KEY_LEFTSHIFT", "+KEY_LEFT", "-KEY_LEFT", "-KEY_LEFTSHIFT", "-KEY_LEFTALT", "-KEY_LEFTCTRL"]}],
+            },
             "select_window": {
                 "default": [{
                     "type": "keyboard",
@@ -241,7 +251,7 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
 
-                ("Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5", "Gimp-2.10"): [{
+                ("code", "Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5", "Gimp-2.10"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_PAGEUP", "-KEY_PAGEUP", "-KEY_LEFTCTRL"]}],
                 
@@ -262,7 +272,7 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTCTRL"]}],
 
-                ("Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5", "Gimp-2.10"): [{
+                ("code", "Code", "Terminator", "Org.gnome.Nautilus", "Apache NetBeans IDE 12.5", "Gimp-2.10"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_PAGEDOWN", "-KEY_PAGEDOWN", "-KEY_LEFTCTRL"]}],
                 
@@ -496,11 +506,15 @@ class SmartOutputReflex(Reflex):
         cmd = "su %s -c 'xclip -selection primary -o -l 1 -d %s'" % (self.username, self.userdisplay)
         proc = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
         selection = proc.stdout.read().decode('utf-8')
-
         query = re.sub('\s', '%20', selection)
-        cmd = "su %s -c 'DISPLAY=%s xdg-open http://www.google.com.br/search?q=%s &'" % (self.username, self.userdisplay, query)
+        
+        browser = "firefox"
+        # browser = "xdg-open"
+        search_engine = "https://duckduckgo.com/?q="
+        # search_engine = "http://www.google.com.br/search?q="
 
-        os.system(cmd)
+        cmd = f"su {self.username} -c 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{self.userid}/bus DISPLAY={self.userdisplay} {browser} {search_engine}{query} &'"
+        Popen(shlex.split(cmd))
 
     def scroll_h_1(self, value):
         with VirtualMouseEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:

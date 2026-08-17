@@ -195,7 +195,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 ![Buttons](images/keys_logitechMXMaster3S.png)
 
-This functionality assumes logid is installed. Check the dependencies bellow on how to configure it.
+This shadow assumes logid is installed. Check the dependencies bellow on how to configure it.
 
 
 ### Normal Mode
@@ -212,45 +212,56 @@ This functionality assumes logid is installed. Check the dependencies bellow on 
 | H        | Forward           |
 
 
-### Holding H (Browser Mode)
-
-| Shortcut | Action            |
-| -------- | ----------------- |
-| H + A    | Go to Declaration |
-| H + B    | Close Tab         |
-| H + C    | Reopen Tab        |
-| H + E    | Switch Tabs       |
-
-
-### Holding G (System Mode)
+### Holding H (Browsing Mode)
 
 | Shortcut | Action             |
 | -------- | ------------------ |
-| G + A    | Previous Workspace |
-| G + B    | Close Window       |
-| G + C    | Next Workspace     |
-| G + E    | Switch Window      |
+| H + A    | Previous Workspace |
+| H + B    | Close Tab          |
+| H + C    | Next Workspace     |
+| H + E    | Switch Tabs        |
 
 
-### Holding G + H (Multimedia Mode)
+### Holding H + G (Window Mode)
 
-| Shortcut  | Action           |
-| --------- | ---------------- |
-| G + H + A | Play / Pause     |
-| G + H + B | Stop             |
-| G + H + C | Mute / Unmute    |
-| G + H + E | Volume Up / Down |
+| Shortcut  | Action                            |
+| --------- | --------------------------------- |
+| H + G + A | Move Window To Previous Workspace |
+| H + G + B | reopen Tab                        |
+| H + G + C | Move Window To Next Workspace     |
+| H + G + E | Zoom                              |
 
 
-### Holding D (Shortcut Mode)
+### Holding G (Multimedia Mode)
 
-| Shortcut | Action        |
-| -------- | ------------- |
-| D + A    | Ctrl + C      |
-| D + B    | Lock          |
-| D + C    | Ctrl + D      |
-| D + G    | Power-off     |
-| D + H    | Reboot        |
+| Shortcut | Action            |
+| -------- | ----------------- |
+| G + A    | Go to Declaration |
+| G + B    | Close Window      |
+| G + C    | Search Selection  |
+| G + E    | Switch Window     |
+
+
+### Holding G + H (Extra Mode)
+
+| Shortcut  | Action            |
+| --------- | ----------------- |
+| G + H + A | Play / Pause      |
+| G + H + B | Stop              |
+| G + H + C | Mute              |
+| G + H + E | Volume            |
+
+
+### Holding D (System Mode)
+
+| Shortcut | Action     |
+| -------- | ---------- |
+| D + A    | Lock       |
+| D + B    | Reopen Tab |
+| D + C    | Power-off  |
+| D + E    |            |
+| D + H    | Ctrl+C     |
+| D + G    | Ctrl+D     |
 
 
 # Dependencies
