@@ -229,6 +229,7 @@ class Mind:
         self.add_shadow("logitech_mx2s")
         self.add_shadow("logi_mxMaster3s")
         self.add_shadow("nulea_m512")
+        self.add_shadow("gulikit_kk3max")
         #self.add_shadow("xppen_deco_pro")
 
         # System shadows
@@ -242,9 +243,8 @@ class Mind:
 
         self.add_shadow("smart_output")
 
-        # Infinity loop until KeyboardInterrupt is received or the system terminates
-
         try:
+            # Infinite loop until KeyboardInterrupt is received or the system terminates
             self.executor.wait()
             
         except:
