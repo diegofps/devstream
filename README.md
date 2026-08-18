@@ -58,7 +58,8 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 ![Buttons](images/keys_mx2s.png)
 
-Note: This is easily portable to the Logitech MX Anywhere 3S, but they sadly removed the two side wheel buttons, D and F. This means the loss of 10 shortcuts in total.
+Notes:
+- This is easily portable to the Logitech MX Anywhere 3S, but they sadly removed the two side wheel buttons, D and F. This means the loss of 10 shortcuts in total.
 
 ### Normal Mode
 
@@ -210,7 +211,8 @@ Note: This is easily portable to the Logitech MX Anywhere 3S, but they sadly rem
 
 ![Buttons](images/keys_logitechMXMaster3S.png)
 
-This shadow assumes logid is installed. Check the dependencies bellow on how to configure it.
+Notes:
+- This shadow assumes logid is installed. Check the dependencies bellow on how to configure it.
 
 
 ### Normal Mode
