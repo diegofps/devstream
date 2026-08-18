@@ -98,13 +98,11 @@ class MX2S_N(BaseMX2SReflex): # Normal
         if event.value == 1: # +H
             log.debug("Pressing H from MX2S_N")
             self.shift_reflex("MX2S_H")
-            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MX2S_N")
             self.shift_reflex("MX2S_G")
-            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G", 50)
     
     def on_scroll(self, event):
         log.debug(f"Sending scroll event: {event}")
@@ -132,41 +130,34 @@ class MX2S_H(BaseMX2SReflex): # Navigator (H:side-up)
 
     def on_left_click(self, event): # A
         self.clean = False
-
-        if event.value == 0:
+        if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.function("go_to_declaration")
+                eb.function("previous_workspace")
 
     def on_middle_click(self, event): # B
         self.clean = False
-
-        if event.value == 0:
+        if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 eb.function("close_tab")
             
     def on_right_click(self, event): # C
         self.clean = False
-
-        if event.value == 0:
+        if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.function("reopen_tab")
+                eb.function("next_workspace")
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
             log.debug("Releasing H from MX2S_H, clean is", self.clean)
-
             if self.clean:
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("navigate_forward")
-            
             self.shift_reflex("MX2S_N")
-            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             log.debug("Pressing G from MX2S_H, clean is", self.clean)
             self.shift_reflex("MX2S_HG")
-            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG", 50)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -175,15 +166,13 @@ class MX2S_H(BaseMX2SReflex): # Navigator (H:side-up)
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
-
-        if event.value == 0:
+        if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 eb.function("zoom_in")
     
     def on_scroll_right_click(self, event): # F
         self.clean = False
-        
-        if event.value == 0:
+        if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 eb.function("zoom_out")
     
@@ -205,41 +194,35 @@ class MX2S_G(BaseMX2SReflex): # System (G:side-down)
     
     def on_left_click(self, event): # A
         self.clean = False
-
         if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.function("undo")
+                eb.function("go_to_declaration")
 
     def on_middle_click(self, event): # B
         self.clean = False
-
-        if event.value == 0:
+        if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                 eb.function("close_window")
         
     def on_right_click(self, event): # C
         self.clean = False
         
-        if event.value != 0:
+        if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                eb.function("redo")
+                eb.function("search_selection")
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
             log.debug("Pressing H from MX2S_H, clean is", self.clean)
-            self.shift_reflex("MX2S_HG")
-            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_HG", 50)
+            self.shift_reflex("MX2S_GH")
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
             log.debug("Releasing G from MX2S_G, clean is", self.clean)
-
             if self.clean:
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("navigate_back")
-
             self.shift_reflex("MX2S_N")
-            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_N", 50)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -248,9 +231,15 @@ class MX2S_G(BaseMX2SReflex): # System (G:side-down)
     
     def on_scroll_left_click(self, event): # D
         self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("redo")
     
     def on_scroll_right_click(self, event): # F
         self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("undo")
     
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
@@ -261,7 +250,67 @@ class MX2S_G(BaseMX2SReflex): # System (G:side-down)
             eb.update("REL_Y", event.value)
 
 
-class MX2S_HG(BaseMX2SReflex): # Multimedia
+class MX2S_HG(BaseMX2SReflex): # Super H
+
+    def on_left_click(self, event): # A
+        self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("move_window_to_previous_workspace")
+
+    def on_middle_click(self, event): # B
+        self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("reopen_tab")
+        
+    def on_right_click(self, event): # C
+        self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                eb.function("move_window_to_next_workspace")
+
+    def on_side_up_click(self, event): # H
+        if event.value == 0: # -H
+            log.debug("Releasing H from MX2S_HG, clean is", self.clean)
+            if self.clean:
+                with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                    eb.function("focus_mode")
+            self.shift_reflex("MX2S_G", clean=False)
+    
+    def on_side_down_click(self, event): # G
+        if event.value == 0: # -G
+            log.debug("Releasing G from MX2S_HG, clean is", self.clean)
+            if self.clean:
+                with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+                    eb.function("system_menu")
+            self.shift_reflex("MX2S_H", clean=False)
+    
+    def on_scroll(self, event): # E
+        self.clean = False
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+            eb.update("SCROLL_VKEYS", event.value)
+    
+    def on_scroll_left_click(self, event): # D
+        self.clean = False
+        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+            eb.update("KEY_RIGHT", event.value)
+    
+    def on_scroll_right_click(self, event): # F
+        self.clean = False
+        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+            eb.update("KEY_LEFT", event.value)
+    
+    def on_move_rel_x(self, event):
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+            eb.update("REL_X", event.value)
+
+    def on_move_rel_y(self, event):
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
+            eb.update("REL_Y", event.value)
+
+
+class MX2S_GH(BaseMX2SReflex): # Super G - Multimedia
 
     def on_left_click(self, event): # A
         self.clean = False
@@ -281,30 +330,12 @@ class MX2S_HG(BaseMX2SReflex): # Multimedia
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
             log.debug("Releasing H from MX2S_HG, clean is", self.clean)
-
             self.shift_reflex("MX2S_G", clean=False)
-            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_G*", 50)
-
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                if self.clean:
-                    eb.press("KEY_LEFTMETA")
-                    eb.release("KEY_LEFTMETA")
-
-                eb.release("KEY_LEFTALT")
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
             log.debug("Releasing G from MX2S_HG, clean is", self.clean)
-
             self.shift_reflex("MX2S_H", clean=False)
-            # self.mind.emit(TOPIC_MX2S_STATE, "MX2S_H*", 50)
-
-            with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
-                if self.clean:
-                    eb.press("KEY_LEFTMETA")
-                    eb.release("KEY_LEFTMETA")
-                
-                eb.release("KEY_LEFTALT")
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -338,4 +369,5 @@ class LogitechMX2S(Shadow):
         self.add_reflex(MX2S_G())
         self.add_reflex(MX2S_H())
         self.add_reflex(MX2S_HG())
+        self.add_reflex(MX2S_GH())
         self.require_device(REQUIRED_DEVICES)

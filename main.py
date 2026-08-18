@@ -29,6 +29,7 @@ mind.add_shadow(shadows.LogitechMarble())
 mind.add_shadow(shadows.LogitechMX2S())
 mind.add_shadow(shadows.LogitechMXMaster3S())
 mind.add_shadow(shadows.NuleaM512())
+mind.add_shadow(shadows.GulikitKK3Max())
 #mind.add_shadow("xppen_deco_pro")
 
 # System shadows

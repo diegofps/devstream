@@ -2,6 +2,7 @@ from .logitech_mxMaster3s import LogitechMXMaster3S
 from .virtual_keyboard import VirtualKeyboard
 from .basic_keyboards import BasicKeyboards
 from .logitech_marble import LogitechMarble
+from .gulikit_kk3max import GulikitKK3Max
 from .macro_keyboard import MacroKeyboard
 from .device_reader import DeviceReader
 from .logitech_mx2s import LogitechMX2S

@@ -140,8 +140,10 @@ class SmartOutputReflex(Reflex):
         self.SCROLL_ZOOM    = DelayedKey("SCROLL_ZOOM",    lambda v: self.run_function("zoom_in") if v else self.run_function("zoom_out"), 200)
         self.SCROLL_UNDO    = DelayedKey("SCROLL_UNDO",    lambda v: self.run_function("undo") if v else self.run_function("redo"), 200)
 
-        self.SCROLL_H = DelayedKey("SCROLL_H", self.scroll_h_send_cmd, 200)
-        self.SCROLL_V = DelayedKey("SCROLL_V", self.scroll_v_send_cmd, 200)
+        self.SCROLL_VKEYS   = DelayedKey("SCROLL_VKEYS",   self.scroll_v_key, 200)
+        self.SCROLL_HKEYS   = DelayedKey("SCROLL_HKEYS",   self.scroll_h_key, 200)
+        self.SCROLL_H       = DelayedKey("SCROLL_H",       self.scroll_h_send_cmd, 200)
+        self.SCROLL_V       = DelayedKey("SCROLL_V",       self.scroll_v_send_cmd, 200)
 
         self.DUAL_WINDOWS_TABS = LockableDelayedKey(
                 "DUAL_WINDOWS_TABS", 
@@ -475,6 +477,22 @@ class SmartOutputReflex(Reflex):
             "poweroff": {
                 "default": self.poweroff,
             },
+            "focus_mode": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_F11", "-KEY_F11"],
+                }],
+
+                "Evince": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_F5", "-KEY_F5"]}],
+            },
+            "system_menu": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "-KEY_LEFTMETA"],
+                }],
+            },
         }
 
         # Convert list of names to single names
@@ -560,6 +578,18 @@ class SmartOutputReflex(Reflex):
     def scroll_v_send_cmd(self, value):
         log.debug("on scroll_v_send_cmd")
         key = "KEY_PAGEUP" if value > 0 else "KEY_PAGEDOWN"
+        with VirtualKeyboardEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
+            eb.press(key)
+            eb.release(key)
+
+    def scroll_h_key(self, value):
+        key = "KEY_LEFT" if value else "KEY_RIGHT"
+        with VirtualKeyboardEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
+            eb.press(key)
+            eb.release(key)
+    
+    def scroll_v_key(self, value):
+        key = "KEY_UP" if value else "KEY_DOWN"
         with VirtualKeyboardEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
             eb.press(key)
             eb.release(key)
