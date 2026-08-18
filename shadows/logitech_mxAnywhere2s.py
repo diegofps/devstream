@@ -16,7 +16,7 @@ REQUIRED_DEVICES = [
 SOURCE_LOGITECH_MX2S = "Logitech MX2S"
 
 
-class BaseMX2SReflex(Reflex):
+class BaseMXAnywhere2SReflex(Reflex):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -81,7 +81,7 @@ class BaseMX2SReflex(Reflex):
         log.debug(f"{self.name} is deactivating")
 
 
-class MX2S_N(BaseMX2SReflex): # Normal
+class MXAnywhere2S_N(BaseMXAnywhere2SReflex): # Normal
 
     def on_left_click(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
@@ -97,13 +97,13 @@ class MX2S_N(BaseMX2SReflex): # Normal
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
-            log.debug("Pressing H from MX2S_N")
-            self.shift_reflex("MX2S_H")
+            log.debug("Pressing H from MXAnywhere2S_N")
+            self.shift_reflex("MXAnywhere2S_H")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            log.debug("Pressing G from MX2S_N")
-            self.shift_reflex("MX2S_G")
+            log.debug("Pressing G from MXAnywhere2S_N")
+            self.shift_reflex("MXAnywhere2S_G")
     
     def on_scroll(self, event):
         log.debug(f"Sending scroll event: {event}")
@@ -127,7 +127,7 @@ class MX2S_N(BaseMX2SReflex): # Normal
             eb.update("REL_Y", event.value)
 
 
-class MX2S_H(BaseMX2SReflex): # Navigator (H:side-up)
+class MXAnywhere2S_H(BaseMXAnywhere2SReflex): # Navigator (H:side-up)
 
     def on_left_click(self, event): # A
         self.clean = False
@@ -149,16 +149,16 @@ class MX2S_H(BaseMX2SReflex): # Navigator (H:side-up)
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
-            log.debug("Releasing H from MX2S_H, clean is", self.clean)
+            log.debug("Releasing H from MXAnywhere2S_H, clean is", self.clean)
             if self.clean:
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("navigate_forward")
-            self.shift_reflex("MX2S_N")
+            self.shift_reflex("MXAnywhere2S_N")
     
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
-            log.debug("Pressing G from MX2S_H, clean is", self.clean)
-            self.shift_reflex("MX2S_HG")
+            log.debug("Pressing G from MXAnywhere2S_H, clean is", self.clean)
+            self.shift_reflex("MXAnywhere2S_HG")
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -186,7 +186,7 @@ class MX2S_H(BaseMX2SReflex): # Navigator (H:side-up)
             eb.update("REL_Y", event.value)
 
 
-class MX2S_G(BaseMX2SReflex): # System (G:side-down)
+class MXAnywhere2S_G(BaseMXAnywhere2SReflex): # System (G:side-down)
 
     def on_deactivate(self):
         super().on_deactivate()
@@ -214,16 +214,16 @@ class MX2S_G(BaseMX2SReflex): # System (G:side-down)
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
-            log.debug("Pressing H from MX2S_H, clean is", self.clean)
-            self.shift_reflex("MX2S_GH")
+            log.debug("Pressing H from MXAnywhere2S_H, clean is", self.clean)
+            self.shift_reflex("MXAnywhere2S_GH")
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
-            log.debug("Releasing G from MX2S_G, clean is", self.clean)
+            log.debug("Releasing G from MXAnywhere2S_G, clean is", self.clean)
             if self.clean:
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("navigate_back")
-            self.shift_reflex("MX2S_N")
+            self.shift_reflex("MXAnywhere2S_N")
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -251,7 +251,7 @@ class MX2S_G(BaseMX2SReflex): # System (G:side-down)
             eb.update("REL_Y", event.value)
 
 
-class MX2S_HG(BaseMX2SReflex): # Super H
+class MXAnywhere2S_HG(BaseMXAnywhere2SReflex): # Super H
 
     def on_left_click(self, event): # A
         self.clean = False
@@ -273,19 +273,19 @@ class MX2S_HG(BaseMX2SReflex): # Super H
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
-            log.debug("Releasing H from MX2S_HG, clean is", self.clean)
+            log.debug("Releasing H from MXAnywhere2S_HG, clean is", self.clean)
             if self.clean:
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("focus_mode")
-            self.shift_reflex("MX2S_G", clean=False)
+            self.shift_reflex("MXAnywhere2S_G", clean=False)
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
-            log.debug("Releasing G from MX2S_HG, clean is", self.clean)
+            log.debug("Releasing G from MXAnywhere2S_HG, clean is", self.clean)
             if self.clean:
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MX2S) as eb:
                     eb.function("system_menu")
-            self.shift_reflex("MX2S_H", clean=False)
+            self.shift_reflex("MXAnywhere2S_H", clean=False)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -311,7 +311,7 @@ class MX2S_HG(BaseMX2SReflex): # Super H
             eb.update("REL_Y", event.value)
 
 
-class MX2S_GH(BaseMX2SReflex): # Super G - Multimedia
+class MXAnywhere2S_GH(BaseMXAnywhere2SReflex): # Super G - Multimedia
 
     def on_left_click(self, event): # A
         self.clean = False
@@ -330,13 +330,13 @@ class MX2S_GH(BaseMX2SReflex): # Super G - Multimedia
 
     def on_side_up_click(self, event): # H
         if event.value == 0: # -H
-            log.debug("Releasing H from MX2S_HG, clean is", self.clean)
-            self.shift_reflex("MX2S_G", clean=False)
+            log.debug("Releasing H from MXAnywhere2S_HG, clean is", self.clean)
+            self.shift_reflex("MXAnywhere2S_G", clean=False)
     
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
-            log.debug("Releasing G from MX2S_HG, clean is", self.clean)
-            self.shift_reflex("MX2S_H", clean=False)
+            log.debug("Releasing G from MXAnywhere2S_HG, clean is", self.clean)
+            self.shift_reflex("MXAnywhere2S_H", clean=False)
     
     def on_scroll(self, event): # E
         self.clean = False
@@ -364,11 +364,11 @@ class MX2S_GH(BaseMX2SReflex): # Super G - Multimedia
             eb.function("scroll_v", event.value * 2.00)
 
 
-class LogitechMX2S(Shadow):
+class LogitechMXAnywhere2S(Shadow):
     def on_configure(self):
-        self.add_reflex(MX2S_N(autostart=True))
-        self.add_reflex(MX2S_G())
-        self.add_reflex(MX2S_H())
-        self.add_reflex(MX2S_HG())
-        self.add_reflex(MX2S_GH())
+        self.add_reflex(MXAnywhere2S_N(autostart=True))
+        self.add_reflex(MXAnywhere2S_G())
+        self.add_reflex(MXAnywhere2S_H())
+        self.add_reflex(MXAnywhere2S_HG())
+        self.add_reflex(MXAnywhere2S_GH())
         self.require_device(REQUIRED_DEVICES)
