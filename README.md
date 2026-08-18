@@ -58,43 +58,58 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 
 ![Buttons](images/keys_mx2s.png)
 
+Note: This is easily portable to the Logitech MX Anywhere 3S, but they sadly removed the two side wheel buttons, D and F. This means the loss of 10 shortcuts in total.
 
 ### Normal Mode
 
-| Shortcut | Action            |
-| -------- | ----------------- |
-| A        | Left Click        |
-| B        | Middle Click      |
-| C        | Right Click       |
-| D        | Horizontal Scroll |
-| E        | Vertical Scroll   |
-| F        | Horizontal Scroll |
-| H        | Back              |
-| G        | Forward           |
-| G + H    | Show All Windows  |
+| Shortcut  | Action            |
+| --------- | ----------------- |
+| A         | Left Click        |
+| B         | Middle Click      |
+| C         | Right Click       |
+| D         | Horizontal Scroll |
+| E         | Vertical Scroll   |
+| F         | Horizontal Scroll |
+| H         | Back              |
+| G         | Forward           |
+| H + G - H | Focus Mode        |
+| H + G - G | Show All Windows  |
 
 
 ### Holding H (Browser Mode)
 
-| Shortcut | Action            |
-| -------- | ----------------- |
-| H + A    | Go to Declaration |
-| H + B    | Close Tab         |
-| H + C    | Reopen Tab        |
-| H + D    | Zoom In           |
-| H + E    | Switch Tabs       |
-| H + F    | Zoom Out          |
+| Shortcut | Action             |
+| -------- | ------------------ |
+| H + A    | Previous Workspace |
+| H + B    | Close Tab          |
+| H + C    | Next Workspace     |
+| H + D    | Zoom In            |
+| H + E    | Switch Tabs        |
+| H + F    | Zoom Out           |
 
 
 ### Holding G (System Mode)
 
-| Shortcut | Action        |
-| -------- | ------------- |
-| G + A    | Undo          |
-| G + B    | Close Window  |
-| G + C    | Redo          |
-| G + E    | Switch Window |
+| Shortcut | Action            |
+| -------- | ----------------- |
+| G + A    | Go To Declaration |
+| G + B    | Close Window      |
+| G + C    | Search Selection  |
+| G + D    | Redo              |
+| G + E    | Switch Window     |
+| G + F    | Undo              |
 
+
+### Holding H + G (System Mode)
+
+| Shortcut  | Action                            |
+| --------- | --------------------------------- |
+| H + G + A | Move Window to Previous Workspace |
+| H + G + B | Reopen Tab                        |
+| H + G + C | Move Window to Next Workspace     |
+| H + G + D | Key Right                         |
+| H + G + E | Keys Up / Down                    |
+| H + G + F | Key Left                          |
 
 ### Holding G + H (Multimedia Mode)
 
@@ -222,16 +237,6 @@ This shadow assumes logid is installed. Check the dependencies bellow on how to 
 | H + E    | Switch Tabs        |
 
 
-### Holding H + G (Window Mode)
-
-| Shortcut  | Action                            |
-| --------- | --------------------------------- |
-| H + G + A | Move Window To Previous Workspace |
-| H + G + B | reopen Tab                        |
-| H + G + C | Move Window To Next Workspace     |
-| H + G + E | Zoom                              |
-
-
 ### Holding G (Multimedia Mode)
 
 | Shortcut | Action            |
@@ -240,6 +245,16 @@ This shadow assumes logid is installed. Check the dependencies bellow on how to 
 | G + B    | Close Window      |
 | G + C    | Search Selection  |
 | G + E    | Switch Window     |
+
+
+### Holding H + G (Window Mode)
+
+| Shortcut  | Action                            |
+| --------- | --------------------------------- |
+| H + G + A | Move Window To Previous Workspace |
+| H + G + B | reopen Tab                        |
+| H + G + C | Move Window To Next Workspace     |
+| H + G + E | Zoom                              |
 
 
 ### Holding G + H (Extra Mode)

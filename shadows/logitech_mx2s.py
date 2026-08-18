@@ -15,6 +15,7 @@ REQUIRED_DEVICES = [
 
 SOURCE_LOGITECH_MX2S = "Logitech MX2S"
 
+
 class BaseMX2SReflex(Reflex):
 
     def __init__(self, *args, **kwargs):
