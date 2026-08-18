@@ -76,7 +76,7 @@ Note: This is easily portable to the Logitech MX Anywhere 3S, but they sadly rem
 | H + G - G | Show All Windows  |
 
 
-### Holding H (Browser Mode)
+### Holding H
 
 | Shortcut | Action             |
 | -------- | ------------------ |
@@ -88,7 +88,7 @@ Note: This is easily portable to the Logitech MX Anywhere 3S, but they sadly rem
 | H + F    | Zoom Out           |
 
 
-### Holding G (System Mode)
+### Holding G
 
 | Shortcut | Action            |
 | -------- | ----------------- |
@@ -100,7 +100,7 @@ Note: This is easily portable to the Logitech MX Anywhere 3S, but they sadly rem
 | G + F    | Undo              |
 
 
-### Holding H + G (System Mode)
+### Holding H + G
 
 | Shortcut  | Action                            |
 | --------- | --------------------------------- |
@@ -111,7 +111,7 @@ Note: This is easily portable to the Logitech MX Anywhere 3S, but they sadly rem
 | H + G + E | Keys Up / Down                    |
 | H + G + F | Key Left                          |
 
-### Holding G + H (Multimedia Mode)
+### Holding G + H
 
 | Shortcut  | Action           |
 | --------- | ---------------- |
@@ -194,7 +194,7 @@ Note: This is easily portable to the Logitech MX Anywhere 3S, but they sadly rem
 | G        | Move Cursor     |
 
 
-### Holding B (ALT Mode)
+### Holding B
 
 | Shortcut | Action                         |
 | -------- | ------------------------------ |
@@ -227,7 +227,7 @@ This shadow assumes logid is installed. Check the dependencies bellow on how to 
 | H        | Forward           |
 
 
-### Holding H (Browsing Mode)
+### Holding H
 
 | Shortcut | Action             |
 | -------- | ------------------ |
@@ -237,7 +237,7 @@ This shadow assumes logid is installed. Check the dependencies bellow on how to 
 | H + E    | Switch Tabs        |
 
 
-### Holding G (Multimedia Mode)
+### Holding G
 
 | Shortcut | Action            |
 | -------- | ----------------- |
@@ -247,7 +247,7 @@ This shadow assumes logid is installed. Check the dependencies bellow on how to 
 | G + E    | Switch Window     |
 
 
-### Holding H + G (Window Mode)
+### Holding H + G
 
 | Shortcut  | Action                            |
 | --------- | --------------------------------- |
@@ -257,7 +257,7 @@ This shadow assumes logid is installed. Check the dependencies bellow on how to 
 | H + G + E | Zoom                              |
 
 
-### Holding G + H (Extra Mode)
+### Holding G + H
 
 | Shortcut  | Action            |
 | --------- | ----------------- |
@@ -267,7 +267,7 @@ This shadow assumes logid is installed. Check the dependencies bellow on how to 
 | G + H + E | Volume            |
 
 
-### Holding D (System Mode)
+### Holding D
 
 | Shortcut | Action     |
 | -------- | ---------- |
