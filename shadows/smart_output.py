@@ -307,6 +307,16 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTALT", "+KEY_F4", "-KEY_F4", "-KEY_LEFTALT"]}],
             },
+            "minimize_window": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "+KEY_H", "-KEY_H", "-KEY_LEFTMETA"]}],
+            },
+            "maximize_window": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTALT", "+KEY_F10", "-KEY_F10", "-KEY_LEFTALT"]}],
+            },
             "close_window": {
                 "default": [{
                     "type": "keyboard",

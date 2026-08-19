@@ -229,7 +229,7 @@ Notes:
 | H        | Forward           |
 
 
-### Holding H
+### H-Mode (+H)
 
 | Shortcut | Action             |
 | -------- | ------------------ |
@@ -239,7 +239,7 @@ Notes:
 | H + E    | Switch Tabs        |
 
 
-### Holding G
+### G-Mode (+G)
 
 | Shortcut | Action            |
 | -------- | ----------------- |
@@ -249,17 +249,17 @@ Notes:
 | G + E    | Switch Window     |
 
 
-### Holding H + G
+### Super H-Mode (+H +G)
 
 | Shortcut  | Action                            |
 | --------- | --------------------------------- |
 | H + G + A | Move Window To Previous Workspace |
-| H + G + B | reopen Tab                        |
+| H + G + B | Reopen Tab                        |
 | H + G + C | Move Window To Next Workspace     |
 | H + G + E | Zoom                              |
 
 
-### Holding G + H
+### Super G-Mode (+G +H)
 
 | Shortcut  | Action            |
 | --------- | ----------------- |
@@ -268,8 +268,27 @@ Notes:
 | G + H + C | Mute              |
 | G + H + E | Volume            |
 
+<!-- ### Ultra H-Mode (+H +G -H)
 
-### Holding D
+| Shortcut      | Action                            |
+| ------------- | --------------------------------- |
+| H + G - H + A |  |
+| H + G - H + B |                         |
+| H + G - H + C |      |
+| H + G - H + E |                               |
+
+
+### Ultra G-Mode (+G +H -G)
+
+| Shortcut      | Action            |
+| ------------- | ----------------- |
+| G + H - G + A |       |
+| G + H - G + B |               |
+| G + H - G + C |               |
+| G + H - G + E |             | -->
+
+
+### D-Mode (+D)
 
 | Shortcut | Action     |
 | -------- | ---------- |
