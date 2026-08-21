@@ -214,20 +214,12 @@ Notes:
 ![Buttons](images/MXMaster3S-StateMachine.png)
 
 Notes:
+
 - This shadow assumes logid is installed. Check the dependencies bellow on how to configure it.
-
-
-### D-Mode (+D)
-
-| Shortcut | Action     |
-| -------- | ---------- |
-| D + A    | Lock       |
-| D + B    | Reopen Tab |
-| D + C    | Power-off  |
-| D + E    |            |
-| D + H    | Ctrl+C     |
-| D + G    | Ctrl+D     | -->
-
+- Blue rows represent a scroll input
+- Yellow rows require a clean button release (no combination was made)
+- Gray rows count as a combination if pressed on a deeper state
+- White rows never invalidate a clear state
 
 # Dependencies
 
