@@ -211,81 +211,10 @@ Notes:
 
 ![Buttons](images/keys_logitechMXMaster3S.png)
 
+![Buttons](images/MXMaster3S-StateMachine.png)
+
 Notes:
 - This shadow assumes logid is installed. Check the dependencies bellow on how to configure it.
-
-
-### Normal Mode
-
-| Shortcut | Action            |
-| -------- | ----------------- |
-| A        | Left Click        |
-| B        | Middle Click      |
-| C        | Right Click       |
-| D        | Windows Key       |
-| E        | Vertical Scroll   |
-| F        | Horizontal Scroll |
-| G        | Back              |
-| H        | Forward           |
-
-
-### H-Mode (+H)
-
-| Shortcut | Action             |
-| -------- | ------------------ |
-| H + A    | Previous Workspace |
-| H + B    | Close Tab          |
-| H + C    | Next Workspace     |
-| H + E    | Switch Tabs        |
-
-
-### G-Mode (+G)
-
-| Shortcut | Action            |
-| -------- | ----------------- |
-| G + A    | Go to Declaration |
-| G + B    | Close Window      |
-| G + C    | Search Selection  |
-| G + E    | Switch Window     |
-
-
-### Super H-Mode (+H +G)
-
-| Shortcut  | Action                            |
-| --------- | --------------------------------- |
-| H + G + A | Move Window To Previous Workspace |
-| H + G + B | Reopen Tab                        |
-| H + G + C | Move Window To Next Workspace     |
-| H + G + E | Zoom                              |
-
-
-### Super G-Mode (+G +H)
-
-| Shortcut  | Action            |
-| --------- | ----------------- |
-| G + H + A | Play / Pause      |
-| G + H + B | Stop              |
-| G + H + C | Mute              |
-| G + H + E | Volume            |
-
-<!-- ### Ultra H-Mode (+H +G -H)
-
-| Shortcut      | Action                            |
-| ------------- | --------------------------------- |
-| H + G - H + A |  |
-| H + G - H + B |                         |
-| H + G - H + C |      |
-| H + G - H + E |                               |
-
-
-### Ultra G-Mode (+G +H -G)
-
-| Shortcut      | Action            |
-| ------------- | ----------------- |
-| G + H - G + A |       |
-| G + H - G + B |               |
-| G + H - G + C |               |
-| G + H - G + E |             | -->
 
 
 ### D-Mode (+D)
@@ -297,7 +226,7 @@ Notes:
 | D + C    | Power-off  |
 | D + E    |            |
 | D + H    | Ctrl+C     |
-| D + G    | Ctrl+D     |
+| D + G    | Ctrl+D     | -->
 
 
 # Dependencies

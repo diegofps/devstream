@@ -114,7 +114,12 @@ class BaseMXMaster3SNode(Reflex):
         log.debug(f"{self.name} is deactivating")
 
 
-class MXMaster3S_N(BaseMXMaster3SNode): # Normal
+
+#############################################################################################
+# N STATE
+#############################################################################################
+
+class MXMaster3S_N(BaseMXMaster3SNode): # Normal Mode
 
     def on_left_click(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
@@ -135,7 +140,6 @@ class MXMaster3S_N(BaseMXMaster3SNode): # Normal
     def on_side_down_click(self, event): # G
         if event.value == 1: # +G
             self.shift_reflex("MXMaster3S_G")
-            # self.mind.emit(TOPIC_MXMASTER3S_STATE, "MXMaster3S_G", 50)
     
     def on_side_ground_click(self, event): # D
         if event.value == 1: # +F
@@ -158,50 +162,31 @@ class MXMaster3S_N(BaseMXMaster3SNode): # Normal
             eb.update("REL_Y", event.value)
 
 
-# | Shortcut | Action             |
-# | -------- | ------------------ |
-# | H + A    | Previous Workspace |
-# | H + B    | Close Tab          |
-# | H + C    | Next Workspace     |
-# | H + E    | Switch Tabs        |
-class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
+
+#############################################################################################
+# H STATES
+#############################################################################################
+
+class MXMaster3S_H(BaseMXMaster3SNode):
 
     def on_left_click(self, event): # A
         self.clean = False
-
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                 eb.function("previous_workspace")
 
     def on_middle_click(self, event): # B
         self.clean = False
-
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                 eb.function("close_tab")
             
     def on_right_click(self, event): # C
         self.clean = False
-
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                 eb.function("next_workspace")
 
-    def on_side_up_click(self, event): # H
-        if event.value == 0: # -H
-            log.debug("Releasing H from MXMaster3S_H, clean is", self.clean)
-
-            if self.clean:
-                with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                    eb.function("navigate_forward")
-            
-            self.shift_reflex("MXMaster3S_N")
-    
-    def on_side_down_click(self, event): # G
-        if event.value == 1: # +G
-            log.debug("Pressing G from MXMaster3S_H, clean is", self.clean)
-            self.shift_reflex("MXMaster3S_HG")
-    
     def on_side_ground_click(self, event): # D
         pass
 
@@ -210,23 +195,31 @@ class MXMaster3S_H(BaseMXMaster3SNode): # Navigator (H:side-up)
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("SCROLL_TABS", event.value)
     
-    def on_scroll_h(self, event):
+    def on_scroll_h(self, event): # F
         pass
         
-    def on_move_rel_x(self, event):
+    def on_side_down_click(self, event): # G
+        if event.value == 1: # +G
+            log.debug("Pressing G from MXMaster3S_H, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_HG")
+    
+    def on_side_up_click(self, event): # H
+        if event.value == 0: # -H
+            log.debug("Releasing H from MXMaster3S_H, clean is", self.clean)
+            if self.clean:
+                with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                    eb.function("navigate_forward")
+            self.shift_reflex("MXMaster3S_N")
+    
+    def on_move_rel_x(self, event): # I
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("REL_X", event.value)
 
-    def on_move_rel_y(self, event):
+    def on_move_rel_y(self, event): # I
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("REL_Y", event.value)
 
 
-# | --------- | --------------------------------- |
-# | H + G + A | Move Window To Previous Workspace |
-# | H + G + B | Reopen Tab                        |
-# | H + G + C | Move Window To Next Workspace     |
-# | H + G + E | Zoom                              |
 class MXMaster3S_HG(BaseMXMaster3SNode): # Super H
     
     def on_left_click(self, event): # A
@@ -247,19 +240,6 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Super H
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                 eb.function("move_window_to_next_workspace")
 
-    def on_side_up_click(self, event): # H
-        if event.value == 0: # -H
-            log.debug("Releasing H from MXMaster3S_HG, clean is", self.clean)
-            # if self.clean:
-            #     with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            #         eb.function("focus_mode")
-            self.shift_reflex("MXMaster3S_HGh", clean=False)
-
-    def on_side_down_click(self, event): # G
-        if event.value == 0: # -G
-            log.debug("Releasing G from MXMaster3S_HG, clean is", self.clean)
-            self.shift_reflex("MXMaster3S_H", clean=False)
-    
     def on_side_ground_click(self, event): # D
         pass
     
@@ -268,19 +248,29 @@ class MXMaster3S_HG(BaseMXMaster3SNode): # Super H
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("SCROLL_HKEYS", event.value)
     
-    def on_scroll_h(self, event):
+    def on_scroll_h(self, event): # F
         pass
         
-    def on_move_rel_x(self, event):
+    def on_side_down_click(self, event): # G
+        if event.value == 0: # -G
+            log.debug("Releasing G from MXMaster3S_HG, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_HGg", clean=False)
+    
+    def on_side_up_click(self, event): # H
+        if event.value == 0: # -H
+            log.debug("Releasing H from MXMaster3S_HG, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_HGh", clean=False)
+
+    def on_move_rel_x(self, event): # I
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("REL_X", event.value)
 
-    def on_move_rel_y(self, event):
+    def on_move_rel_y(self, event): # I
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("REL_Y", event.value)
 
 
-class MXMaster3S_HGh(BaseMXMaster3SNode): # Ultra H
+class MXMaster3S_HGh(BaseMXMaster3SNode):
     
     def on_left_click(self, event): # A
         self.clean = False
@@ -320,9 +310,6 @@ class MXMaster3S_HGh(BaseMXMaster3SNode): # Ultra H
     
     def on_scroll_h(self, event):
         pass
-        # self.clean = False
-        # with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #     eb.update("SCROLL_HKEYS", event.value)
         
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
@@ -333,13 +320,51 @@ class MXMaster3S_HGh(BaseMXMaster3SNode): # Ultra H
             eb.update("REL_Y", event.value)
 
 
-# | Shortcut | Action            |
-# | -------- | ----------------- |
-# | G + A    | Go to Declaration |
-# | G + B    | Close Window      |
-# | G + C    | Search Selection  |
-# | G + E    | Switch Window     |
-class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
+class MXMaster3S_HGg(BaseMXMaster3SNode):
+    
+    def on_left_click(self, event): # A
+        pass
+
+    def on_middle_click(self, event): # B
+        pass
+        
+    def on_right_click(self, event): # C
+        pass
+
+    def on_side_up_click(self, event): # H
+        if event.value == 0: # -H
+            log.debug("Releasing H from MXMaster3S_HGg, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_N", clean=False)
+    
+    def on_side_down_click(self, event): # G
+        if event.value == 1: # -G
+            log.debug("Pressing G from MXMaster3S_HGg, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_HG", clean=False)
+    
+    def on_side_ground_click(self, event): # D
+        pass
+    
+    def on_scroll(self, event): # E
+        pass
+    
+    def on_scroll_h(self, event):
+        pass
+        
+    def on_move_rel_x(self, event): # I
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.function("scroll_h", event.value * 1.50)
+
+    def on_move_rel_y(self, event): # I
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.function("scroll_v", event.value * 2.00)
+
+
+
+#############################################################################################
+# G STATES
+#############################################################################################
+
+class MXMaster3S_G(BaseMXMaster3SNode):
 
     def on_deactivate(self):
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
@@ -361,7 +386,7 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("search_selection")
+                eb.function("rename")
 
     def on_side_up_click(self, event): # H
         if event.value == 1: # +H
@@ -398,65 +423,60 @@ class MXMaster3S_G(BaseMXMaster3SNode): # System (G:side-down)
             eb.update("REL_Y", event.value)
 
 
-class MXMaster3S_GH(BaseMXMaster3SNode): # Super G
+class MXMaster3S_GH(BaseMXMaster3SNode):
     
     def on_left_click(self, event): # A
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("KEY_ENTER", event.value)
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                eb.function("search_selection_with_duckduckgo")
 
     def on_middle_click(self, event): # B
         self.clean = False
-        if event.value == 1: # +B
+        if event.value == 1:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("ctrl_c")
+                eb.function("search_selection_with_ecosia")
         
     def on_right_click(self, event): # C
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("KEY_ESC", event.value)
-
-    def on_side_up_click(self, event): # H
-        if event.value == 0: # -H
-            log.debug("Releasing H from MXMaster3S_GH, clean is", self.clean)
-            self.shift_reflex("MXMaster3S_G", clean=False)
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                eb.function("search_selection_with_brave")
     
+    def on_side_ground_click(self, event): # D
+        self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                eb.function("search_selection_with_bing")
+    
+    def on_scroll(self, event): # E
+        self.clean = False
+        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("SCROLL_HKEYS", -event.value)
+    
+    def on_scroll_h(self, event): # F
+        pass
+
     def on_side_down_click(self, event): # G
         if event.value == 0: # -G
             log.debug("Releasing G from MXMaster3S_GH, clean is", self.clean)
             self.shift_reflex("MXMaster3S_GHg", clean=False)
     
-    def on_side_ground_click(self, event): # D
-        pass
+    def on_side_up_click(self, event): # H
+        if event.value == 0: # -H
+            log.debug("Releasing H from MXMaster3S_GH, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_GHh", clean=False)
     
-    def on_scroll(self, event): # E
-        self.clean = False
-        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("SCROLL_VKEYS", event.value)
-    
-    def on_scroll_h(self, event):
-        pass
+    def on_move_rel_x(self, event): # I
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("REL_X", event.value)
 
-    def on_move_rel_x(self, event):
-        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #     eb.update("REL_X", event.value)
-        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("SCROLL_HKEYS", -event.value)
-
-    def on_move_rel_y(self, event):
-        # with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-        #     eb.update("REL_Y", event.value)
-        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.update("SCROLL_VKEYS", -event.value)
+    def on_move_rel_y(self, event): # I
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("REL_Y", event.value)
 
 
-# | Shortcut  | Action             |
-# | --------- | ------------------ |
-# | G + H + A | Play / Pause Music |
-# | G + H + B | Stop Music         |
-# | G + H + C | Mute               |
-# | G + H + E | Volume             |
-class MXMaster3S_GHg(BaseMXMaster3SNode): # Super G
+class MXMaster3S_GHg(BaseMXMaster3SNode):
     
     def on_left_click(self, event): # A
         self.clean = False
@@ -473,16 +493,6 @@ class MXMaster3S_GHg(BaseMXMaster3SNode): # Super G
         with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("KEY_MUTE", event.value)
 
-    def on_side_up_click(self, event): # H
-        if event.value == 0: # -H
-            log.debug("Releasing H from MXMaster3S_GH, clean is", self.clean)
-            self.shift_reflex("MXMaster3S_N", clean=False)
-    
-    def on_side_down_click(self, event): # G
-        if event.value == 1: # -G
-            log.debug("Releasing G from MXMaster3S_GH, clean is", self.clean)
-            self.shift_reflex("MXMaster3S_GH", clean=False)
-    
     def on_side_ground_click(self, event): # D
         pass
     
@@ -491,29 +501,83 @@ class MXMaster3S_GHg(BaseMXMaster3SNode): # Super G
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
             eb.update("SCROLL_VOLUME", event.value)
     
-    def on_scroll_h(self, event):
+    def on_scroll_h(self, event): # F
         pass
 
-    def on_move_rel_x(self, event):
+    def on_side_down_click(self, event): # G
+        if event.value == 1: # +G
+            log.debug("Pressing G from MXMaster3S_GHg, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_GH", clean=False)
+    
+    def on_side_up_click(self, event): # H
+        if event.value == 0: # -H
+            log.debug("Releasing H from MXMaster3S_GHg, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_N", clean=False)
+    
+    def on_move_rel_x(self, event): # I
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("REL_X", event.value)
+
+    def on_move_rel_y(self, event): # I
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("REL_Y", event.value)
+
+
+class MXMaster3S_GHh(BaseMXMaster3SNode):
+
+    def on_left_click(self, event): # A
+        self.clean = False
+        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("KEY_ENTER", event.value)
+
+    def on_middle_click(self, event): # B
+        self.clean = False
+        if event.value == 1: # +B
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                eb.function("ctrl_c")
+        
+    def on_right_click(self, event): # C
+        self.clean = False
+        with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("KEY_ESC", event.value)
+
+    def on_side_ground_click(self, event): # D
+        pass
+    
+    def on_scroll(self, event): # E
+        self.clean = False
         with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.function("scroll_h", event.value * 1.50)
+            eb.update("SCROLL_VKEYS", event.value)
+    
+    def on_scroll_h(self, event): # F
+        pass
+    
+    def on_side_down_click(self, event): # G
+        if event.value == 0: # -G
+            log.debug("Releasing G from MXMaster3S_GHh, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_N", clean=False)
+
+    def on_side_up_click(self, event): # H
+        if event.value == 1: # +H
+            log.debug("Pressing H from MXMaster3S_GHh, clean is", self.clean)
+            self.shift_reflex("MXMaster3S_GH", clean=False)
+
+    def on_move_rel_x(self, event):
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("REL_X", event.value)
 
     def on_move_rel_y(self, event):
-        with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-            eb.function("scroll_v", event.value * 2.00)
+        with VirtualMouseEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+            eb.update("REL_Y", event.value)
 
 
 
 
-# | Shortcut | Action     |
-# | -------- | ---------- |
-# | D + A    | Lock       |
-# | D + B    | Reopen Tab |
-# | D + C    | Power-off  |
-# | D + E    |            |
-# | D + H    | Ctrl+C     |
-# | D + G    | Ctrl+D     |
-class MXMaster3S_D(BaseMXMaster3SNode): # System
+#############################################################################################
+# D STATE
+#############################################################################################
+
+class MXMaster3S_D(BaseMXMaster3SNode):
     
     def on_left_click(self, event): # A
         self.clean = False
@@ -531,31 +595,15 @@ class MXMaster3S_D(BaseMXMaster3SNode): # System
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                # eb.function("ctrl_d")
-                # eb.function("move_window_to_next_workspace")
                 eb.function("poweroff")
 
-    def on_side_up_click(self, event): # H
-        self.clean = False
-        if event.value == 0:
-            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("ctrl_c")
-    
-    def on_side_down_click(self, event): # G
-        self.clean = False
-        if event.value == 0:
-            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
-                eb.function("ctrl_d")
-    
     def on_side_ground_click(self, event): # D
         if event.value == 0: # -F
             log.debug("Releasing F from MXMaster3S_D, clean is", self.clean)
-
             if self.clean:
                 with VirtualKeyboardEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
                     eb.press("KEY_LEFTMETA")
                     eb.release("KEY_LEFTMETA")
-
             self.shift_reflex("MXMaster3S_N")
     
     def on_scroll(self, event): # E
@@ -565,25 +613,48 @@ class MXMaster3S_D(BaseMXMaster3SNode): # System
         #     eb.update("SCROLL_UNDO", -speed if event.value > 0 else speed)
         pass
     
-    def on_scroll_h(self, event):
+    def on_scroll_h(self, event): # F
         pass
 
-    def on_move_rel_x(self, event):
+    def on_side_down_click(self, event): # G
+        self.clean = False
+        if event.value == 0:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                eb.function("ctrl_d")
+    
+    def on_side_up_click(self, event): # H
+        self.clean = False
+        if event.value == 0:
+            with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MXMASTER3S) as eb:
+                eb.function("ctrl_c")
+    
+    def on_move_rel_x(self, event): # I
         pass
 
-    def on_move_rel_y(self, event):
+    def on_move_rel_y(self, event): # I
         pass
 
+
+
+#############################################################################################
+# Shadow Declaration
+#############################################################################################
 
 class LogitechMXMaster3S(Shadow):
     def on_configure(self):
         self.add_reflex(MXMaster3S_LogidMonitor(keepalive=True))
+        
         self.add_reflex(MXMaster3S_N(autostart=True))
-        self.add_reflex(MXMaster3S_H())
-        self.add_reflex(MXMaster3S_G())
-        self.add_reflex(MXMaster3S_HG())
-        self.add_reflex(MXMaster3S_GH())
-        self.add_reflex(MXMaster3S_HGh())
-        self.add_reflex(MXMaster3S_GHg())
         self.add_reflex(MXMaster3S_D())
+
+        self.add_reflex(MXMaster3S_H())
+        self.add_reflex(MXMaster3S_HG())
+        self.add_reflex(MXMaster3S_HGh())
+        self.add_reflex(MXMaster3S_HGg())
+
+        self.add_reflex(MXMaster3S_G())
+        self.add_reflex(MXMaster3S_GH())
+        self.add_reflex(MXMaster3S_GHg())
+        self.add_reflex(MXMaster3S_GHh())
+        
         self.require_device(REQUIRED_DEVICES)

@@ -435,18 +435,30 @@ class SmartOutputReflex(Reflex):
                     "sequence": ["+KEY_LEFTALT", "+KEY_LEFTSHIFT", "+KEY_O", "-KEY_O", "-KEY_LEFTSHIFT", "-KEY_LEFTALT"]}],
             },
 
-            "search_selection": {
-                "default": self.search_selection_1,
+            # "search_selection": {
+            #     "default": self.search_selection_with_duckduckgo,
 
-                ("firefox", "firefox-beta", "Google-chrome"): [
-                    {"type": "keyboard",
-                    "sequence": ["+KEY_LEFTALT"]},
+            #     ("firefox", "firefox-beta", "Google-chrome"): [
+            #         {"type": "keyboard",
+            #         "sequence": ["+KEY_LEFTALT"]},
 
-                    {"type": "mouse",
-                    "sequence": ["+BTN_RIGHT", "-BTN_RIGHT", 0.2]},
+            #         {"type": "mouse",
+            #         "sequence": ["+BTN_RIGHT", "-BTN_RIGHT", 0.2]},
 
-                    {"type": "keyboard",
-                    "sequence": ["-KEY_LEFTALT", "+KEY_S", "+KEY_S"]}],
+            #         {"type": "keyboard",
+            #         "sequence": ["-KEY_LEFTALT", "+KEY_S", "+KEY_S"]}],
+            # },
+            "search_selection_with_duckduckgo": {
+                "default": self.search_selection_with_duckduckgo,
+            },
+            "search_selection_with_google": {
+                "default": self.search_selection_with_google,
+            },
+            "search_selection_with_bing": {
+                "default": self.search_selection_with_bing,
+            },
+            "search_selection_with_brave": {
+                "default": self.search_selection_with_brave,
             },
             "scroll_h": {
                 "default": self.scroll_h_1,
@@ -503,6 +515,12 @@ class SmartOutputReflex(Reflex):
                     "sequence": ["+KEY_LEFTMETA", "-KEY_LEFTMETA"],
                 }],
             },
+            "rename": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_F2", "-KEY_F2"],
+                }],
+            },
         }
 
         # Convert list of names to single names
@@ -525,8 +543,23 @@ class SmartOutputReflex(Reflex):
     # Advanced functions not easily mapped to keys
     ######################################################################################
 
-    def search_selection_1(self):
-        log.info("Running search selection 1")
+    def search_selection_with_duckduckgo(self):
+        self._search_selection("firefox", "https://duckduckgo.com/?q=")
+
+    def search_selection_with_google(self):
+        self._search_selection("firefox", "http://www.google.com.br/search?q=")
+
+    def search_selection_with_bing(self):
+        self._search_selection("firefox", "https://www.bing.com/search?q=")
+
+    def search_selection_with_brave(self):
+        self._search_selection("firefox", "https://search.brave.com/search?q=")
+
+    def search_selection_with_ecosia(self):
+        self._search_selection("firefox", "https://www.ecosia.org/search?q=")
+
+    def _search_selection(self, browser, search_engine):
+        log.info(f"Running search selection with browser='{browser}' and engine='{search_engine}'")
         
         if self.username is None:
             log.error("Could not find a user session to open this search")
@@ -535,12 +568,6 @@ class SmartOutputReflex(Reflex):
         proc = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
         selection = proc.stdout.read().decode('utf-8')
         query = re.sub('\s', '%20', selection)
-        
-        browser = "firefox"
-        # browser = "xdg-open"
-        search_engine = "https://duckduckgo.com/?q="
-        # search_engine = "http://www.google.com.br/search?q="
-
         cmd = f"su {self.username} -c 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{self.userid}/bus DISPLAY={self.userdisplay} {browser} {search_engine}{query} &'"
         Popen(shlex.split(cmd))
 
