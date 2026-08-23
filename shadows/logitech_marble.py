@@ -22,13 +22,9 @@ class BaseMarbleReflex(Reflex):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.clean = True
-    
-    def on_configure(self):
-        for x in REQUIRED_DEVICES:
-            self.add_listener(f"DeviceReader:{x}", self.on_event)
 
     def on_event(self, topic_name, event):
-        # log.debug("Processing marble event", self.name, event)
+        # self.debug_event(device_name, event)
 
         if event.type == e.EV_KEY:
 
@@ -274,8 +270,8 @@ class Marble_D(BaseMarbleReflex):
 
 class LogitechMarble(Shadow):
     def on_configure(self):
-        self.add_reflex(Marble_N(autostart=True))
-        self.add_reflex(Marble_B())
-        self.add_reflex(Marble_C())
-        self.add_reflex(Marble_D())
+        self.add_reflex(Marble_N(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE, autostart=True))
+        self.add_reflex(Marble_B(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE))
+        self.add_reflex(Marble_C(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE))
+        self.add_reflex(Marble_D(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE))
         self.require_device(REQUIRED_DEVICES)

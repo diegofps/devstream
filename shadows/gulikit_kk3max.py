@@ -20,12 +20,8 @@ class BaseJoypadNode(Reflex):
         super().__init__(*args, **kwargs)
         self.clean = True
     
-    def on_configure(self):
-        for x in REQUIRED_DEVICES:
-            self.add_listener(f"DeviceReader:{x}", self.on_event)
-
     def on_event(self, device_name, event):
-        # log.debug(f"event received from {device_name}: {event}")
+        # self.debug_event(device_name, event)
 
         if event.type == e.EV_KEY:
 
@@ -207,6 +203,6 @@ class Joypad_N(BaseJoypadNode): # Normal
 
 class GulikitKK3Max(Shadow):
     def on_configure(self):
-        self.add_reflex(Joypad_N(autostart=True))
+        self.add_reflex(Joypad_N(required_devices=REQUIRED_DEVICES, source_name=SOURCE_JOYPAD, autostart=True))
         self.require_device(REQUIRED_DEVICES)
 

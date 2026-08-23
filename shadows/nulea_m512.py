@@ -20,10 +20,6 @@ SOURCE_NULEAM512 = "Nulea M512"
 
 class BaseNuleaM512Reflex(Reflex):
 
-    def on_configure(self):
-        for x in REQUIRED_DEVICES:
-            self.add_listener(f"DeviceReader:{x}", self.on_event)
-
     def on_event(self, topic_name, event):
         # log.debug("Processing Nulea M512 event: ", self.name, event)
 

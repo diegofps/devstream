@@ -3,6 +3,7 @@ from threading import Thread
 import traceback
 import log
 
+
 class Daemon(Thread):
 
     def __init__(self, target):
@@ -19,8 +20,12 @@ class Daemon(Thread):
 
 class Reflex:
 
-    def __init__(self, autostart=False, keepalive=False, name=None):
+    def __init__(self, autostart=False, keepalive=False, name=None, source_name=None, required_devices=[], event_wrapper=None):
+        self.state_name = self.__class__.__name__.split('_', 1)[0] + '_'
         self.name = type(self).__name__ if name is None else name
+        self.required_devices = required_devices
+        self.event_wrapper = event_wrapper
+        self.source_name = source_name
         self.must_run_daemon = False
         self.autostart = autostart
         self.keepalive = keepalive
@@ -30,6 +35,7 @@ class Reflex:
         self.active = False
         self.daemon = None
         self.shadow = None
+        self.clean = True
         self.mind = None
 
         log.info("Creating reflex", self.name, "...")
@@ -119,7 +125,7 @@ class Reflex:
     
     def shift_reflex(self, reflex_name, *args, **kwargs):
         if self.is_activated():
-            self.shadow.shift_reflex(reflex_name, *args, **kwargs)
+            self.shadow.shift_reflex(self.state_name + reflex_name, *args, **kwargs)
     
     def debug_event(self, topic_name, evt):
         code  = e.bytype[evt.type][evt.code]
@@ -128,12 +134,14 @@ class Reflex:
 
         log.debug(f"Processing event: type={type}, code={code}, value={value}")
     
-    def on_event(self, topic_name, evt):
-        self.debug_event(topic_name, evt)
+    def on_event(self, device_name, event):
+        # self.debug_event(device_name, event)
+        self.event_wrapper(device_name, event, self)
     
     def on_configure(self):
-        # log.debug(f"Inside default on_configure for reflex {self.name}")
-        pass
+        log.debug(f"Inside default on_configure for reflex {self.name}")
+        for x in self.required_devices:
+            self.add_listener(f"DeviceReader:{x}", self.on_event)
 
     def on_attach(self):
         # log.debug(f"Inside default on_attach for reflex {self.name}")
@@ -143,14 +151,13 @@ class Reflex:
         # log.debug(f"Inside default on_dettach for reflex {self.name}")
         pass
     
-    def on_activate(self, *args, **kwargs):
-        # log.debug(f"Inside default on_activate for reflex {self.name}")
-        pass
+    def on_activate(self, clean=True):
+        log.debug(f"{self.name} is activating, clean={clean}")
+        self.clean = clean
 
     def on_deactivate(self):
-        # log.debug(f"Inside default on_deactivate for reflex {self.name}")
-        pass
-    
+        log.debug(f"{self.name} is deactivating")
+
     def require_daemon(self, value=True):
         # log.debug(f"Inside require_daemon for reflex {self.name}, value={value}")
         self.must_run_daemon = value
