@@ -1,10 +1,6 @@
 from shadows.virtual_keyboard import VirtualKeyboardEvent
-
-# from evdev import ecodes as e
 from reflex import Reflex
 from shadow import Shadow
-
-import log
 
 
 # If you want to intercept more keybords, add them here
@@ -32,5 +28,5 @@ class BasicKeyboardsReflex(Reflex):
 
 class BasicKeyboards(Shadow):
     def on_configure(self):
-        self.require_device(TARGET_DEVICES)
-        self.add_reflex(BasicKeyboardsReflex(required_devices=TARGET_DEVICES, source_name=SOURCE_BASIC_KEYBOARD, autostart=True))
+        super().on_configure(required_devices=TARGET_DEVICES, source_name=SOURCE_BASIC_KEYBOARD)
+        self.add_reflex(BasicKeyboardsReflex, autostart=True)

@@ -4,7 +4,6 @@ from reflex import Reflex
 from keys import Key
 
 import time
-import log
 
 
 class VirtualDeviceEvent:
@@ -139,7 +138,7 @@ class VirtualDeviceReflex(Reflex):
             self.on_event_sleep(event[1])
         
         else:
-            log.error(f"Invalid event_type in {self.__class__.__name__} event: {event_type}")
+            self.log.error(f"Invalid event_type in {self.__class__.__name__} event: {event_type}")
 
     def on_event_press(self, key_name):
         if hasattr(self, key_name):
@@ -168,7 +167,7 @@ class VirtualDeviceReflex(Reflex):
     def on_event_forward(self, type, code, value):
         if not code in self.acquired_keys and not code in self._ignored_keys:
             # log.info(self._ignored_keys, code)
-            log.info(f"{self.__class__.__name__} is missing the key {e.KEY[code]}")
+            self.log.info(f"{self.__class__.__name__} is missing the key {e.KEY[code]}")
         
         self.vdev.write(type, code, value)
 

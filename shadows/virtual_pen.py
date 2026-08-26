@@ -3,8 +3,6 @@ from keys import DirectKey
 
 from .virtual_device import VirtualDeviceReflex, VirtualDeviceEvent
 
-import log
-
 
 TOPIC_VIRTUALPEN_EVENT = "VirtualPen"
 

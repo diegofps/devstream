@@ -1,6 +1,5 @@
-from evdev import UInput, ecodes as e
-
 from .virtual_device import VirtualDeviceReflex, VirtualDeviceEvent
+from evdev import UInput, ecodes as e
 from shadow import Shadow
 
 
@@ -92,7 +91,8 @@ class VirtualKeyboardReflex(VirtualDeviceReflex):
 
 class VirtualKeyboard(Shadow):
     def on_configure(self):
-        self.add_reflex(VirtualKeyboardReflex(autostart=True))
+        super().on_configure()
+        self.add_reflex(VirtualKeyboardReflex, autostart=True)
 
 # def on_load(shadow):
 #     VirtualKeyboardReflex(shadow)

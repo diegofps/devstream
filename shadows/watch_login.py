@@ -4,7 +4,6 @@ from shadow import Shadow
 
 import shlex
 import time
-import log
 
 
 TOPIC_LOGIN_CHANGED = "LoginChanged"
@@ -33,7 +32,7 @@ class WatchLoginReflex(Reflex):
 
                     if line is None or line == "":
                         error_msg = proc.stderr.readlines()
-                        log.error("returncode:", str(proc.returncode), "error_msg:", error_msg)
+                        self.log.error("returncode:", str(proc.returncode), "error_msg:", error_msg)
                         break
 
                     if "CLOSE_WRITE" in line:
@@ -41,7 +40,7 @@ class WatchLoginReflex(Reflex):
                         self.mind.emit(TOPIC_LOGIN_CHANGED, logins)
 
             except Exception as e:
-                log.error("Fail during login monitoring, retrying in 3s...", e)
+                self.log.error("Fail during login monitoring, retrying in 3s...", e)
             
             time.sleep(3)
 
@@ -67,5 +66,6 @@ class WatchLoginReflex(Reflex):
 
 class WatchLogin(Shadow):
     def on_configure(self):
-        self.add_reflex(WatchLoginReflex(autostart=True))
+        super().on_configure()
+        self.add_reflex(WatchLoginReflex, autostart=True)
 

@@ -1,10 +1,11 @@
+from devstreamlog import DevStreamLogger
 import threading
 import importlib
 import traceback
 import queue
 import evdev
-import log
 
+log = DevStreamLogger(filename="mind.log")
 
 class Topic:
 
@@ -149,7 +150,7 @@ class Mind:
         try:
             self.executor.wait()
         except:
-            print("\nTerminating...")
+            log.debug("\nTerminating...")
 
     def _emit_all(self, topic_name, event):
 
@@ -162,8 +163,12 @@ class Mind:
             topic.last_event = event
             self.topics[topic_name] = topic
 
+        if topic_name == "DeviceReader:Logitech MX Master 3S":
+            log.debug(f"Topic has {len(topic.listeners)} listeners")
+            
         for callback in topic.listeners:
             try:
+                # print("Event.topic_name=" + topic_name)
                 callback(topic_name, event)
             except Exception as e:
                 traceback.print_exc()

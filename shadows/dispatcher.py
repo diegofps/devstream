@@ -7,8 +7,6 @@ from evdev import InputDevice
 from reflex import Reflex
 from shadow import Shadow
 
-import log
-
 
 """
 This class has three responsibilities:
@@ -27,56 +25,57 @@ class DispatcherReflex(Reflex):
         self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
 
     def on_device_connected(self, topic_name, event):
-        log.debug("Dispatcher received a device connected event", topic_name, event)
+        self.log.debug(f"Dispatcher received a device connected event, topic_name=\"{topic_name}\", event=\"{event}\"")
 
         for device_path in event:
             try:
                 dev = InputDevice(device_path)
 
                 if dev.name in self.mind.required_devices:
-                    log.info(f"Device is required, starting DeviceReader for \"{dev.name}\"")
+                    self.log.info(f"Device is required, starting DeviceReader for devname=\"{dev.name}\"")
                     shadow = DeviceReader(dev=dev, name=f"DeviceReader:{dev.name}")
                     self.mind.add_shadow(shadow)
                     self.device_readers[device_path] = (shadow.name, shadow)
-                    log.debug(f"DeviceReader started from dispatcher, name={shadow.name}")
+                    self.log.debug(f"DeviceReader started from dispatcher, name=\"{shadow.name}\"")
                 else:
-                    log.info(f"Device is not required, skipping \"{dev.name}\", path=\"{dev.path}\"")
+                    self.log.info(f"Device is not required, skipping devname=\"{dev.name}\", path=\"{dev.path}\"")
             except Exception as e:
-                log.warn(f"Device reading failure for {device_path}:", e)
+                self.log.warn(f"Device reading failure for devpath=\"{device_path}\", error=\"{e}\"")
     
     def on_device_disconnected(self, topic_name, event):
         for device_path in event:
-            log.info("Device disconnected:", device_path)
+            self.log.info("Device disconnected:", device_path)
 
             if device_path in self.device_readers:
                 shadow_name, _ = self.device_readers[device_path]
                 self.mind.remove_shadow(shadow_name)
                 del self.device_readers[device_path]
-                log.debug(f"DeviceReader stopped from dispatcher, name={shadow_name}")
+                self.log.debug(f"DeviceReader stopped from dispatcher, name=\"{shadow_name}\"")
 
     def on_login_changed(self, topic_name, event):
-        log.info("Dispatcher has detected a login change: ", event)
+        self.log.info(f"Dispatcher has detected a login change, event=\"{event}\"")
 
         if self.watch_windows is None:
             if len(event) == 0:
-                log.warn(f"Unexpected login event with empty length. WatchWindows is not active and event={event}")
+                self.log.warn(f"Unexpected login event with empty length. WatchWindows is not active and event=\"{event}\"")
             else:
                 username, display = event[0]
-                log.info(f"User is now identified by name '{username}' and display '{display}'. Starting WatchWindows.")
+                self.log.info(f"User is now identified by username=\"{username}\" and display=\"{display}\". Starting WatchWindows.")
                 self.watch_windows = WatchWindows(username, display)
                 self.mind.add_shadow(self.watch_windows)
 
         else:
             if len(event) == 0:
-                log.info("User is now inactive. Stoping WatchWindows.")
+                self.log.info("User is now inactive. Stoping WatchWindows.")
                 if self.watch_windows is not None:
                     self.mind.remove_shadow(self.watch_windows.name)
                     self.watch_windows = None
             else:
-                log.warn(f"Unexpected login event with non-empty length. WatchWindows is active and event={event}")
+                self.log.warn(f"Unexpected login event with non-empty length. WatchWindows is active and event=\"{event}\"")
 
 
 class Dispatcher(Shadow):
     def on_configure(self):
-        self.add_reflex(DispatcherReflex(autostart=True))
+        super().on_configure()
+        self.add_reflex(DispatcherReflex, autostart=True)
 

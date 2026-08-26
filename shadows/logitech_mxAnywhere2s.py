@@ -3,11 +3,6 @@ from shadows.virtual_mouse import VirtualMouseEvent
 from shadows.smart_output import SmartOutputEvent
 from shadows.smart_mouse import SmartMouseShadow
 from evdev import ecodes as e
-from reflex import Reflex
-from shadow import Shadow
-
-import log
-
 
 REQUIRED_DEVICES = [
     "Logitech MX Anywhere 2S"
@@ -15,9 +10,8 @@ REQUIRED_DEVICES = [
 
 SOURCE_LOGITECH_MX2S = "Logitech MX2S"
 
-
-def mxAnywhere2SEventWrapper(device_name, event, target):
-    log.debug("Inside mxAnywhere2SEventWrapper for dev_name=" + mxAnywhere2SEventWrapper)
+def mxAnywhere2SEventWrapper(reflex, device_name, event, target):
+    reflex.debug("Inside mxAnywhere2SEventWrapper for dev_name=" + mxAnywhere2SEventWrapper)
 
     if event.type == e.EV_KEY:
 
@@ -66,9 +60,7 @@ def mxAnywhere2SEventWrapper(device_name, event, target):
 
 class LogitechMXAnywhere2S(SmartMouseShadow):
     def on_configure(self):
-        log.debug("Inside on_configure for LogitechMXAnywhere2S")
-        super().on_configure(
-            event_wrapper=mxAnywhere2SEventWrapper, 
-            required_devices=REQUIRED_DEVICES, 
-            source_name=SOURCE_LOGITECH_MX2S)
+        self.log.debug("Inside on_configure for LogitechMXAnywhere2S")
+        super().on_configure(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MX2S)
+        self.configure_SmartMouse(event_wrapper=mxAnywhere2SEventWrapper)
 

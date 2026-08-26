@@ -14,7 +14,6 @@ from queue import Queue
 import base64
 import time
 import math
-import log
 import os
 
 TOPIC_NOTIFICATION_STRONG = "SetStrongNotification"
@@ -63,7 +62,7 @@ class Canvas:
     def process_main(self):
         while not self.done:
             if self.username is None or self.userdisplay is None:
-                log.warn("DecoPro.Process: Deco Pro is waiting for user interface")
+                self.log.warn("DecoPro.Process: Deco Pro is waiting for user interface")
                 time.sleep(2)
                 continue
             
@@ -80,19 +79,19 @@ class Canvas:
                         break
 
                     if os.path.exists(filepath):
-                        log.info("DecoPro.Process: Starting Deco Pro Canvas")
+                        self.log.info("DecoPro.Process: Starting Deco Pro Canvas")
                         cmd = "su %s -c 'DISPLAY=%s %s'" % (self.username, self.userdisplay, filepath)
                         status = os.system(cmd)
 
                         if status == 2:
-                            log.warn("DecoPro.Process: Canvas exited with exit status 2, exiting")
+                            self.log.warn("DecoPro.Process: Canvas exited with exit status 2, exiting")
                             os._exit(os.EX_OK)
                         else:
-                            log.error("DecoPro.Process: Canvas process finished unexpectedly", status)
+                            self.log.error("DecoPro.Process: Canvas process finished unexpectedly", status)
                 
-                log.warn("DecoPro.Process: Failed to start canvas process for xppen deco pro")
+                self.log.warn("DecoPro.Process: Failed to start canvas process for xppen deco pro")
             except Exception as e:
-                log.error("DecoPro.Process: Failed to start or execute the canvas process, retrying in 5s...", 
+                self.log.error("DecoPro.Process: Failed to start or execute the canvas process, retrying in 5s...", 
                     exception_class=e.__class__.__name__,
                     description=e, 
                 )
@@ -124,7 +123,7 @@ class Canvas:
                                 # log.debug("message sent")
                                 break
                             except Exception as e:
-                                log.error("DecoPro.Pipe: Failed to send message to canvas.", 
+                                self.log.error("DecoPro.Pipe: Failed to send message to canvas.", 
                                     attempt=f"{i+1}/{self.tries}", 
                                     msg=msg, 
                                     exception_class=e.__class__.__name__, 
@@ -132,7 +131,7 @@ class Canvas:
                                 )
                                 time.sleep(1)
             except Exception as e:
-                log.error("DecoPro.Pipe: Failed to connect to pipe.", 
+                self.log.error("DecoPro.Pipe: Failed to connect to pipe.", 
                     attempt=f"{i+1}/{self.tries}", 
                     msg=msg, 
                     exception_class=e.__class__.__name__,
@@ -482,7 +481,7 @@ class XPPEN_DecoPro_Base(Reflex):
                     any_match = True
                 
                 if self.saw_pattern != 0 and not any_match:
-                    log.debug(f"Unknown deco pro key pattern: {self.saw_pattern}")
+                    self.log.debug(f"Unknown deco pro key pattern: {self.saw_pattern}")
 
                 # Close
                 if self.saw_BTN_TOOL_PEN is not None:
@@ -503,13 +502,13 @@ class XPPEN_DecoPro_Base(Reflex):
             canvas.username, canvas.userdisplay = None, None
         else:
             canvas.username, canvas.userdisplay = event[0]
-        log.info("Login changed received", canvas.username, canvas.userdisplay)
+        self.log.info("Login changed received", canvas.username, canvas.userdisplay)
 
     def on_set_strong_notification(self, topic_name, event):
         # log.info("Processing set strong notification event:", event)
 
         if len(event) != 3:
-            log.warn("Invalid strong notification request: ", event)
+            self.log.warn("Invalid strong notification request: ", event)
             return
 
         title, extra, visibility = event
@@ -524,7 +523,7 @@ class XPPEN_DecoPro_Base(Reflex):
         # log.info("Processing set weak notification event:", event)
 
         if len(event) != 2:
-            log.warn("Invalid weak notification request: ", event)
+            self.log.warn("Invalid weak notification request: ", event)
             return
 
         title, extra = event
@@ -560,45 +559,45 @@ class XPPEN_DecoPro_Base(Reflex):
 
     
     def on_key00(self, value):
-        log.debug("Deco pro key 00", value)
+        self.log.debug("Deco pro key 00", value)
         if value == 0:
             self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Transparent")
         
     def on_key01(self, value):
-        log.debug("Deco pro key 01", value)
+        self.log.debug("Deco pro key 01", value)
         if value == 0:
             self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Opaque")
 
     def on_key10(self, value):
-        log.debug("Deco pro key 10", value)
+        self.log.debug("Deco pro key 10", value)
         if value == 0:
             self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Passthrough")
         
     def on_key11(self, value):
-        log.debug("Deco pro key 11", value)
+        self.log.debug("Deco pro key 11", value)
         if value == 0:
             self.mind.emit(TOPIC_DECOPRO_STATE, "XPPEN_DecoPro_Disable")
         
     def on_key20(self, value):
-        log.debug("Deco pro key 20", value)
+        self.log.debug("Deco pro key 20", value)
         if value == 0:
             canvas.send("change_page -1")
         # Previous page
         
     def on_key21(self, value):
-        log.debug("Deco pro key 21", value)
+        self.log.debug("Deco pro key 21", value)
         if value == 0:
             canvas.send("change_page +1")
         # Next page
         
     def on_key30(self, value):
-        log.debug("Deco pro key 30", value)
+        self.log.debug("Deco pro key 30", value)
         if value != 1:
             canvas.send("undo -1")
         # UNDO
         
     def on_key31(self, value):
-        log.debug("Deco pro key 31", value)
+        self.log.debug("Deco pro key 31", value)
         if value != 1:
             canvas.send("undo +1")
         # REDO
@@ -642,13 +641,13 @@ class XPPEN_DecoPro_Base(Reflex):
         if value == 0:
             return
         
-        log.debug("Base: Deco pro key pen_btn_close", value)
+        self.log.debug("Base: Deco pro key pen_btn_close", value)
 
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_TOOL_PEN", value)
 
     def on_pen_btn_touch(self, value, x, y):
-        log.debug("Base: Deco pro key pen_btn_touch", value)
+        self.log.debug("Base: Deco pro key pen_btn_touch", value)
 
         if self.erasing:
             return
@@ -664,7 +663,7 @@ class XPPEN_DecoPro_Base(Reflex):
             canvas.send(f"draw {x} {y} {x+1} {y+1}")
 
     def on_pen_btn_low(self, value, x, y):
-        log.debug("Base: Deco pro key pen_btn_low", value)
+        self.log.debug("Base: Deco pro key pen_btn_low", value)
         
         if self.erasing and value == 0:
             canvas.send("save_present")
@@ -685,7 +684,7 @@ class XPPEN_DecoPro_Base(Reflex):
             # canvas.send(f"erase {x} {y} {x+1} {y+1}")
         
     def on_pen_btn_high(self, value, x, y):
-        log.debug("Base: Deco pro key pen_btn_high", value)
+        self.log.debug("Base: Deco pro key pen_btn_high", value)
         # canvas.send(f"toggle_menu")
 
 
@@ -696,7 +695,7 @@ class XPPEN_DecoPro_Transparent(XPPEN_DecoPro_Base): # N
 
     def on_activate(self):
         super().on_activate()
-        log.info("Transparent: on_activate")
+        self.log.info("Transparent: on_activate")
         canvas.send(f"set_page_mode {MODE_TRANSPARENT}")
 
 
@@ -709,7 +708,7 @@ class XPPEN_DecoPro_Opaque(XPPEN_DecoPro_Base): # N
     
     def on_activate(self):
         super().on_activate()
-        log.info("Opaque: on_activate")
+        self.log.info("Opaque: on_activate")
         canvas.send(f"set_page_mode {MODE_OPAQUE}")
 
 
@@ -747,16 +746,16 @@ class XPPEN_DecoPro_Passthrough(XPPEN_DecoPro_Base):
     #     log.debug("Deco pro key 21", value)
         
     def on_key30(self, value):
-        log.debug("Passthrough: Deco pro key 30", value)
+        self.log.debug("Passthrough: Deco pro key 30", value)
         
     def on_key31(self, value):
-        log.debug("Passthrough: Deco pro key 31", value)
+        self.log.debug("Passthrough: Deco pro key 31", value)
     
     def on_orb_rel(self, rel_x, rel_y):
-        log.debug("Passthrough: Deco pro key orb_rel", rel_x, rel_y)
+        self.log.debug("Passthrough: Deco pro key orb_rel", rel_x, rel_y)
     
     def on_orb_wheel(self, value):
-        log.debug("Passthrough: Deco pro key orb_wheel", value)
+        self.log.debug("Passthrough: Deco pro key orb_wheel", value)
     
     def on_pen_abs(self, x, y, z, tx, ty):
         # log.debug("Passthrough: Deco pro key on_pen_abs", x, y, z, tx, ty)
@@ -764,24 +763,24 @@ class XPPEN_DecoPro_Passthrough(XPPEN_DecoPro_Base):
             eb.function("ABS", x, y, z, tx, ty)
     
     def on_pen_btn_close(self, value):
-        log.debug("Passthrough: Deco pro key pen_btn_close", value)
+        self.log.debug("Passthrough: Deco pro key pen_btn_close", value)
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_TOOL_PEN", value)
 
     def on_pen_btn_touch(self, value, x, y):
-        log.debug("Passthrough: Deco pro key pen_btn_touch", value)
+        self.log.debug("Passthrough: Deco pro key pen_btn_touch", value)
         with VirtualPenEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("BTN_TOUCH", value)
 
     def on_pen_btn_low(self, value, x, y):
-        log.debug("Passthrough: Deco pro key pen_btn_low", value)
+        self.log.debug("Passthrough: Deco pro key pen_btn_low", value)
         with VirtualMouseEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("ABS_X", x)
             eb.update("ABS_Y", y)
             eb.update("BTN_MIDDLE", value)
 
     def on_pen_btn_high(self, value, x, y):
-        log.debug("Passthrough: Deco pro key pen_btn_high", value)
+        self.log.debug("Passthrough: Deco pro key pen_btn_high", value)
         
         with VirtualMouseEvent(self.mind, SOURCE_XPPEN_DECO_PRO) as eb:
             eb.update("REL_X", 0)
@@ -790,7 +789,7 @@ class XPPEN_DecoPro_Passthrough(XPPEN_DecoPro_Base):
 
     def on_activate(self):
         super().on_activate()
-        log.info("Passthrough: on_activate")
+        self.log.info("Passthrough: on_activate")
         canvas.send(f"set_page_mode {MODE_PASSTHROUGH}")
 
 
@@ -801,7 +800,7 @@ class XPPEN_DecoPro_Disable(XPPEN_DecoPro_Passthrough):
     
     def on_activate(self):
         super().on_activate()
-        log.info("mode disabled")
+        self.log.info("mode disabled")
         canvas.send(f"set_page_mode {MODE_DISABLED}")
 
 def on_unload_shadow(shadow):

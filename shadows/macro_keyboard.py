@@ -17,7 +17,6 @@ import threading
 import pickle
 import time
 import sys
-import log
 import os
 
 
@@ -286,11 +285,12 @@ class Macro:
 
 class MacroPlayer:
 
-    def __init__(self, mind):
+    def __init__(self, log, mind):
 
         self.done = False
         self.mind = mind
         self.task = None
+        self.log = log
 
         self.producer = Lock()
         self.consumer = Lock()
@@ -319,17 +319,17 @@ class MacroPlayer:
                 task_type = self.task[0]
                 task_args = self.task[1:]
 
-                log.debug("MacroPlayer: task: ", task_type, task_args)
+                self.log.debug(f"MacroPlayer: task_type={task_type}, task_args={task_args}")
 
                 if task_type == "play":
                     self._play(*task_args)
 
                 else:
-                    log.debug("Invalid task type: ", task_type)
+                    self.log.debug("Invalid task type: ", task_type)
             
             except:
                 traceback.print_exc()
-                log.error("MacroPlayer: task failed: ", task_type, task_args)
+                self.log.error(f"MacroPlayer failed to execute task: task_type={task_type}, task_args={task_args}")
 
             self.producer.release()
     
@@ -340,13 +340,13 @@ class MacroPlayer:
 
         self.mind.emit(TOPIC_NOTIFICATION_WEAK, ("Playing", macro.name))
         # self.mind.emit(TOPIC_NOTIFICATION_STRONG, ("Playing", macro.name, 1))
-        log.debug(f"Sending weak notification for 'Playing' {macro.name}")
+        self.log.debug(f"Sending weak notification for 'Playing' {macro.name}")
 
         try:
 
             for r in range(repeat):
 
-                log.debug(f"MacroPlayer: Repeating play loop {r+1}/{repeat}, length {len(macro.sequence)}")
+                self.log.debug(f"MacroPlayer: Repeating play loop {r+1}/{repeat}, length {len(macro.sequence)}")
 
                 for cmd in macro.sequence:
 
@@ -368,14 +368,14 @@ class MacroPlayer:
                             break
                     
                     else:
-                        log.debug("Invalid macro cmd: ", cmd_type)
+                        self.log.debug("Invalid macro cmd=", cmd_type)
                     
                     # TODO: Required to pause between each playback?
                     # time.sleep(0.01)
         
         except:
             traceback.print_exc()
-            log.error("MacroPlayer: cmd failed: ", cmd_type, cmd_args)
+            self.log.error("MacroPlayer: cmd failed: ", cmd_type, cmd_args)
         
         # self.mind.emit(TOPIC_NOTIFICATION_STRONG, ("Playing", "", 0))
         # log.debug("Sending weak notification for 'playing' 0")
@@ -441,7 +441,7 @@ class MacroKeyboardReflex(Reflex):
 
     def on_activate(self, *args, **kwargs):
         super().on_activate(*args, **kwargs)
-        self.macro_player = MacroPlayer(self.mind)
+        self.macro_player = MacroPlayer(self.log, self.mind)
 
     def on_deactivate(self):
         super().on_deactivate()
@@ -454,7 +454,7 @@ class MacroKeyboardReflex(Reflex):
         else:
             self.username, self.userdisplay = event[0]
 
-        log.info(f"Macro Keyboard received a login changed for username '{self.username}' and display '{self.userdisplay}'")
+        self.log.info(f"Macro Keyboard received a login changed for username='{self.username}' and display='{self.userdisplay}'")
 
     # Called when a key from a macro keyboard is pressed
     def on_macro_event(self, device_name, event):
@@ -463,7 +463,7 @@ class MacroKeyboardReflex(Reflex):
             device_name = device_name[13:]
         
         if not device_name in MACRO_KEYBOARDS:
-            log.warn("Unmapped macro keyboard: ", device_name)
+            self.log.warn("Unmapped macro keyboard: ", device_name)
             return
 
         if event.type != e.EV_KEY:
@@ -479,7 +479,7 @@ class MacroKeyboardReflex(Reflex):
         if action_key in actions:
 
             for action in actions[action_key]:
-                log.info(f"Parsing action: {action[0]}")
+                self.log.info(f"Parsing action: {action[0]}")
 
                 try:
                     if action[0] == "set":
@@ -507,29 +507,29 @@ class MacroKeyboardReflex(Reflex):
                         self.weak_notify(device_name, action[1], action[2])
 
                     elif action[0] == "interrupt":
-                        log.info("Calling macro_interrupt")
+                        self.log.info("Calling macro_interrupt")
                         self.macro_interrupt()
 
                     elif action[0] == "wait":
                         self.macro_push_delay(action[1])
                     
                     else:
-                        log.error("Unknown action:", action)
+                        self.log.error("Unknown action:", action)
                 
                 except Exception as err:
                     traceback.print_exc(file=sys.stdout)
-                    log.error(err)
+                    self.log.error(err)
 
     def set_var(self, device_name, var_name, var_value):
-        log.debug(f"Updating variable {var_name}={var_value}")
+        self.log.debug(f"Updating variable {var_name}={var_value}")
         MACRO_KEYBOARDS[device_name]["mem"][var_name] = var_value
 
     def macro_interrupt(self):
-        log.debug("Interrupting macro playback")
+        self.log.debug("Interrupting macro playback")
         self.macro_player.interrupt()
     
     def macro_help(self):
-        log.info("Showing help")
+        self.log.info("Showing help")
 
         imgpath = os.path.join(os.path.abspath('.'), 'images', 'help_numpad_as_macro_kbd.png')
         cmd = f"su {self.username} -c 'DISPLAY={self.userdisplay} xdg-open {imgpath}'"
@@ -537,7 +537,7 @@ class MacroKeyboardReflex(Reflex):
         self.thread_help.start()
     
     def notify(self, device_name:str, title:str, extra:str, visible):
-        log.info("Sending strong notification")
+        self.log.info("Sending strong notification")
 
         mem = MACRO_KEYBOARDS[device_name]["mem"]
         title = title.format(**mem)
@@ -545,7 +545,7 @@ class MacroKeyboardReflex(Reflex):
         self.mind.emit(TOPIC_NOTIFICATION_STRONG, (title, extra, visible))
     
     def weak_notify(self, device_name:str, title:str, extra:str):
-        log.info("Sending weak notification")
+        self.log.info("Sending weak notification")
 
         mem = MACRO_KEYBOARDS[device_name]["mem"]
         title = title.format(**mem)
@@ -563,14 +563,14 @@ class MacroKeyboardReflex(Reflex):
         # macro_name = mem["group"] + macro_key if "group" in mem else macro_key
         macro_name = ''.join([mem.get(name, '0') for name in ['bit0', 'bit1', 'bit2', 'bit3']]) + macro_key
 
-        log.debug("Playing macro - ", macro_name)
+        self.log.debug("Playing macro - ", macro_name)
 
         if macro_name in self.recorded:
             macro = self.recorded[macro_name]
             self.macro_player.play(macro, repeat)
 
         else:
-            log.warn("Attempting to execute a macro that does not exists - ", macro_name)
+            self.log.warn("Attempting to execute a macro that does not exists - ", macro_name)
 
     def macro_record_new(self, device_name, macro_key):
 
@@ -579,17 +579,17 @@ class MacroKeyboardReflex(Reflex):
         macro_name = ''.join([mem.get(name, '0') for name in ['bit0', 'bit1', 'bit2', 'bit3']]) + macro_key
         self.macro = Macro(macro_name)
 
-        log.debug("Recording macro - ", macro_name)
+        self.log.debug("Recording macro - ", macro_name)
 
     def macro_save(self):
-        log.debug("Saving macro")
+        self.log.debug("Saving macro")
 
         if self.macro is None:
-            log.error("Attempting to save a macro recording but no recording is in progress")
+            self.log.error("Attempting to save a macro recording but no recording is in progress")
             return
         
         if len(self.macro.sequence) == 0:
-            log.warn("Nothing to save, macro didn't capture any event - ", self.macro.name)
+            self.log.warn("Nothing to save, macro didn't capture any event - ", self.macro.name)
         else:
             self.recorded[self.macro.name] = self.macro
             self.export_macros()
@@ -597,10 +597,10 @@ class MacroKeyboardReflex(Reflex):
         self.macro = None
     
     def macro_cancel(self):
-        log.debug("Canceling macro recording")
+        self.log.debug("Canceling macro recording")
 
         if self.macro is None:
-            log.error("Attempting to cancel a macro recording but no recording is in progress")
+            self.log.error("Attempting to cancel a macro recording but no recording is in progress")
             return
         
         self.macro = None
@@ -657,9 +657,9 @@ class MacroKeyboardReflex(Reflex):
             with open("./macros.bin", "wb") as fout:
                 fout.write(data)
 
-            log.info("Macros exported successfully")
+            self.log.info("Macros exported successfully")
         except:
-            log.error("Could not export macros")
+            self.log.error("Could not export macros")
             traceback.print_exc(file=sys.stdout)
 
     def import_macros(self):
@@ -668,9 +668,9 @@ class MacroKeyboardReflex(Reflex):
                 data = fin.read()
                 data = pickle.loads(data)
                 self.recorded = { k:Macro.importFromDict(v) for k,v in data.items() }
-            log.info("Macros imported successfully")
+            self.log.info("Macros imported successfully")
         except:
-            log.error("Could not import macros, creating new buffer")
+            self.log.error("Could not import macros, creating new buffer")
             traceback.print_exc(file=sys.stdout)
             self.recorded = {}
             # self.export_macros()
@@ -678,8 +678,8 @@ class MacroKeyboardReflex(Reflex):
 
 class MacroKeyboard(Shadow):
     def on_configure(self):
-        self.add_reflex(MacroKeyboardReflex(autostart=True))
-        self.require_device(list(MACRO_KEYBOARDS.keys()))
+        super().on_configure(required_devices=list(MACRO_KEYBOARDS.keys()))
+        self.add_reflex(MacroKeyboardReflex, autostart=True)
 
 # def on_load(shadow):
 #     MacroKeyboardReflex(shadow)

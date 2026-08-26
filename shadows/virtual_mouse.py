@@ -4,9 +4,6 @@ from keys import WheelKey, SmoothedKey, DirectKey
 from .virtual_device import VirtualDeviceReflex, VirtualDeviceEvent
 from shadow import Shadow
 
-import time
-import log
-
 
 TOPIC_VIRTUALMOUSE_EVENT = "VirtualMouse"
 
@@ -67,7 +64,8 @@ class VirtualMouseReflex(VirtualDeviceReflex):
 
 class VirtualMouse(Shadow):
     def on_configure(self):
-        self.add_reflex(VirtualMouseReflex(autostart=True))
+        super().on_configure()
+        self.add_reflex(VirtualMouseReflex, autostart=True)
 
 # def on_load(shadow):
 #     VirtualMouseReflex(shadow)

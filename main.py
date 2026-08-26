@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
-import sys
-import log
-import os
+import devstreamlog
 import shadows
+import sys
+import os
 
 from mind import Mind
 
 
 os.nice(-20)
-log.init_logger("DEBUG" if len(sys.argv) == 1 else sys.argv[1])
+devstreamlog.set_log_level("DEBUG" if len(sys.argv) == 1 else sys.argv[1])
 
 
 mind = Mind()

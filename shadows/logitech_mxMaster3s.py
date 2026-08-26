@@ -6,8 +6,6 @@ from evdev import ecodes as e
 from reflex import Reflex
 from shadow import Shadow
 
-import log
-
 
 REQUIRED_DEVICES = [
     "Logitech MX Master 3S",
@@ -24,7 +22,7 @@ class MXMaster3S_LogidMonitor(Reflex):
         self.require_daemon()
     
     def run(self, daemon):
-        log.debug(f"Starting LogidMonitor daemon thread")
+        self.log.debug(f"Starting LogidMonitor daemon thread")
 
         from subprocess import Popen, PIPE
         import shlex
@@ -39,27 +37,27 @@ class MXMaster3S_LogidMonitor(Reflex):
                     lines = proc.stdout.readlines()
 
                 if lines and lines[0].decode('utf-8').endswith('after 5 tries. Treating as failure.\n'):
-                    log.info('Detected logid is in a failure state, restarting the service')
+                    self.log.info('Detected logid is in a failure state, restarting the service')
                     os.system('service logid restart')
                 
             except Exception as e:
-                log.error(f"Failed to monitor logid service: {e}")
+                self.log.error(f"Failed to monitor logid service: {e}")
             
             time.sleep(3)
         
-        log.debug(f"Ending LogidMonitor daemon thread")
+        self.log.debug(f"Ending LogidMonitor daemon thread")
 
 
-def mxMaster3SEventWrapper(device_name, event, target):
+def mxMaster3SEventWrapper(reflex, device_name, event, target):
     # log.debug(f"Event received from {device_name}: {event}")
 
     if event.type == e.EV_KEY:
 
         if event.code == e.BTN_LEFT:
-            target.on_A(device_name, event)
+            target.on_A(event)
 
         elif event.code == e.BTN_MIDDLE:
-            target.on_B(device_name, event)
+            target.on_B(event)
 
         elif event.code == e.BTN_RIGHT:
             target.on_C(event)
@@ -74,7 +72,7 @@ def mxMaster3SEventWrapper(device_name, event, target):
             target.on_D(event)
             
         elif event.code == e.KEY_A:
-            log.debug("KEY_A event")
+            reflex.log.debug("KEY_A event")
             
         elif event.code == e.KEY_B:
             # log.debug("KEY_B event")
@@ -98,9 +96,8 @@ def mxMaster3SEventWrapper(device_name, event, target):
 
 class LogitechMXMaster3S(SmartMouseShadow):
     def on_configure(self):
-        self.add_reflex(MXMaster3S_LogidMonitor(keepalive=True))
-        super().on_configure(
-            event_wrapper=mxMaster3SEventWrapper, 
-            required_devices=REQUIRED_DEVICES, 
-            source_name=SOURCE_LOGITECH_MXMASTER3S)
+        self.log.debug("Configuring MXMaster3S")
+        super().on_configure(required_devices=REQUIRED_DEVICES)
+        self.configure_SmartMouse(event_wrapper=mxMaster3SEventWrapper)
+        self.add_reflex(MXMaster3S_LogidMonitor, keepalive=True)
 

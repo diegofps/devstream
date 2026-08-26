@@ -3,8 +3,6 @@ from shadows.virtual_keyboard import VirtualKeyboardEvent
 from evdev import ecodes as e
 from reflex import Reflex
 
-import log
-
 
 REQUIRED_DEVICES = [
     "AT Translated Set 2 keyboard", 

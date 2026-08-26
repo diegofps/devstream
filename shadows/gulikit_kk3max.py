@@ -5,8 +5,6 @@ from evdev import ecodes as e
 from reflex import Reflex
 from shadow import Shadow
 
-import log
-
 SOURCE_JOYPAD    = "GULIKIT KK3 MAX"
 REQUIRED_DEVICES = [
     "ZhiXu GuliKit Controller A",
@@ -100,11 +98,11 @@ class BaseJoypadNode(Reflex):
             self.debug_event(device_name, event)
 
     def on_activate(self, clean=True):
-        log.debug(f"{self.name} is activating, clean={clean}")
+        self.log.debug(f"{self.name} is activating, clean={clean}")
         self.clean = clean
 
     def on_deactivate(self):
-        log.debug(f"{self.name} is deactivating")
+        self.log.debug(f"{self.name} is deactivating")
 
 
 class Joypad_N(BaseJoypadNode): # Normal
@@ -203,6 +201,6 @@ class Joypad_N(BaseJoypadNode): # Normal
 
 class GulikitKK3Max(Shadow):
     def on_configure(self):
-        self.add_reflex(Joypad_N(required_devices=REQUIRED_DEVICES, source_name=SOURCE_JOYPAD, autostart=True))
-        self.require_device(REQUIRED_DEVICES)
+        super().on_configure(required_devices=REQUIRED_DEVICES, source_name=SOURCE_JOYPAD)
+        self.add_reflex(Joypad_N, autostart=True)
 

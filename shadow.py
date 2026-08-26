@@ -1,4 +1,4 @@
-import log
+from devstreamlog import DevStreamLogger
 
 
 class Shadow:
@@ -7,18 +7,19 @@ class Shadow:
         self.name = type(self).__name__ if name is None else name
         self.state_name = f"{self.name}>STATE"
         self.required_devices = set()
-        self.reflexes = {}
+        self.reflex_kwargs = {}
         self.active = False
+        self.reflexes = {}
         self.mind = None
 
-        log.info(f"Creating shadow {self.name}")
+        self.log = DevStreamLogger(filename=f"{self.name}.shadow.log")
+        self.log.info(f"Creating shadow {self.name}")
 
-    def add_reflex(self, reflex):
+    def add_reflex(self, ReflexType, *args, **kwargs):
+        reflex = ReflexType(*args, **{**self.reflex_kwargs, **kwargs})
         assert not reflex.name in self.reflexes, f"Shadow {self.name} already contains a reflex with the name {reflex.name}"
-
         self.reflexes[reflex.name] = reflex
         reflex.attach(self)
-
         return reflex
     
     def remove_reflex(self, reflex_name):
@@ -34,7 +35,7 @@ class Shadow:
         assert not self.is_attached(), "This shadow is already attached to a mind"
         assert not self.is_activated(), "This shadow is already activated"
 
-        log.info(f"Attaching shadow {self.name} to mind")
+        self.log.info(f"Attaching shadow {self.name} to mind")
         self.mind = mind
 
         self.on_configure()
@@ -42,7 +43,7 @@ class Shadow:
     def dettach(self):
         assert self.is_attached(), "This shadow is not attached to a mind"
 
-        log.info(f"Dettaching shadow {self.name}")
+        self.log.info(f"Dettaching shadow {self.name}")
 
         if self.is_activated():
             self.deactivate()
@@ -50,7 +51,7 @@ class Shadow:
         self.mind = None
     
     def activate(self):
-        log.debug(f"Inside activate for shadow {self.name}")
+        self.log.debug(f"Inside activate for shadow {self.name}")
 
         assert self.is_attached(), "This shadow is not attached"
         assert not self.is_activated(), "This shadow is already activated"
@@ -61,18 +62,18 @@ class Shadow:
 
         for reflex in self.reflexes.values():
             if reflex.autostart or reflex.keepalive:
-                log.debug(f"Shadow {self.name} is activating reflex {reflex.name}")
+                self.log.debug(f"Shadow {self.name} is activating reflex {reflex.name}")
                 reflex.activate()
 
         self.on_activate()
     
     def shift_reflex(self, reflex_name, *args, **kwargs):
-        log.debug(f"Shifting to reflex {reflex_name}, args={args}m kwargs={kwargs} within shadow {self.name}")
+        self.log.debug(f"Shifting to reflex {reflex_name}, args={args}m kwargs={kwargs} within shadow {self.name}")
         assert self.is_attached(), "Needs to be attached to use activate_reflex"
         self.mind.emit(self.state_name, (reflex_name, args, kwargs), 50)
     
     def deactivate(self):
-        log.debug(f"Deactivating shadow {self.name}")
+        self.log.debug(f"Deactivating shadow {self.name}")
 
         assert self.is_attached(), "This shadow is not attached"
         assert self.is_activated(), "This shadow is not activated"
@@ -94,8 +95,11 @@ class Shadow:
     def is_activated(self):
         return self.active
 
-    def on_configure(self):
-        pass
+    def on_configure(self, **reflex_kwargs):
+        if not 'log_prefix' in reflex_kwargs:
+            reflex_kwargs['log_prefix'] = self.name
+        self.reflex_kwargs = reflex_kwargs
+        self.require_device(reflex_kwargs.get('required_devices', []))
 
     def on_activate(self):
         pass
@@ -104,7 +108,7 @@ class Shadow:
         pass
 
     def on_state_changed(self, topic_name, event):
-        log.info(f"Received an state changed event at shadow {self.name}: topic={topic_name}, event={event}")
+        self.log.info(f"Received an state changed event at shadow {self.name}: topic={topic_name}, event={event}")
 
         reflex_name, args, kwargs = event
         target_reflex = None
@@ -115,10 +119,10 @@ class Shadow:
                 break
         
         if target_reflex is None:
-            log.warn(f"Shadow {self.name} if trying to shift reflexes but couldn't find the target reflex {reflex_name}, args={args}, kwargs={kwargs}")
+            self.log.warn(f"Shadow {self.name} if trying to shift reflexes but couldn't find the target reflex {reflex_name}, args={args}, kwargs={kwargs}")
 
         elif target_reflex.is_activated():
-            log.warn(f"Shadow {self.name} if trying to shift reflexes but the target reflex {reflex_name} is already activated, args={args}, kwargs={kwargs}")
+            self.log.warn(f"Shadow {self.name} if trying to shift reflexes but the target reflex {reflex_name} is already activated, args={args}, kwargs={kwargs}")
         
         else:
             for reflex in self.reflexes.values():

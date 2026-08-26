@@ -2,7 +2,7 @@ from reflex import Reflex
 from shadow import Shadow
 
 import time
-import log
+import devstreamlog
 
 
 class DeviceReaderReflex(Reflex):
@@ -17,11 +17,10 @@ class DeviceReaderReflex(Reflex):
         self.require_daemon()
         
     def run(self, daemon):
-
         while not daemon.done:
             try:
                 if self.dev is None:
-                    log.warn("Dev is None not found, retrying in 3s...")
+                    self.log.warn("Dev is None not found, retrying in 3s...")
                     time.sleep(3)
                 
                 else:
@@ -33,18 +32,18 @@ class DeviceReaderReflex(Reflex):
                         self.mind.emit(self.topic_name, event)
                 
             except OSError as e:
-                log.error("OSError, resuming in 3s -", e)
+                self.log.error("OSError, resuming in 3s -", e)
                 # print("Device error", self.dev.name)
                 # traceback.print_exc(file=sys.stdout)
                 time.sleep(3)
             
             except KeyboardInterrupt:
-                log.info("Received a KeyboardInterrupt, terminating app")
+                self.log.info("Received a KeyboardInterrupt, terminating app")
         
         if self.dev is not None:
             self.dev.close()
         
-        log.debug(f"Reflex {self.name}'s daemon thread is ending, daemon.done={daemon.done}")
+        self.log.debug(f"Reflex {self.name}'s daemon thread is ending, daemon.done={daemon.done}")
 
 class DeviceReader(Shadow):
 
@@ -53,8 +52,5 @@ class DeviceReader(Shadow):
         self.dev = dev
 
     def on_configure(self):
-        self.add_reflex(DeviceReaderReflex(self.name, self.dev, autostart=True))
-
-# def on_load(shadow, device):
-#     DeviceReaderReflex(shadow, device)
-#     shadow.name = shadow.name + ":" + device.path
+        super().on_configure()
+        self.add_reflex(DeviceReaderReflex, self.name, self.dev, autostart=True)

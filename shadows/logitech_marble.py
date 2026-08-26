@@ -7,9 +7,6 @@ from evdev import ecodes as e
 from reflex import Reflex
 from shadow import Shadow
 
-import log
-
-
 REQUIRED_DEVICES = [
     "Logitech USB Trackball"
 ]
@@ -55,11 +52,11 @@ class BaseMarbleReflex(Reflex):
                 self.on_move_rel_y(event)
     
     def on_activate(self, clean=True):
-        log.debug(f"{self.name} is activating, clean={clean}")
+        self.log.debug(f"{self.name} is activating, clean={clean}")
         self.clean = clean
 
     def on_deactivate(self):
-        log.debug(f"{self.name} is deactivating")
+        self.log.debug(f"{self.name} is deactivating")
 
 
 class Marble_N(BaseMarbleReflex): # N
@@ -69,7 +66,7 @@ class Marble_N(BaseMarbleReflex): # N
             eb.update("BTN_LEFT", event.value)
         
     def on_down_click(self, event): # B
-        log.debug("N: on_down_click " + str(event.value))
+        self.log.debug("N: on_down_click " + str(event.value))
         if event.value == 1: # +B
             self.shift_reflex("Marble_B")
             # self.mind.emit(TOPIC_MARBLE_STATE, "Marble_B", 50)
@@ -125,15 +122,15 @@ class Marble_B(BaseMarbleReflex):
                 eb.release("KEY_LEFTMETA")
 
     def on_down_click(self, event): # B
-        log.debug("B: on_down_click " + str(event.value))
+        self.log.debug("B: on_down_click " + str(event.value))
         if event.value == 0:
 
             if self.clean:
-                log.debug("Ended state B and emitting go_to_declaration, clean = true")
+                self.log.debug("Ended state B and emitting go_to_declaration, clean = true")
                 with SmartOutputEvent(self.mind, SOURCE_LOGITECH_MARBLE) as eb:
                     eb.function("go_to_declaration")
             else:
-                log.debug("Ended state B with clean = false")
+                self.log.debug("Ended state B with clean = false")
             
             self.shift_reflex("Marble_N")
             # self.mind.emit(TOPIC_MARBLE_STATE, "Marble_N", 50)
@@ -270,8 +267,8 @@ class Marble_D(BaseMarbleReflex):
 
 class LogitechMarble(Shadow):
     def on_configure(self):
-        self.add_reflex(Marble_N(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE, autostart=True))
-        self.add_reflex(Marble_B(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE))
-        self.add_reflex(Marble_C(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE))
-        self.add_reflex(Marble_D(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE))
-        self.require_device(REQUIRED_DEVICES)
+        super().on_configure(required_devices=REQUIRED_DEVICES, source_name=SOURCE_LOGITECH_MARBLE)
+        self.add_reflex(Marble_N, autostart=True)
+        self.add_reflex(Marble_B)
+        self.add_reflex(Marble_C)
+        self.add_reflex(Marble_D)

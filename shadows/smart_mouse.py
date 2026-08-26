@@ -5,8 +5,6 @@ from evdev import ecodes as e
 from reflex import Reflex
 from shadow import Shadow
 
-import log
-
 
 #############################################################################################
 # N STATE
@@ -100,12 +98,12 @@ class SmartMouseReflex_H(Reflex):
         
     def on_G(self, event):
         if event.value == 1: # +G
-            log.debug("Pressing G from SmartMouseReflex_H, clean is", self.clean)
+            self.log.debug("Pressing G from SmartMouseReflex_H, clean is", self.clean)
             self.shift_reflex("HG")
     
     def on_H(self, event):
         if event.value == 0: # -H
-            log.debug("Releasing H from SmartMouseReflex_H, clean is", self.clean)
+            self.log.debug("Releasing H from SmartMouseReflex_H, clean is", self.clean)
             if self.clean:
                 with SmartOutputEvent(self.mind, self.source_name) as eb:
                     eb.function("navigate_forward")
@@ -165,12 +163,12 @@ class SmartMouseReflex_HG(Reflex): # Super H
         
     def on_G(self, event):
         if event.value == 0: # -G
-            log.debug("Releasing G from SmartMouseReflex_HG, clean is", self.clean)
+            self.log.debug("Releasing G from SmartMouseReflex_HG, clean is", self.clean)
             self.shift_reflex("HGg", clean=False)
     
     def on_H(self, event):
         if event.value == 0: # -H
-            log.debug("Releasing H from SmartMouseReflex_HG, clean is", self.clean)
+            self.log.debug("Releasing H from SmartMouseReflex_HG, clean is", self.clean)
             self.shift_reflex("HGh", clean=False)
 
     def on_I(self, event):
@@ -214,12 +212,12 @@ class SmartMouseReflex_HGh(Reflex):
 
     def on_H(self, event):
         if event.value == 1: # -H
-            log.debug("Pressing H from SmartMouseReflex_HGh, clean is", self.clean)
+            self.log.debug("Pressing H from SmartMouseReflex_HGh, clean is", self.clean)
             self.shift_reflex("HG", clean=False)
     
     def on_G(self, event):
         if event.value == 0: # -G
-            log.debug("Releasing G from SmartMouseReflex_HGh, clean is", self.clean)
+            self.log.debug("Releasing G from SmartMouseReflex_HGh, clean is", self.clean)
             self.shift_reflex("N", clean=False)
     
     def on_D(self, event):
@@ -260,12 +258,12 @@ class SmartMouseReflex_HGg(Reflex):
 
     def on_H(self, event):
         if event.value == 0: # -H
-            log.debug("Releasing H from SmartMouseReflex_HGg, clean is", self.clean)
+            self.log.debug("Releasing H from SmartMouseReflex_HGg, clean is", self.clean)
             self.shift_reflex("N", clean=False)
     
     def on_G(self, event):
         if event.value == 1: # -G
-            log.debug("Pressing G from SmartMouseReflex_HGg, clean is", self.clean)
+            self.log.debug("Pressing G from SmartMouseReflex_HGg, clean is", self.clean)
             self.shift_reflex("HG", clean=False)
     
     def on_D(self, event):
@@ -322,12 +320,12 @@ class SmartMouseReflex_G(Reflex):
 
     def on_H(self, event):
         if event.value == 1: # +H
-            log.debug("Pressing H from SmartMouseReflex_G, clean is", self.clean)
+            self.log.debug("Pressing H from SmartMouseReflex_G, clean is", self.clean)
             self.shift_reflex("GH")
     
     def on_G(self, event):
         if event.value == 0: # -G
-            log.debug("Releasing G from SmartMouseReflex_G, clean is", self.clean)
+            self.log.debug("Releasing G from SmartMouseReflex_G, clean is", self.clean)
 
             if self.clean:
                 with SmartOutputEvent(self.mind, self.source_name) as eb:
@@ -403,12 +401,12 @@ class SmartMouseReflex_GH(Reflex):
 
     def on_G(self, event):
         if event.value == 0: # -G
-            log.debug("Releasing G from SmartMouseReflex_GH, clean is", self.clean)
+            self.log.debug("Releasing G from SmartMouseReflex_GH, clean is", self.clean)
             self.shift_reflex("GHg", clean=False)
     
     def on_H(self, event):
         if event.value == 0: # -H
-            log.debug("Releasing H from SmartMouseReflex_GH, clean is", self.clean)
+            self.log.debug("Releasing H from SmartMouseReflex_GH, clean is", self.clean)
             self.shift_reflex("GHh", clean=False)
     
     def on_I(self, event):
@@ -460,12 +458,12 @@ class SmartMouseReflex_GHg(Reflex):
 
     def on_G(self, event):
         if event.value == 1: # +G
-            log.debug("Pressing G from SmartMouseReflex_GHg, clean is", self.clean)
+            self.log.debug("Pressing G from SmartMouseReflex_GHg, clean is", self.clean)
             self.shift_reflex("GH", clean=False)
     
     def on_H(self, event):
         if event.value == 0: # -H
-            log.debug("Releasing H from SmartMouseReflex_GHg, clean is", self.clean)
+            self.log.debug("Releasing H from SmartMouseReflex_GHg, clean is", self.clean)
             self.shift_reflex("N", clean=False)
     
     def on_I(self, event):
@@ -514,12 +512,12 @@ class SmartMouseReflex_GHh(Reflex):
     
     def on_G(self, event):
         if event.value == 0: # -G
-            log.debug("Releasing G from SmartMouseReflex_GHh, clean is", self.clean)
+            self.log.debug("Releasing G from SmartMouseReflex_GHh, clean is", self.clean)
             self.shift_reflex("N", clean=False)
 
     def on_H(self, event):
         if event.value == 1: # +H
-            log.debug("Pressing H from SmartMouseReflex_GHh, clean is", self.clean)
+            self.log.debug("Pressing H from SmartMouseReflex_GHh, clean is", self.clean)
             self.shift_reflex("GH", clean=False)
 
     def on_I(self, event):
@@ -564,7 +562,7 @@ class SmartMouseReflex_D(Reflex):
 
     def on_D(self, event):
         if event.value == 0:
-            log.debug(f"Releasing D from {self.name}, clean is {self.clean}")
+            self.log.debug(f"Releasing D from {self.name}, clean is {self.clean}")
             if self.clean:
                 with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
                     eb.press("KEY_LEFTMETA")
@@ -610,22 +608,23 @@ class SmartMouseReflex_D(Reflex):
 # Shadow Declaration
 #############################################################################################
 
-
 class SmartMouseShadow(Shadow):
-    def on_configure(self, **kwargs):
-        log.debug("Inside on_configure for SmartMouseShadow")
+        
+    def configure_SmartMouse(self, **kwargs):
+        # if not 'log_prefix' in kwargs:
+        #     kwargs['log_prefix'] = self.name
+        
+        self.log.debug(f"Inside configure for SmartMouseShadow, kwargs={kwargs}")
 
-        self.add_reflex(SmartMouseReflex_N({**kwargs, 'autostart':True}))
-        self.add_reflex(SmartMouseReflex_D(**kwargs))
+        self.add_reflex(SmartMouseReflex_N, **{**kwargs, 'autostart':True})
+        self.add_reflex(SmartMouseReflex_D, **kwargs)
 
-        self.add_reflex(SmartMouseReflex_H(**kwargs))
-        self.add_reflex(SmartMouseReflex_HG(**kwargs))
-        self.add_reflex(SmartMouseReflex_HGh(**kwargs))
-        self.add_reflex(SmartMouseReflex_HGg(**kwargs))
+        self.add_reflex(SmartMouseReflex_H, **kwargs)
+        self.add_reflex(SmartMouseReflex_HG, **kwargs)
+        self.add_reflex(SmartMouseReflex_HGh, **kwargs)
+        self.add_reflex(SmartMouseReflex_HGg, **kwargs)
 
-        self.add_reflex(SmartMouseReflex_G(**kwargs))
-        self.add_reflex(SmartMouseReflex_GH(**kwargs))
-        self.add_reflex(SmartMouseReflex_GHg(**kwargs))
-        self.add_reflex(SmartMouseReflex_GHh(**kwargs))
-
-        self.require_device(kwargs['required_devices'])
+        self.add_reflex(SmartMouseReflex_G, **kwargs)
+        self.add_reflex(SmartMouseReflex_GH, **kwargs)
+        self.add_reflex(SmartMouseReflex_GHg, **kwargs)
+        self.add_reflex(SmartMouseReflex_GHh, **kwargs)

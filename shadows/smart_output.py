@@ -13,8 +13,6 @@ from shadow import Shadow
 from reflex import Reflex
 
 import shlex
-import log
-import os
 import re
 
 
@@ -81,17 +79,17 @@ class SmartOutputReflex(Reflex):
             elif event_type == SmartOutputEvent.UPDATE:
                 self.run_update(name, *args)
             else:
-                log.warn(f"Invalid event type in SmartOutputEvent: {event_type}")
+                self.log.warn(f"Invalid event type in SmartOutputEvent: {event_type}")
     
     def run_update(self, key_name, value):
         if hasattr(self, key_name):
             getattr(self, key_name).update(value)
     
     def run_function(self, function_name, *args):
-        log.info("Inside run_function. Looking for", function_name)
+        self.log.info("Inside run_function. Looking for", function_name)
         
         if not function_name in self.functions:
-            log.error("Unknown function: %s", function_name)
+            self.log.error("Unknown function: %s", function_name)
             return
         
         function = self.functions[function_name]
@@ -100,18 +98,18 @@ class SmartOutputReflex(Reflex):
             # log.info(f"Running function {function_name} as list of events")
             
             for f in function:
-                log.info(f["type"])
+                self.log.info(f["type"])
                 if f["type"] == "keyboard":
                     VirtualEvent = VirtualKeyboardEvent
                 elif f["type"] == "mouse":
                     VirtualEvent = VirtualMouseEvent
                 else:
-                    log.error(f"Unknown function type: {f['type']}")
+                    self.log.error(f"Unknown function type: {f['type']}")
                     continue
                 
                 with VirtualEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
                     for key in f["sequence"]:
-                        log.info("key:", key)
+                        self.log.info("key:", key)
                         if isinstance(key, (int, float)):
                             eb.sleep(key)
                         elif key.startswith("+"):
@@ -126,7 +124,7 @@ class SmartOutputReflex(Reflex):
             if hasattr(self, function):
                 getattr(self, function)(*args)
             else:
-                log.error(f"Unknown function: {function}")
+                self.log.error(f"Unknown function: {function}")
 
         else:
             # log.info(f"Running function {function_name} as instance method")
@@ -179,7 +177,7 @@ class SmartOutputReflex(Reflex):
                 self.functions[intent_name] = callback
 
             else:
-                log.error("No default function for intent %s", intent_name)
+                self.log.error("No default function for intent %s", intent_name)
     
     def init_preferences(self):
         raw_preferences = {
@@ -559,10 +557,10 @@ class SmartOutputReflex(Reflex):
         self._search_selection("firefox", "https://www.ecosia.org/search?q=")
 
     def _search_selection(self, browser, search_engine):
-        log.info(f"Running search selection with browser='{browser}' and engine='{search_engine}'")
+        self.log.info(f"Running search selection with browser='{browser}' and engine='{search_engine}'")
         
         if self.username is None:
-            log.error("Could not find a user session to open this search")
+            self.log.error("Could not find a user session to open this search")
         
         cmd = "su %s -c 'xclip -selection primary -o -l 1 -d %s'" % (self.username, self.userdisplay)
         proc = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
@@ -596,15 +594,15 @@ class SmartOutputReflex(Reflex):
             eb.update("WHEEL_V", value * -10)
     
     def scroll_h_4(self, value):
-        log.debug(f"on scroll_h_4, {value}")
+        self.log.debug(f"on scroll_h_4, {value}")
         self.SCROLL_H.update(-value)
     
     def scroll_v_4(self, value):
-        log.debug(f"on scroll_v_4, {value}")
+        self.log.debug(f"on scroll_v_4, {value}")
         self.SCROLL_V.update(-value)
 
     def scroll_h_send_cmd(self, value):
-        log.debug("on scroll_h_send_cmd")
+        self.log.debug("on scroll_h_send_cmd")
         key = "KEY_PAGEUP" if value > 0 else "KEY_PAGEDOWN"
         with VirtualKeyboardEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
             eb.press("KEY_LEFTCTRL")
@@ -613,7 +611,7 @@ class SmartOutputReflex(Reflex):
             eb.release("KEY_LEFTCTRL")
     
     def scroll_v_send_cmd(self, value):
-        log.debug("on scroll_v_send_cmd")
+        self.log.debug("on scroll_v_send_cmd")
         key = "KEY_PAGEUP" if value > 0 else "KEY_PAGEDOWN"
         with VirtualKeyboardEvent(self.mind, SOURCE_SMART_OUTPUT) as eb:
             eb.press(key)
@@ -632,20 +630,20 @@ class SmartOutputReflex(Reflex):
             eb.release(key)
     
     def logout(self):
-        log.debug(f"logout {self.username} {self.userdisplay} {self.userid}")
+        self.log.debug(f"logout {self.username} {self.userdisplay} {self.userid}")
         self._session_quit('logout')
     
     def reboot(self):
-        log.debug("reboot")
+        self.log.debug("reboot")
         self._session_quit('reboot')
     
     def poweroff(self):
-        log.debug(f"poweroff")
+        self.log.debug(f"poweroff")
         self._session_quit('power-off')
     
     def _session_quit(self, action):
         if self.username is None:
-            log.error("Could not find a current user session to initiate the logout command")
+            self.log.error("Could not find a current user session to initiate the logout command")
 
         else:
             cmd = f"su {self.username} -c 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{self.userid}/bus DISPLAY={self.userdisplay} gnome-session-quit --{action}'"
@@ -654,5 +652,6 @@ class SmartOutputReflex(Reflex):
 
 class SmartOutput(Shadow):
     def on_configure(self):
-        self.add_reflex(SmartOutputReflex(autostart=True))
+        super().on_configure()
+        self.add_reflex(SmartOutputReflex, autostart=True)
 

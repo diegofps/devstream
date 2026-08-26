@@ -7,8 +7,6 @@ from evdev import ecodes as e
 from reflex import Reflex
 from shadow import Shadow
 
-import log
-
 
 REQUIRED_DEVICES = [
     "Compx 2.4G Receiver Mouse",
@@ -54,7 +52,7 @@ class BaseNuleaM512Reflex(Reflex):
                 self.on_wheel_right(event)
             
             else:
-                log.debug("This is a different rel event")
+                self.log.debug("This is a different rel event")
     
     def on_activate(self):
         pass
@@ -63,28 +61,28 @@ class BaseNuleaM512Reflex(Reflex):
         pass
 
     def on_top_left_click(self, event):
-        log.debug("B: on_top_left_click " + str(event.value))
+        self.log.debug("B: on_top_left_click " + str(event.value))
         
     def on_top_right_click(self, event):
-        log.debug("B: on_top_right_click " + str(event.value))
+        self.log.debug("B: on_top_right_click " + str(event.value))
         
     def on_bottom_left_click(self, event):
-        log.debug("B: on_bottom_left_click " + str(event.value))
+        self.log.debug("B: on_bottom_left_click " + str(event.value))
         
     def on_bottom_right_click(self, event):
-        log.debug("B: on_bottom_right_click " + str(event.value))
+        self.log.debug("B: on_bottom_right_click " + str(event.value))
         
     def on_move_rel_x(self, event):
-        log.debug("B: on_move_rel_x " + str(event.value))
+        self.log.debug("B: on_move_rel_x " + str(event.value))
         
     def on_move_rel_y(self, event):
-        log.debug("B: on_move_rel_y " + str(event.value))
+        self.log.debug("B: on_move_rel_y " + str(event.value))
         
     def on_wheel_left(self, event):
-        log.debug("B: on_wheel_left " + str(event.value))
+        self.log.debug("B: on_wheel_left " + str(event.value))
         
     def on_wheel_right(self, event):
-        log.debug("B: on_wheel_right " + str(event.value))
+        self.log.debug("B: on_wheel_right " + str(event.value))
         
 
 class NuleaM512_N(BaseNuleaM512Reflex):
@@ -108,7 +106,7 @@ class NuleaM512_N(BaseNuleaM512Reflex):
             if self.btn_left != 0 or self.btn_right != 0 or self.btn_middle != 0:
                 return
             
-            log.debug("\n\n\nN: Entering state ALT " + str(self.counter))
+            self.log.debug("\n\n\nN: Entering state ALT " + str(self.counter))
             self.counter += 1
             self.shift_reflex("NuleaM512_ALT")
     
@@ -234,6 +232,6 @@ class NuleaM512_ALT(BaseNuleaM512Reflex):
 
 class NuleaM512(Shadow):
     def on_configure(self):
-        self.require_device(REQUIRED_DEVICES)
-        self.add_reflex(NuleaM512_N(autostart=True))
-        self.add_reflex(NuleaM512_ALT())
+        super().on_configure(required_devices=REQUIRED_DEVICES)
+        self.add_reflex(NuleaM512_N, autostart=True)
+        self.add_reflex(NuleaM512_ALT)
