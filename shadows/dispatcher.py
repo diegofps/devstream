@@ -38,7 +38,7 @@ class DispatcherReflex(Reflex):
                     self.device_readers[device_path] = (shadow.name, shadow)
                     self.log.debug(f"DeviceReader started from dispatcher, name=\"{shadow.name}\"")
                 else:
-                    self.log.info(f"Device is not required, skipping devname=\"{dev.name}\", path=\"{dev.path}\"")
+                    self.log.info(f"Device is not required, skipping devname=\"{dev.name}\", path=\"{dev.path}\", required_devices=\"{self.mind.required_devices}\"")
             except Exception as e:
                 self.log.warn(f"Device reading failure for devpath=\"{device_path}\", error=\"{e}\"")
     

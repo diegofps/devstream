@@ -1,6 +1,5 @@
 from devstreamlog import DevStreamLogger
 import threading
-import importlib
 import traceback
 import queue
 import evdev
@@ -93,7 +92,11 @@ class Mind:
         self.executor = Executor()
         self.shadows = {}
 
+        log.debug("Initializing mind")
+
     def require_device(self, device_name):
+        # print(f"Requiring device_name=\"{device_name}\"")
+        log.debug(f"Requiring device_name=\"{device_name}\"")
         if isinstance(device_name, (set,list)):
             self.required_devices.update(device_name)
         else:
@@ -114,7 +117,7 @@ class Mind:
             shadow.dettach()
 
     def add_listener(self, topic_names, callback):
-        log.debug(f"Adding listener for {topic_names}")
+        log.debug(f"Adding listener for topic_names=\"{topic_names}\"")
         
         if not isinstance(topic_names, list):
             topic_names = [topic_names]
@@ -144,7 +147,7 @@ class Mind:
         try:
             self.executor.submit(self._emit_all, priority, topic_name, event)
         except RuntimeError as e:
-            log.warn("Could not emit event, maybe we are shutting down -", e)
+            log.warn(f"Could not emit event, maybe we are shutting down. Error=\"{e}\"")
 
     def run(self):
         try:
@@ -172,11 +175,11 @@ class Mind:
                 callback(topic_name, event)
             except Exception as e:
                 traceback.print_exc()
-                log.error("Error during event processing for topic", topic_name, "- error:", e)
+                log.error(f"Error during event processing for topic_name=\"{topic_name}\", error=\"{e}\"")
 
     def _emit_one(self, callback, topic_name, event):
         try:
             callback(topic_name, event)
         except Exception as e:
             traceback.print_exc()
-            log.error("Error during event processing for topic", topic_name, "- error:", e)
+            log.error(f"Error during event processing for topic_name=\"{topic_name}\", error=\"{e}\"")

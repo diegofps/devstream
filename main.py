@@ -9,6 +9,7 @@ from mind import Mind
 
 
 os.nice(-20)
+devstreamlog.clear_logs()
 devstreamlog.set_log_level("DEBUG" if len(sys.argv) == 1 else sys.argv[1])
 
 

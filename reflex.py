@@ -47,7 +47,7 @@ class Reflex:
         self.clean = True
         self.mind = None
 
-        self.log = DevStreamLogger(filename=f"{log_prefix}.{self.name}.reflex.log")
+        self.log = DevStreamLogger(filename=f"{log_prefix}.{self.name}.log")
         self.log.info("Creating reflex", self.name, "...")
     
     def attach(self, shadow):

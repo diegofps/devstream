@@ -12,7 +12,7 @@ class Shadow:
         self.reflexes = {}
         self.mind = None
 
-        self.log = DevStreamLogger(filename=f"{self.name}.shadow.log")
+        self.log = DevStreamLogger(filename=f"{self.name}.log")
         self.log.info(f"Creating shadow {self.name}")
 
     def add_reflex(self, ReflexType, *args, **kwargs):
@@ -29,6 +29,7 @@ class Shadow:
             reflex.dettach()
 
     def require_device(self, device_name):
+        self.log.debug(f"Requiring device_name=\"{device_name}\"")
         self.required_devices.update(device_name)
     
     def attach(self, mind):

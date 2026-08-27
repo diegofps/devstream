@@ -43,6 +43,12 @@ class DevStreamLogger:
         target(title)
 
 
+def clear_logs(folderpath="./logs"):
+    pattern = os.path.join(folderpath, '*.log')
+    cmd = f"rm \"{pattern}\""
+    # print(cmd)
+    os.system(cmd)
+
 def set_log_level(level):
     global ENV
     ENV = level
