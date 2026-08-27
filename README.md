@@ -54,76 +54,6 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | D + E    | Switch Tabs (Vertical) or Switch Windows (Horizontal) |
 
 
-## Logitech MX Anywhere 2S
-
-![Buttons](images/keys_mx2s.png)
-
-Notes:
-- This is easily portable to the Logitech MX Anywhere 3S, but they sadly removed the two side wheel buttons, D and F. This means the loss of 10 shortcuts in total.
-
-### Normal Mode
-
-| Shortcut  | Action            |
-| --------- | ----------------- |
-| A         | Left Click        |
-| B         | Middle Click      |
-| C         | Right Click       |
-| D         | Horizontal Scroll |
-| E         | Vertical Scroll   |
-| F         | Horizontal Scroll |
-| H         | Back              |
-| G         | Forward           |
-| H + G - H | Focus Mode        |
-| H + G - G | Show All Windows  |
-
-
-### Holding H
-
-| Shortcut | Action             |
-| -------- | ------------------ |
-| H + A    | Previous Workspace |
-| H + B    | Close Tab          |
-| H + C    | Next Workspace     |
-| H + D    | Zoom In            |
-| H + E    | Switch Tabs        |
-| H + F    | Zoom Out           |
-
-
-### Holding G
-
-| Shortcut | Action            |
-| -------- | ----------------- |
-| G + A    | Go To Declaration |
-| G + B    | Close Window      |
-| G + C    | Search Selection  |
-| G + D    | Redo              |
-| G + E    | Switch Window     |
-| G + F    | Undo              |
-
-
-### Holding H + G
-
-| Shortcut  | Action                            |
-| --------- | --------------------------------- |
-| H + G + A | Move Window to Previous Workspace |
-| H + G + B | Reopen Tab                        |
-| H + G + C | Move Window to Next Workspace     |
-| H + G + D | Key Right                         |
-| H + G + E | Keys Up / Down                    |
-| H + G + F | Key Left                          |
-
-### Holding G + H
-
-| Shortcut  | Action           |
-| --------- | ---------------- |
-| G + H + A | Play / Pause     |
-| G + H + B | Stop             |
-| G + H + C | Mute / Unmute    |
-| G + H + D | Next Track       |
-| G + H + E | Volume Up / Down |
-| G + H + F | Previous Track   |
-
-
 ## Macro Keyboard
 
 ![Buttons](images/keys_macros.png)
@@ -207,19 +137,18 @@ Notes:
 | B + G    | Vertical and Horizontal Scroll |
 
 
-## Logitech MX Master 3S
-
-![Buttons](images/keys_logitechMXMaster3S.png)
+## Logitech MX Master 3S and MX Anywhwere 2S
 
 ![Buttons](images/MXMaster3S-StateMachine.png)
 
 Notes:
 
 - This shadow assumes logid is installed. Check the dependencies bellow on how to configure it.
-- Blue rows represent a scroll input
+- Blue rows represent a scroll input.
 - Yellow rows require a clean button release (no combination was made)
 - Gray rows count as a combination if pressed on a deeper state
-- White rows never invalidate a clear state
+- White rows never invalidate a clear state.
+- Some keys are not available for every mouse due to their physical limitations.
 
 # Dependencies
 
