@@ -14,11 +14,10 @@ from reflex import Reflex
 
 import shlex
 import re
-
+import os
 
 TOPIC_SMARTOUTPUT_EVENT = "SmartOutput"
 SOURCE_SMART_OUTPUT = "Smart Output"
-
 
 class SmartOutputEvent:
 
@@ -519,6 +518,9 @@ class SmartOutputReflex(Reflex):
                     "sequence": ["+KEY_F2", "-KEY_F2"],
                 }],
             },
+            "show_macro_help": {
+                "default": self.show_macro_help,
+            }
         }
 
         # Convert list of names to single names
@@ -567,6 +569,16 @@ class SmartOutputReflex(Reflex):
         selection = proc.stdout.read().decode('utf-8')
         query = re.sub('\s', '%20', selection)
         cmd = f"su {self.username} -c 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{self.userid}/bus DISPLAY={self.userdisplay} {browser} {search_engine}{query} &'"
+        Popen(shlex.split(cmd))
+
+    def show_macro_help(self):
+        self.log.info(f"Starting show macro help")
+                
+        if self.username is None:
+            self.log.error("Could not find a user session to open this search")
+
+        imgpath = os.path.join(os.path.abspath('.'), 'images', 'help_numpad_as_macro_kbd.png')
+        cmd = f"su {self.username} -c 'DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/{self.userid}/bus DISPLAY={self.userdisplay} eog {imgpath} &'"
         Popen(shlex.split(cmd))
 
     def scroll_h_1(self, value):

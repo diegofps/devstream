@@ -92,10 +92,9 @@ class Mind:
         self.executor = Executor()
         self.shadows = {}
 
-        log.debug("Initializing mind")
+        log.info("Initializing mind")
 
     def require_device(self, device_name):
-        # print(f"Requiring device_name=\"{device_name}\"")
         log.debug(f"Requiring device_name=\"{device_name}\"")
         if isinstance(device_name, (set,list)):
             self.required_devices.update(device_name)

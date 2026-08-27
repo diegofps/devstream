@@ -3,6 +3,7 @@ from shadows.virtual_keyboard import VirtualKeyboardEvent, TOPIC_VIRTUALKEYBOARD
 from shadows.xppen_deco_pro import TOPIC_NOTIFICATION_STRONG, TOPIC_NOTIFICATION_WEAK
 from shadows.virtual_device import VirtualDeviceEvent
 from shadows.watch_login import TOPIC_LOGIN_CHANGED
+from shadows.smart_output import SmartOutputEvent
 from shadows.virtual_pen import VirtualPenEvent
 
 from threading import Thread, Lock
@@ -422,7 +423,7 @@ class MacroKeyboardReflex(Reflex):
     def on_configure(self):
 
         self.macro_player = None
-        self.userdisplay = None
+        # self.userdisplay = None
         self.username = None
         self.recorded = {}
         self.macro = None
@@ -430,7 +431,7 @@ class MacroKeyboardReflex(Reflex):
         self.import_macros()
 
         # Monitor current user name and display - needed to open the help screen
-        self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
+        # self.add_listener(TOPIC_LOGIN_CHANGED, self.on_login_changed)
 
         # Monitor output keys sent to virtual output device - needed to record macros from any keyboard or smart output
         self.add_listener(TOPIC_VIRTUALKEYBOARD_EVENT, self.on_output_event)
@@ -447,14 +448,14 @@ class MacroKeyboardReflex(Reflex):
         super().on_deactivate()
         self.macro_player.terminate()
     
-    def on_login_changed(self, topic_name, event):
+    # def on_login_changed(self, topic_name, event):
 
-        if len(event) == 0:
-            self.username, self.userdisplay = None, None
-        else:
-            self.username, self.userdisplay = event[0]
+    #     if len(event) == 0:
+    #         self.username, self.userdisplay = None, None
+    #     else:
+    #         self.username, self.userdisplay = event[0]
 
-        self.log.info(f"Macro Keyboard received a login changed for username='{self.username}' and display='{self.userdisplay}'")
+    #     self.log.info(f"Macro Keyboard received a login changed for username='{self.username}' and display='{self.userdisplay}'")
 
     # Called when a key from a macro keyboard is pressed
     def on_macro_event(self, device_name, event):
@@ -474,7 +475,7 @@ class MacroKeyboardReflex(Reflex):
         actions = MACRO_KEYBOARDS[device_name]["actions"][state]
         action_key = (event.code, event.value)
 
-        # log.debug(f"Processing a macro keyboard key:", e.keys[action[0]], action[1], state, group)
+        self.log.debug(f"Processing a macro keyboard key: action_key=\"{action_key}\", actions=\"{actions}\", state=\"{state}\"")
 
         if action_key in actions:
 
@@ -530,11 +531,8 @@ class MacroKeyboardReflex(Reflex):
     
     def macro_help(self):
         self.log.info("Showing help")
-
-        imgpath = os.path.join(os.path.abspath('.'), 'images', 'help_numpad_as_macro_kbd.png')
-        cmd = f"su {self.username} -c 'DISPLAY={self.userdisplay} xdg-open {imgpath}'"
-        self.thread_help = threading.Thread(target=os.system, args=(cmd,))
-        self.thread_help.start()
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("show_macro_help")
     
     def notify(self, device_name:str, title:str, extra:str, visible):
         self.log.info("Sending strong notification")
