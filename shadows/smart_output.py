@@ -6,7 +6,7 @@ from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
 # from shadows.virtual_pen import VirtualPenEvent
 
-from keys import DelayedKey, LockableDelayedKey
+from keys import DelayedKey, LockableDelayedKey, AdversarialDelayedKey
 
 from subprocess import Popen, PIPE
 from shadow import Shadow
@@ -22,11 +22,13 @@ SOURCE_SMART_OUTPUT = "Smart Output"
 class SmartOutputEvent:
 
     FUNCTION = 0
-    UPDATE = 1
+    UPDATE   = 1
+    UPDATE_H = 2
+    UPDATE_V = 3
     
     def __init__(self, mind, source=None):
-        self.source        = source
         self.topic         = TOPIC_SMARTOUTPUT_EVENT
+        self.source        = source
         self.mind          = mind
         self.sequence      = []
     
@@ -38,6 +40,14 @@ class SmartOutputEvent:
     
     def update(self, key_name, *args):
         event = (SmartOutputEvent.UPDATE, key_name, args)
+        self.sequence.append(event)
+    
+    def update_h(self, key_name, *args):
+        event = (SmartOutputEvent.UPDATE_H, key_name, args)
+        self.sequence.append(event)
+    
+    def update_v(self, key_name, *args):
+        event = (SmartOutputEvent.UPDATE_V, key_name, args)
         self.sequence.append(event)
 
     def function(self, function_name, *args):
@@ -69,20 +79,36 @@ class SmartOutputReflex(Reflex):
         self.add_listener(TOPIC_SMARTOUTPUT_EVENT, self.on_event)
 
     def on_event(self, topic_name, event):
-        # log.debug(f"Reflex {self.name} for a new event, topic_name={topic_name}, event={event}")
+        # self.log.debug(f"Reflex {self.name} for a new event, topic_name={topic_name}, event={event}")
+        # self.log.debug(f"{self.__class__.__name__} is parsing a sequence")
         sequence, source = event
 
         for event_type, name, args in sequence:
             if event_type == SmartOutputEvent.FUNCTION:
                 self.run_function(name, *args)
             elif event_type == SmartOutputEvent.UPDATE:
+                # self.log.debug(f"{self.__class__.__name__} received an UPDATE")
                 self.run_update(name, *args)
+            elif event_type == SmartOutputEvent.UPDATE_H:
+                # self.log.debug(f"{self.__class__.__name__} received an UPDATE_H")
+                self.run_update_h(name, *args)
+            elif event_type == SmartOutputEvent.UPDATE_V:
+                # self.log.debug(f"{self.__class__.__name__} received an UPDATE_V")
+                self.run_update_v(name, *args)
             else:
                 self.log.warn(f"Invalid event type in SmartOutputEvent: {event_type}")
     
     def run_update(self, key_name, value):
         if hasattr(self, key_name):
             getattr(self, key_name).update(value)
+    
+    def run_update_h(self, key_name, value):
+        if hasattr(self, key_name):
+            getattr(self, key_name).update_h(value)
+    
+    def run_update_v(self, key_name, value):
+        if hasattr(self, key_name):
+            getattr(self, key_name).update_v(value)
     
     def run_function(self, function_name, *args):
         self.log.info("Inside run_function. Looking for", function_name)
@@ -153,6 +179,13 @@ class SmartOutputReflex(Reflex):
                 lambda v: self.run_function("redo") if v else self.run_function("undo"),
                 lambda v: self.run_function("volume_up") if v else self.run_function("volume_down"), 
                 500) # lockable2
+
+        self.ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW = AdversarialDelayedKey(
+            "ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW",
+            lambda x: self.run_function("move_window_right") if x >= 0 else self.run_function("move_window_left"),
+            lambda x: self.run_function("minimize_window") if x >= 0 else self.run_function("maximize_window"),
+            250, self.log
+        )
     
     def on_login_changed(self, topic_name, event):
         import pwd
@@ -303,6 +336,16 @@ class SmartOutputReflex(Reflex):
                 "Inkscape": [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTALT", "+KEY_F4", "-KEY_F4", "-KEY_LEFTALT"]}],
+            },
+            "move_window_right": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "+KEY_RIGHT", "-KEY_RIGHT", "-KEY_LEFTMETA", 0.1, "+KEY_ESC", "-KEY_ESC"]}],
+            },
+            "move_window_left": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "+KEY_LEFT", "-KEY_LEFT", "-KEY_LEFTMETA", 0.1, "+KEY_ESC", "-KEY_ESC"]}],
             },
             "minimize_window": {
                 "default": [{

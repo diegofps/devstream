@@ -108,7 +108,7 @@ class NuleaM512_N(BaseNuleaM512Reflex):
             
             self.log.debug("\n\n\nN: Entering state ALT " + str(self.counter))
             self.counter += 1
-            self.shift_reflex("NuleaM512_ALT")
+            self.shift_reflex("ALT")
     
     def on_bottom_right_click(self, event): # C
         self.btn_right = event.value
@@ -124,13 +124,22 @@ class NuleaM512_N(BaseNuleaM512Reflex):
     
     def on_move_rel_x(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
-            value = self._smooth(event.value, 0.2, 0.5, 1, 20)
+            # value = self._smooth(event.value, 0.2, 0.5, 1, 20)
+            value = event.value
             eb.update("REL_X", value)
+        
+        # with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
+        #     eb.update_h("ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW", event.value)
         
     def on_move_rel_y(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
-            value = self._smooth(event.value, 0.2, 0.5, 1, 20)
+            # value = self._smooth(event.value, 0.2, 0.5, 1, 20)
+            value = event.value
             eb.update("REL_Y", value)
+
+        # self.log.debug("Sending update_v event for ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW")
+        # with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
+        #     eb.update_v("ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW", event.value)
     
     def on_wheel_left(self, event): # E
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
@@ -187,7 +196,7 @@ class NuleaM512_ALT(BaseNuleaM512Reflex):
     
     def on_top_right_click(self, event): # B
         if event.value == 0:
-            self.shift_reflex("NuleaM512_N")
+            self.shift_reflex("N")
     
     def on_bottom_left_click(self, event): # C
         self.clean = False

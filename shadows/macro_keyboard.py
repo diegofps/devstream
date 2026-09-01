@@ -475,7 +475,7 @@ class MacroKeyboardReflex(Reflex):
         actions = MACRO_KEYBOARDS[device_name]["actions"][state]
         action_key = (event.code, event.value)
 
-        self.log.debug(f"Processing a macro keyboard key: action_key=\"{action_key}\", actions=\"{actions}\", state=\"{state}\"")
+        # self.log.debug(f"Processing a macro keyboard key: action_key=\"{action_key}\", actions=\"{actions}\", state=\"{state}\"")
 
         if action_key in actions:
 

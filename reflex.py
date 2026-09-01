@@ -144,20 +144,20 @@ class Reflex:
         type  = e.EV[evt.type]
         value = evt.value
 
-        self.log.debug(f"Processing event: type={type}, code={code}, value={value}")
+        # self.log.debug(f"Processing event: type={type}, code={code}, value={value}")
     
     def on_event(self, device_name, event):
-        self.debug_event(device_name, event)
+        # self.debug_event(device_name, event)
         if self.event_wrapper is None:
-            self.log.error("event_wrapper is None")
+            self.log.warn(f"event_wrapper is None for class {self.__class__.__name__}")
         else:
             self.event_wrapper(self, device_name, event, self)
     
     def on_configure(self):
-        self.log.debug(f"Inside default on_configure for reflex {self.name}")
+        # self.log.debug(f"Inside default on_configure for reflex {self.name}")
         for x in self.required_devices:
             name = f"DeviceReader:{x}"
-            self.log.debug("Registering topic name: " + name)
+            # self.log.debug("Registering topic name: " + name)
             self.add_listener(name, self.on_event)
 
     def on_attach(self):

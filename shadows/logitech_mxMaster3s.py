@@ -47,6 +47,10 @@ class MXMaster3S_LogidMonitor(Reflex):
         
         self.log.debug(f"Ending LogidMonitor daemon thread")
 
+    def on_event(self, device_name, event):
+        # This method merely ignores the parent implementation, which complains that no event_wrapper is declared
+        pass
+
 
 def mxMaster3SEventWrapper(reflex, device_name, event, target):
     # log.debug(f"Event received from {device_name}: {event}")

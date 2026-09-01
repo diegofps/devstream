@@ -165,8 +165,8 @@ class Mind:
             topic.last_event = event
             self.topics[topic_name] = topic
 
-        if topic_name == "DeviceReader:Logitech MX Master 3S":
-            log.debug(f"Topic has {len(topic.listeners)} listeners")
+        # if topic_name == "DeviceReader:Logitech MX Master 3S":
+        #     log.debug(f"Topic has {len(topic.listeners)} listeners")
             
         for callback in topic.listeners:
             try:
