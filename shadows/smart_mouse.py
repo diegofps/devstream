@@ -1,9 +1,11 @@
 from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
 from shadows.smart_output import SmartOutputEvent
+from keys import AdversarialDelayedKey
 from evdev import ecodes as e
 from reflex import Reflex
 from shadow import Shadow
+
 
 
 #############################################################################################
@@ -67,13 +69,13 @@ class SmartMouseReflex_N(Reflex): # Normal Mode
 
 class SmartMouseReflex_H(Reflex):
 
-    def on_A(self, event): # A
+    def on_A(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
                 eb.function("previous_workspace")
 
-    def on_B(self, event): # B
+    def on_B(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
@@ -132,13 +134,13 @@ class SmartMouseReflex_H(Reflex):
 
 class SmartMouseReflex_HG(Reflex): # Super H
     
-    def on_A(self, event): # A
+    def on_A(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
                 eb.function("move_window_to_previous_workspace")
 
-    def on_B(self, event): # B
+    def on_B(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
@@ -156,15 +158,17 @@ class SmartMouseReflex_HG(Reflex): # Super H
     def on_E(self, event):
         self.clean = False
         with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.update("SCROLL_HKEYS", event.value)
+            eb.update("SCROLL_MAXIMIZE_MININIMIZE_WINDOW", event.value)
     
     def on_F(self, event):
-        pass
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.update("SCROLL_PLACE_WINDOW_LEFT_RIGHT", event.value)
         
     def on_G(self, event):
         if event.value == 0: # -G
             self.log.debug("Releasing G from SmartMouseReflex_HG, clean is", self.clean)
-            self.shift_reflex("HGg", clean=False)
+            self.shift_reflex("H", clean=False)
     
     def on_H(self, event):
         if event.value == 0: # -H
@@ -181,34 +185,34 @@ class SmartMouseReflex_HG(Reflex): # Super H
 
     def on_K(self, event):
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
-            eb.update("KEY_RIGHT", event.value)
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("place_window_right", event.value)
     
     def on_L(self, event):
         self.clean = False
-        with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
-            eb.update("KEY_LEFT", event.value)
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("place_window_left", event.value)
     
 
 class SmartMouseReflex_HGh(Reflex):
     
-    def on_A(self, event): # A
+    def on_A(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("minimize_window")
+                eb.function("reboot")
 
-    def on_B(self, event): # B
+    def on_B(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("focus_mode")
+                eb.function("lock")
         
     def on_C(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("maximize_window")
+                eb.function("poweroff")
 
     def on_H(self, event):
         if event.value == 1: # -H
@@ -229,65 +233,75 @@ class SmartMouseReflex_HGh(Reflex):
             eb.update("SCROLL_ZOOM", event.value)
     
     def on_F(self, event):
-        pass
-        
-    def on_I(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_Y", event.value)
-
-    def on_J(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_X", event.value)
-
-    def on_K(self, event):
-        pass
-    
-    def on_L(self, event):
-        pass
-
-class SmartMouseReflex_HGg(Reflex):
-    
-    def on_A(self, event): # A
-        pass
-
-    def on_B(self, event): # B
-        pass
-        
-    def on_C(self, event):
-        pass
-
-    def on_H(self, event):
-        if event.value == 0: # -H
-            self.log.debug("Releasing H from SmartMouseReflex_HGg, clean is", self.clean)
-            self.shift_reflex("N", clean=False)
-    
-    def on_G(self, event):
-        if event.value == 1: # -G
-            self.log.debug("Pressing G from SmartMouseReflex_HGg, clean is", self.clean)
-            self.shift_reflex("HG", clean=False)
-    
-    def on_D(self, event):
-        pass
-    
-    def on_E(self, event):
-        pass
-    
-    def on_F(self, event):
-        pass
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.update("SCROLL_WINDOWS", event.value)
         
     def on_I(self, event):
         with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.function("scroll_v", event.value * 1.50)
+            eb.function("scroll_v", event.value)
 
     def on_J(self, event):
         with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.function("scroll_h", event.value * 2.00)
+            eb.function("scroll_h", event.value)
 
     def on_K(self, event):
-        pass
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("next_similar_window", event.value)
     
     def on_L(self, event):
-        pass
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("previous_similar_window", event.value)
+
+    def on_deactivate(self):
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("select_window")
+    
+# class SmartMouseReflex_HGg(Reflex):
+    
+#     def on_A(self, event):
+#         pass
+
+#     def on_B(self, event):
+#         pass
+        
+#     def on_C(self, event):
+#         pass
+
+#     def on_H(self, event):
+#         if event.value == 0: # -H
+#             self.log.debug("Releasing H from SmartMouseReflex_HGg, clean is", self.clean)
+#             self.shift_reflex("N", clean=False)
+    
+#     def on_G(self, event):
+#         if event.value == 1: # -G
+#             self.log.debug("Pressing G from SmartMouseReflex_HGg, clean is", self.clean)
+#             self.shift_reflex("HG", clean=False)
+    
+#     def on_D(self, event):
+#         pass
+    
+#     def on_E(self, event):
+#         pass
+    
+#     def on_F(self, event):
+#         pass
+        
+#     def on_I(self, event):
+#         with SmartOutputEvent(self.mind, self.source_name) as eb:
+#             eb.function("scroll_v", event.value * 1.50)
+
+#     def on_J(self, event):
+#         with SmartOutputEvent(self.mind, self.source_name) as eb:
+#             eb.function("scroll_h", event.value * 2.00)
+
+#     def on_K(self, event):
+#         pass
+    
+#     def on_L(self, event):
+#         pass
 
 
 #############################################################################################
@@ -296,17 +310,22 @@ class SmartMouseReflex_HGg(Reflex):
 
 class SmartMouseReflex_G(Reflex):
 
-    def on_deactivate(self):
-        with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.function("select_window")
-    
-    def on_A(self, event): # A
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.adversarial_switch_apps_or_windows = AdversarialDelayedKey(
+            "adversarial_switch_apps_or_windows",
+            self._switch_apps,
+            self._switch_app_windows,
+            100, self.log
+        )
+
+    def on_A(self, event):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
                 eb.function("go_to_declaration")
 
-    def on_B(self, event): # B
+    def on_B(self, event):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
@@ -345,12 +364,10 @@ class SmartMouseReflex_G(Reflex):
         pass
 
     def on_I(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_Y", event.value)
+        self.adversarial_switch_apps_or_windows.update_v(event.value)
 
     def on_J(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_X", event.value)
+        self.adversarial_switch_apps_or_windows.update_h(event.value)
 
     def on_K(self, event):
         self.clean = False
@@ -364,20 +381,34 @@ class SmartMouseReflex_G(Reflex):
             with SmartOutputEvent(self.mind, self.source_name) as eb:
                 eb.function("undo")
     
+    def on_deactivate(self):
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("select_window")
+    
+    def _switch_apps(self, value):
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("next_app" if value > 0 else "previous_app")
+
+    def _switch_app_windows(self, value):
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("previous_app_window" if value > 0 else "next_app_window")
+
 
 class SmartMouseReflex_GH(Reflex):
     
-    def on_A(self, event): # A
+    def on_A(self, event):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
                 eb.function("search_selection_with_duckduckgo")
 
-    def on_B(self, event): # B
+    def on_B(self, event):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("search_selection_with_ecosia")
+                eb.function("focus_mode")
         
     def on_C(self, event):
         self.clean = False
@@ -389,16 +420,16 @@ class SmartMouseReflex_GH(Reflex):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("search_selection_with_bing")
+                eb.function("search_selection_with_ecosia")
     
     def on_E(self, event):
-        self.clean = False
-        with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.update("SCROLL_HKEYS", -event.value)
+        with VirtualMouseEvent(self.mind, self.source_name) as eb:
+            eb.update("WHEEL_V", event.value * 10)
     
     def on_F(self, event):
-        pass
-
+        with VirtualMouseEvent(self.mind, self.source_name) as eb:
+            eb.update("WHEEL_H", event.value * 10)
+    
     def on_G(self, event):
         if event.value == 0: # -G
             self.log.debug("Releasing G from SmartMouseReflex_GH, clean is", self.clean)
@@ -407,7 +438,7 @@ class SmartMouseReflex_GH(Reflex):
     def on_H(self, event):
         if event.value == 0: # -H
             self.log.debug("Releasing H from SmartMouseReflex_GH, clean is", self.clean)
-            self.shift_reflex("GHh", clean=False)
+            self.shift_reflex("G", clean=False)
     
     def on_I(self, event):
         with VirtualMouseEvent(self.mind, self.source_name) as eb:
@@ -427,15 +458,19 @@ class SmartMouseReflex_GH(Reflex):
         with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
             eb.update("KEY_PREVIOUSSONG", event.value)
     
+    def on_deactivate(self):
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("select_window")
+    
 
 class SmartMouseReflex_GHg(Reflex):
     
-    def on_A(self, event): # A
+    def on_A(self, event):
         self.clean = False
         with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
             eb.update("KEY_PLAYPAUSE", event.value)
 
-    def on_B(self, event): # B
+    def on_B(self, event):
         self.clean = False
         with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
             eb.update("KEY_STOPCD", event.value)
@@ -465,74 +500,74 @@ class SmartMouseReflex_GHg(Reflex):
         if event.value == 0: # -H
             self.log.debug("Releasing H from SmartMouseReflex_GHg, clean is", self.clean)
             self.shift_reflex("N", clean=False)
-    
+
     def on_I(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_Y", event.value)
-
-    def on_J(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_X", event.value)
-
-    def on_K(self, event):
-        pass
-    
-    def on_L(self, event):
-        pass
-    
-
-class SmartMouseReflex_GHh(Reflex):
-
-    def on_A(self, event): # A
-        self.clean = False
-        with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
-            eb.update("KEY_ENTER", event.value)
-
-    def on_B(self, event): # B
-        self.clean = False
-        if event.value == 1: # +B
-            with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("ctrl_c")
-        
-    def on_C(self, event):
-        self.clean = False
-        with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
-            eb.update("KEY_ESC", event.value)
-
-    def on_D(self, event):
-        pass
-    
-    def on_E(self, event):
-        self.clean = False
         with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.update("SCROLL_VKEYS", event.value)
-    
-    def on_F(self, event):
-        pass
-    
-    def on_G(self, event):
-        if event.value == 0: # -G
-            self.log.debug("Releasing G from SmartMouseReflex_GHh, clean is", self.clean)
-            self.shift_reflex("N", clean=False)
-
-    def on_H(self, event):
-        if event.value == 1: # +H
-            self.log.debug("Pressing H from SmartMouseReflex_GHh, clean is", self.clean)
-            self.shift_reflex("GH", clean=False)
-
-    def on_I(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_Y", event.value)
+            eb.function("scroll_v", event.value)
 
     def on_J(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_X", event.value)
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("scroll_h", event.value)
 
     def on_K(self, event):
         pass
     
     def on_L(self, event):
         pass
+    
+
+# class SmartMouseReflex_GHh(Reflex):
+
+#     def on_A(self, event):
+#         self.clean = False
+#         with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
+#             eb.update("KEY_ENTER", event.value)
+
+#     def on_B(self, event):
+#         self.clean = False
+#         if event.value == 1: # +B
+#             with SmartOutputEvent(self.mind, self.source_name) as eb:
+#                 eb.function("ctrl_c")
+        
+#     def on_C(self, event):
+#         self.clean = False
+#         with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
+#             eb.update("KEY_ESC", event.value)
+
+#     def on_D(self, event):
+#         pass
+    
+#     def on_E(self, event):
+#         self.clean = False
+#         with SmartOutputEvent(self.mind, self.source_name) as eb:
+#             eb.update("SCROLL_VKEYS", event.value)
+    
+#     def on_F(self, event):
+#         pass
+    
+#     def on_G(self, event):
+#         if event.value == 0: # -G
+#             self.log.debug("Releasing G from SmartMouseReflex_GHh, clean is", self.clean)
+#             self.shift_reflex("N", clean=False)
+
+#     def on_H(self, event):
+#         if event.value == 1: # +H
+#             self.log.debug("Pressing H from SmartMouseReflex_GHh, clean is", self.clean)
+#             self.shift_reflex("GH", clean=False)
+
+#     def on_I(self, event):
+#         with VirtualMouseEvent(self.mind, self.source_name) as eb:
+#             eb.update("REL_Y", event.value)
+
+#     def on_J(self, event):
+#         with VirtualMouseEvent(self.mind, self.source_name) as eb:
+#             eb.update("REL_X", event.value)
+
+#     def on_K(self, event):
+#         pass
+    
+#     def on_L(self, event):
+#         pass
 
 
 
@@ -622,9 +657,9 @@ class SmartMouseShadow(Shadow):
         self.add_reflex(SmartMouseReflex_H, **kwargs)
         self.add_reflex(SmartMouseReflex_HG, **kwargs)
         self.add_reflex(SmartMouseReflex_HGh, **kwargs)
-        self.add_reflex(SmartMouseReflex_HGg, **kwargs)
+        # self.add_reflex(SmartMouseReflex_HGg, **kwargs)
 
         self.add_reflex(SmartMouseReflex_G, **kwargs)
         self.add_reflex(SmartMouseReflex_GH, **kwargs)
         self.add_reflex(SmartMouseReflex_GHg, **kwargs)
-        self.add_reflex(SmartMouseReflex_GHh, **kwargs)
+        # self.add_reflex(SmartMouseReflex_GHh, **kwargs)

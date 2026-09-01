@@ -248,39 +248,39 @@ class LockableDelayedKey:
 class AdversarialDelayedKey:
 
     def __init__(self, name, callback_h, callback_v, size, log):
+        self.cumulative_h = 0
+        self.cumulative_v = 0
         self.callback_h   = callback_h
         self.callback_v   = callback_v
         self.size         = size
         self.name         = name
-        self.cumulative_h = 0
-        self.cumulative_v = 0
         self.log          = log
 
     def update_h(self, value):
         self.cumulative_h, self.cumulative_v = self._consume1(value, self.cumulative_h, self.cumulative_v)
-        self.log.debug(f"update_h is updating values, self.cumulative_v={self.cumulative_v}, self.cumulative_h={self.cumulative_h}, self.size={self.size}, value={value}")
+        # self.log.debug(f"update_h is updating values, self.cumulative_v={self.cumulative_v}, self.cumulative_h={self.cumulative_h}, self.size={self.size}, value={value}")
 
         while self.cumulative_h >= self.size:
-            self.log.debug(f"update_h is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
+            # self.log.debug(f"update_h is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
             self.callback_h(self.cumulative_h)
             self.cumulative_h -= self.size
 
         while self.cumulative_h <= -self.size:
-            self.log.debug(f"update_h is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
+            # self.log.debug(f"update_h is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
             self.callback_h(self.cumulative_h)
             self.cumulative_h += self.size
 
     def update_v(self, value):
         self.cumulative_v, self.cumulative_h = self._consume1(value, self.cumulative_v, self.cumulative_h)
-        self.log.debug(f"update_v is updating values, self.cumulative_v={self.cumulative_v}, self.cumulative_h={self.cumulative_h}, self.size={self.size}, value={value}")
+        # self.log.debug(f"update_v is updating values, self.cumulative_v={self.cumulative_v}, self.cumulative_h={self.cumulative_h}, self.size={self.size}, value={value}")
 
         while self.cumulative_v >= self.size:
-            self.log.debug(f"update_v is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
+            # self.log.debug(f"update_v is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
             self.callback_v(self.cumulative_v)
             self.cumulative_v -= self.size
 
         while self.cumulative_v <= -self.size:
-            self.log.debug(f"update_v is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
+            # self.log.debug(f"update_v is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
             self.callback_v(self.cumulative_v)
             self.cumulative_v += self.size
     

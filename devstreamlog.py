@@ -45,7 +45,7 @@ class DevStreamLogger:
 
 def clear_logs(folderpath="./logs"):
     pattern = os.path.join(folderpath, '*.log')
-    cmd = f"rm \"{pattern}\""
+    cmd = f"rm -f \"{pattern}\""
     # print(cmd)
     os.system(cmd)
 

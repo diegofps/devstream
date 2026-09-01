@@ -144,7 +144,7 @@ class Reflex:
         type  = e.EV[evt.type]
         value = evt.value
 
-        # self.log.debug(f"Processing event: type={type}, code={code}, value={value}")
+        self.log.debug(f"Processing event: type={type}, code={code}, value={value}")
     
     def on_event(self, device_name, event):
         # self.debug_event(device_name, event)

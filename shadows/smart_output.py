@@ -168,6 +168,18 @@ class SmartOutputReflex(Reflex):
         self.SCROLL_H       = DelayedKey("SCROLL_H",       self.scroll_h_send_cmd, 200)
         self.SCROLL_V       = DelayedKey("SCROLL_V",       self.scroll_v_send_cmd, 200)
 
+        self.SCROLL_MAXIMIZE_MININIMIZE_WINDOW = DelayedKey(
+            "SCROLL_MAXIMIZE_MININIMIZE_WINDOW", 
+            lambda x: self.run_function("maximize_window") if x else self.run_function("minimize_window"),
+            400
+        )
+
+        self.SCROLL_PLACE_WINDOW_LEFT_RIGHT = DelayedKey(
+            "SCROLL_PLACE_WINDOW_LEFT_RIGHT", 
+            lambda x: self.run_function("place_window_right") if x else self.run_function("place_window_left"),
+            400
+        )
+
         self.DUAL_WINDOWS_TABS = LockableDelayedKey(
                 "DUAL_WINDOWS_TABS", 
                 lambda v: self.run_function("next_window") if v else self.run_function("previous_window"), 
@@ -182,9 +194,16 @@ class SmartOutputReflex(Reflex):
 
         self.ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW = AdversarialDelayedKey(
             "ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW",
-            lambda x: self.run_function("move_window_right") if x >= 0 else self.run_function("move_window_left"),
+            lambda x: self.run_function("place_window_right") if x >= 0 else self.run_function("place_window_left"),
             lambda x: self.run_function("minimize_window") if x >= 0 else self.run_function("maximize_window"),
             250, self.log
+        )
+    
+        self.ADVERSARIAL_SWITCH_APPS_OR_WINDOWS = AdversarialDelayedKey(
+            "ADVERSARIAL_SWITCH_APPS_OR_WINDOWS",
+            lambda x: self.run_function("next_app") if x >= 0 else self.run_function("previous_app"),
+            lambda x: self.run_function("next_app_window") if x >= 0 else self.run_function("previous_app_window"),
+            100, self.log
         )
     
     def on_login_changed(self, topic_name, event):
@@ -223,6 +242,26 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTALT", "+KEY_LEFTSHIFT", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTSHIFT"]}],
             },
+            "next_app": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "+KEY_TAB", "-KEY_TAB"]}],
+            },
+            "previous_app": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "+KEY_LEFTSHIFT", "+KEY_TAB", "-KEY_TAB", "-KEY_LEFTSHIFT"]}],
+            },
+            "next_app_window": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "+KEY_GRAVE", "-KEY_GRAVE"]}],
+            },
+            "previous_app_window": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTMETA", "+KEY_LEFTSHIFT", "+KEY_GRAVE", "-KEY_GRAVE", "-KEY_LEFTSHIFT"]}],
+            },
             "next_workspace": {
                 "default": [{
                     "type": "keyboard",
@@ -246,7 +285,7 @@ class SmartOutputReflex(Reflex):
             "select_window": {
                 "default": [{
                     "type": "keyboard",
-                    "sequence": ["-KEY_LEFTALT"]}],
+                    "sequence": ["-KEY_LEFTALT", "-KEY_LEFTMETA"]}],
             },
             "undo": {
                 "default": [{
@@ -337,12 +376,12 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTALT", "+KEY_F4", "-KEY_F4", "-KEY_LEFTALT"]}],
             },
-            "move_window_right": {
+            "place_window_right": {
                 "default": [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTMETA", "+KEY_RIGHT", "-KEY_RIGHT", "-KEY_LEFTMETA", 0.1, "+KEY_ESC", "-KEY_ESC"]}],
             },
-            "move_window_left": {
+            "place_window_left": {
                 "default": [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTMETA", "+KEY_LEFT", "-KEY_LEFT", "-KEY_LEFTMETA", 0.1, "+KEY_ESC", "-KEY_ESC"]}],
