@@ -74,7 +74,7 @@ class Shadow:
         self.mind.emit(self.state_name, (reflex_name, args, kwargs), 50)
     
     def deactivate(self):
-        self.log.debug(f"Deactivating shadow {self.name}")
+        self.log.info(f"Deactivating shadow {self.name}")
 
         assert self.is_attached(), "This shadow is not attached"
         assert self.is_activated(), "This shadow is not activated"
@@ -84,8 +84,6 @@ class Shadow:
         for reflex in self.reflexes.values():
             if reflex.is_activated():
                 reflex.deactivate()
-        
-        # TODO: Unrequire devices from mind?
         
         self.active = False
         self.on_deactivate()

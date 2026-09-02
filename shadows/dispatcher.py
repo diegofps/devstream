@@ -32,7 +32,7 @@ class DispatcherReflex(Reflex):
                 dev = InputDevice(device_path)
 
                 if dev.name in self.mind.required_devices:
-                    self.log.info(f"Device is required, starting DeviceReader for devname=\"{dev.name}\"")
+                    self.log.info(f"Device is required, starting DeviceReader for dev.name=\"{dev.name}\"")
                     shadow = DeviceReader(dev=dev, name=f"DeviceReader:{dev.name}")
                     self.mind.add_shadow(shadow)
                     self.device_readers[device_path] = (shadow.name, shadow)
@@ -44,13 +44,15 @@ class DispatcherReflex(Reflex):
     
     def on_device_disconnected(self, topic_name, event):
         for device_path in event:
-            self.log.info("Device disconnected:", device_path)
+            self.log.info(f"Device disconnected. device_path={device_path}, self.device_readers={self.device_readers}")
 
             if device_path in self.device_readers:
                 shadow_name, _ = self.device_readers[device_path]
+                self.log.info(f"Dispatcher is stopping DeviceReader, name=\"{shadow_name}\"")
                 self.mind.remove_shadow(shadow_name)
                 del self.device_readers[device_path]
-                self.log.debug(f"DeviceReader stopped from dispatcher, name=\"{shadow_name}\"")
+            else:
+                self.log.debug(f"Dispatcher sees no reason to stop DeviceReader, device_path=\"{device_path}\"")
 
     def on_login_changed(self, topic_name, event):
         self.log.info(f"Dispatcher has detected a login change, event=\"{event}\"")

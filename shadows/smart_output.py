@@ -111,7 +111,7 @@ class SmartOutputReflex(Reflex):
             getattr(self, key_name).update_v(value)
     
     def run_function(self, function_name, *args):
-        self.log.info("Inside run_function. Looking for", function_name)
+        # self.log.info("Inside run_function. Looking for", function_name)
         
         if not function_name in self.functions:
             self.log.error("Unknown function: %s", function_name)

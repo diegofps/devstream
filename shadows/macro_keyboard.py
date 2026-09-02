@@ -480,7 +480,7 @@ class MacroKeyboardReflex(Reflex):
         if action_key in actions:
 
             for action in actions[action_key]:
-                self.log.info(f"Parsing action: {action[0]}")
+                # self.log.info(f"Parsing action: {action[0]}")
 
                 try:
                     if action[0] == "set":

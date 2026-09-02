@@ -103,12 +103,14 @@ class Mind:
     
     def add_shadow(self, shadow):
         assert not shadow.name in self.shadows, "A shadow with the same name already exists in the mind"
+        log.info(f"Adding shadow, name={shadow.name}")
         self.shadows[shadow.name] = shadow
         shadow.attach(self)
         shadow.activate()
         return shadow
     
     def remove_shadow(self, name):
+        log.info(f"Mind is removing a shadow, name={name}")
         shadow = self.shadows.get(name)
         if shadow is not None:
             del self.shadows[name]

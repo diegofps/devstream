@@ -17,6 +17,7 @@ class DevStreamLogger:
         handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
 
         self.logger = logging.getLogger(self.filepath)
+        self.logger.handlers.clear()
         self.logger.setLevel(logging.INFO if ENV == "PRODUCTION" else logging.DEBUG)
         self.logger.addHandler(handler)
 
