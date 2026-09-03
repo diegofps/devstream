@@ -168,6 +168,12 @@ class SmartOutputReflex(Reflex):
         self.SCROLL_H       = DelayedKey("SCROLL_H",       self.scroll_h_send_cmd, 200)
         self.SCROLL_V       = DelayedKey("SCROLL_V",       self.scroll_v_send_cmd, 200)
 
+        self.SCROLL_BRIGHTNESS = DelayedKey(
+            "SCROLL_BRIGHTNESS", 
+            lambda v: self.run_function("brightness_up") if v else self.run_function("brightness_down"), 
+            200
+        )
+
         self.SCROLL_MAXIMIZE_MININIMIZE_WINDOW = DelayedKey(
             "SCROLL_MAXIMIZE_MININIMIZE_WINDOW", 
             lambda x: self.run_function("maximize_window") if x else self.run_function("minimize_window"),
@@ -181,16 +187,18 @@ class SmartOutputReflex(Reflex):
         )
 
         self.DUAL_WINDOWS_TABS = LockableDelayedKey(
-                "DUAL_WINDOWS_TABS", 
-                lambda v: self.run_function("next_window") if v else self.run_function("previous_window"), 
-                lambda v: self.run_function("next_tab") if v else self.run_function("previous_tab"),
-                800) # lockable1
+            "DUAL_WINDOWS_TABS", 
+            lambda v: self.run_function("next_window") if v else self.run_function("previous_window"), 
+            lambda v: self.run_function("next_tab") if v else self.run_function("previous_tab"),
+            800
+        )
         
         self.DUAL_UNDO_VOLUME  = LockableDelayedKey(
-                "DUAL_UNDO_VOLUME",  
-                lambda v: self.run_function("redo") if v else self.run_function("undo"),
-                lambda v: self.run_function("volume_up") if v else self.run_function("volume_down"), 
-                500) # lockable2
+            "DUAL_UNDO_VOLUME",  
+            lambda v: self.run_function("redo") if v else self.run_function("undo"),
+            lambda v: self.run_function("volume_up") if v else self.run_function("volume_down"), 
+            500
+        )
 
         self.ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW = AdversarialDelayedKey(
             "ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW",
@@ -602,7 +610,19 @@ class SmartOutputReflex(Reflex):
             },
             "show_macro_help": {
                 "default": self.show_macro_help,
-            }
+            },
+            "brightness_up": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_BRIGHTNESSUP", "-KEY_BRIGHTNESSUP"],
+                }],
+            },
+            "brightness_down": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_BRIGHTNESSDOWN", "-KEY_BRIGHTNESSDOWN"],
+                }],
+            },
         }
 
         # Convert list of names to single names

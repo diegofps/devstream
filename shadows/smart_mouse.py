@@ -96,7 +96,9 @@ class SmartMouseReflex_H(Reflex):
             eb.update("SCROLL_TABS", event.value)
     
     def on_F(self, event):
-        pass
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.update("SCROLL_BRIGHTNESS", event.value)
         
     def on_G(self, event):
         if event.value == 1: # +G
@@ -323,7 +325,7 @@ class SmartMouseReflex_G(Reflex):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("go_to_declaration")
+                eb.function("search_selection_with_duckduckgo")
 
     def on_B(self, event):
         self.clean = False
@@ -335,13 +337,22 @@ class SmartMouseReflex_G(Reflex):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("rename")
-
-    def on_H(self, event):
-        if event.value == 1: # +H
-            self.log.debug("Pressing H from SmartMouseReflex_G, clean is", self.clean)
-            self.shift_reflex("GH")
+                eb.function("search_selection_with_brave")
     
+    def on_D(self, event):
+        self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, self.source_name) as eb:
+                eb.function("search_selection_with_ecosia")
+    
+    def on_E(self, event):
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.update("SCROLL_WINDOWS", event.value)
+    
+    def on_F(self, event):
+        pass
+
     def on_G(self, event):
         if event.value == 0: # -G
             self.log.debug("Releasing G from SmartMouseReflex_G, clean is", self.clean)
@@ -352,17 +363,11 @@ class SmartMouseReflex_G(Reflex):
             
             self.shift_reflex("N")
     
-    def on_D(self, event):
-        pass
-
-    def on_E(self, event):
-        self.clean = False
-        with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.update("SCROLL_WINDOWS", event.value)
+    def on_H(self, event):
+        if event.value == 1: # +H
+            self.log.debug("Pressing H from SmartMouseReflex_G, clean is", self.clean)
+            self.shift_reflex("GH")
     
-    def on_F(self, event):
-        pass
-
     def on_I(self, event):
         self.adversarial_switch_apps_or_windows.update_v(event.value)
 
@@ -402,7 +407,7 @@ class SmartMouseReflex_GH(Reflex):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("search_selection_with_duckduckgo")
+                eb.function("go_to_declaration")
 
     def on_B(self, event):
         self.clean = False
@@ -414,14 +419,11 @@ class SmartMouseReflex_GH(Reflex):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("search_selection_with_brave")
-    
+                eb.function("rename")
+
     def on_D(self, event):
-        self.clean = False
-        if event.value == 1:
-            with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("search_selection_with_ecosia")
-    
+        pass
+
     def on_E(self, event):
         with VirtualMouseEvent(self.mind, self.source_name) as eb:
             eb.update("WHEEL_V", event.value * 10)
