@@ -23,7 +23,7 @@ SOURCE_BASIC_KEYBOARD = "Basic Keyboard"
 class BasicKeyboardsReflex(Reflex):
     def on_event(self, topic_name, event):
         # self.log.debug(f"Calling debug_event for topic_name={topic_name}, event={event}")
-        self.debug_event(topic_name, event)
+        # self.debug_event(topic_name, event)
         with VirtualKeyboardEvent(self.mind, SOURCE_BASIC_KEYBOARD) as eb:
             eb.forward(event.type, event.code, event.value)
 

@@ -14,7 +14,7 @@ class DevStreamLogger:
         os.makedirs(folderpath, exist_ok=True)
 
         handler = logging.FileHandler(self.filepath)
-        handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+        handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)06d %(levelname)s %(message)s', datefmt='%Y-%m-%dT%H:%M:%S'))
 
         self.logger = logging.getLogger(self.filepath)
         self.logger.handlers.clear()
