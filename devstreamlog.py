@@ -1,17 +1,20 @@
 import logging
+import pathlib
+import shutil
 import os
 
 DEFAULT_LOGGER = None
+LOGS_FOLDERPATH = './logs'
 FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 ENV="PRODUCTION"
 
 class DevStreamLogger:
 
-    def __init__(self, filename="default.log", folderpath="./logs"):
-        self.filepath = os.path.join(folderpath, filename)
-        self.folderpath = folderpath
+    def __init__(self, filename="default.log"):
+        self.filepath = os.path.join(LOGS_FOLDERPATH, filename)
+        self.folderpath = LOGS_FOLDERPATH
 
-        os.makedirs(folderpath, exist_ok=True)
+        # os.makedirs(LOGS_FOLDERPATH, exist_ok=True)
 
         handler = logging.FileHandler(self.filepath)
         handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)06d %(levelname)s %(message)s', datefmt='%Y-%m-%dT%H:%M:%S'))
@@ -44,15 +47,30 @@ class DevStreamLogger:
         target(title)
 
 
-def clear_logs(folderpath="./logs"):
-    pattern = os.path.join(folderpath, '*.log')
-    cmd = f"rm -f \"{pattern}\""
-    # print(cmd)
-    os.system(cmd)
-
-def set_log_level(level):
+def init(folderpath=".", max_backups=5, level="DEBUG"):
     global ENV
     ENV = level
+
+    assert max_backups <= 999
+    assert max_backups > 0
+
+    folderpath     = pathlib.Path(folderpath).absolute()
+    old_folderpath = folderpath.joinpath(f"logs.{max_backups:03d}")
+
+    os.makedirs(folderpath, exist_ok=True)
+
+    if old_folderpath.exists():
+        shutil.rmtree(old_folderpath, ignore_errors=True)
+
+    for i in range(max_backups-1,-1,-1):
+        new_folderpath = os.path.join(folderpath, f"logs.{i:03d}")
+        if os.path.exists(new_folderpath):
+            shutil.move(new_folderpath, old_folderpath)
+        old_folderpath = new_folderpath
+
+    global LOGS_FOLDERPATH
+    LOGS_FOLDERPATH = os.path.join(folderpath, f"logs.{0:03d}")
+    os.mkdir(LOGS_FOLDERPATH)
 
 
 def default_logger():

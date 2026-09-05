@@ -3,8 +3,7 @@
 import devstreamlog
 import sys
 
-devstreamlog.clear_logs()
-devstreamlog.set_log_level("DEBUG" if len(sys.argv) == 1 else sys.argv[1])
+devstreamlog.init(folderpath='.', max_backups=5, level="DEBUG" if len(sys.argv) == 1 else sys.argv[1])
 
 from mind import Mind
 import shadows

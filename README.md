@@ -108,7 +108,7 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | L   | Middle mouse click |
 | M   | Right mouse click  |
 
-
+<!-- 
 ## Nulea M512
 
 ![Buttons](images/keys_nuleaM512.png)
@@ -134,12 +134,17 @@ These is a system service to enhance the compatibility of the Logitech Trackball
 | B + D    | Play / Pause                   |
 | B + E    | Change Windows                 |
 | B + F    | Zoom In / Out                  |
-| B + G    | Vertical and Horizontal Scroll |
+| B + G    | Vertical and Horizontal Scroll | -->
+
+## Dual Hands
+
+This is mode is supposed to use a mouse one side and a trackball on the other.
+The state is controlled by the mouse side buttons (requires two).
 
 
-## Logitech MX Master 3S and MX Anywhwere 2S
+## Mouse Side (Logitech MX Master 3S or MX Anywhwere 2S)
 
-![Buttons](images/MXMaster3S-StateMachine.png)
+![Buttons](images/SmartMouse-StateMachine-Mouse.png)
 
 Notes:
 
@@ -149,6 +154,15 @@ Notes:
 - Gray rows count as a combination if pressed on a deeper state
 - White rows never invalidate a clear state.
 - Some keys are not available for every mouse due to their physical limitations.
+
+## Trackball Side (Nulea M512)
+
+![Buttons](images/SmartMouse-StateMachine-Trackball.png)
+
+Notes:
+
+- 
+
 
 # Dependencies
 
