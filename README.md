@@ -155,13 +155,13 @@ Notes:
 - White rows never invalidate a clear state.
 - Some keys are not available for every mouse due to their physical limitations.
 
-## Trackball Side (Nulea M512)
+<!-- ## Trackball Side (Nulea M512)
 
 ![Buttons](images/SmartMouse-StateMachine-Trackball.png)
 
 Notes:
 
-- 
+-  -->
 
 
 # Dependencies
