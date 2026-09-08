@@ -314,18 +314,30 @@ class SmartMouseReflex_G(Reflex):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.adversarial_switch_apps_or_windows = AdversarialDelayedKey(
-            "adversarial_switch_apps_or_windows",
-            self._switch_apps,
-            self._switch_app_windows,
-            100, self.log
+
+        self.main_axis = AdversarialDelayedKey(
+            "main_axis",
+            self._on_mainaxis_h,
+            self._on_mainaxis_v,
+            100, self.log,
+            axis_lockable=False,
+            single_shot=True
+        )
+
+        self.vertical_scroll = AdversarialDelayedKey(
+            "vertical_scroll",
+            self._on_verticalscroll,
+            self._on_verticalscroll,
+            250, self.log,
+            axis_lockable=False,
+            single_shot=False
         )
 
     def on_A(self, event):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("search_selection_with_duckduckgo")
+                eb.function("previous_window")
 
     def on_B(self, event):
         self.clean = False
@@ -337,18 +349,18 @@ class SmartMouseReflex_G(Reflex):
         self.clean = False
         if event.value == 1:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("search_selection_with_brave")
+                eb.function("next_window")
     
     def on_D(self, event):
-        self.clean = False
-        if event.value == 1:
-            with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("search_selection_with_ecosia")
+        pass
+        # self.clean = False
+        # if event.value == 1:
+        #     with SmartOutputEvent(self.mind, self.source_name) as eb:
+        #         eb.function("search_selection_with_ecosia")
     
     def on_E(self, event):
         self.clean = False
-        with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.update("SCROLL_WINDOWS", event.value)
+        self.vertical_scroll.update_v(event.value)
     
     def on_F(self, event):
         pass
@@ -356,11 +368,9 @@ class SmartMouseReflex_G(Reflex):
     def on_G(self, event):
         if event.value == 0: # -G
             self.log.debug("Releasing G from SmartMouseReflex_G, clean is", self.clean)
-
             if self.clean:
                 with SmartOutputEvent(self.mind, self.source_name) as eb:
                     eb.function("navigate_back")
-            
             self.shift_reflex("N")
     
     def on_H(self, event):
@@ -369,10 +379,10 @@ class SmartMouseReflex_G(Reflex):
             self.shift_reflex("GH")
     
     def on_I(self, event):
-        self.adversarial_switch_apps_or_windows.update_v(event.value)
+        self.main_axis.update_v(event.value)
 
     def on_J(self, event):
-        self.adversarial_switch_apps_or_windows.update_h(event.value)
+        self.main_axis.update_h(event.value)
 
     def on_K(self, event):
         self.clean = False
@@ -387,19 +397,31 @@ class SmartMouseReflex_G(Reflex):
                 eb.function("undo")
     
     def on_deactivate(self):
+        self.vertical_scroll.clear()
+        self.main_axis.clear()
+
         with SmartOutputEvent(self.mind, self.source_name) as eb:
             eb.function("select_window")
     
-    def _switch_apps(self, value):
+    def _on_mainaxis_h(self, value):
+        self.log.debug(f'_on_mainaxis_h: {value}')
         self.clean = False
         with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.function("next_app" if value > 0 else "previous_app")
+            eb.function("search_selection_with_brave" if value > 0 else "search_selection_with_ecosia")
 
-    def _switch_app_windows(self, value):
+    def _on_mainaxis_v(self, value):
+        self.log.debug(f'_on_mainaxis_v: {value}')
         self.clean = False
         with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.function("previous_app_window" if value > 0 else "next_app_window")
+            eb.function("search_selection_with_bing" if value > 0 else "search_selection_with_duckduckgo")
 
+    def _on_verticalscroll(self, value):
+        self.log.debug(f'_on_verticalscroll: {value}')
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("previous_window" if value > 0 else "next_window")
+            # eb.function("previous_app_window" if value > 0 else "next_app_window")
+        
 
 class SmartMouseReflex_GH(Reflex):
     

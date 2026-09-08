@@ -247,68 +247,157 @@ class LockableDelayedKey:
 
 class AdversarialDelayedKey:
 
-    def __init__(self, name, callback_h, callback_v, size, log):
+    LOCKED_NONE = 0
+    LOCKED_H    = 1
+    LOCKED_V    = 2
+
+    def __init__(self, name, callback_h, callback_v, size, log, axis_lockable=False, single_shot=False):
+        self.axis_lockable = axis_lockable
+        self.cumulative_h  = 0
+        self.cumulative_v  = 0
+        self.single_shot   = single_shot
+        self.callback_h    = callback_h
+        self.callback_v    = callback_v
+        self.locked        = AdversarialDelayedKey.LOCKED_NONE
+        self.shot          = False
+        self.size          = size
+        self.name          = name
+        self.log           = log
+
+    def clear(self):
         self.cumulative_h = 0
         self.cumulative_v = 0
-        self.callback_h   = callback_h
-        self.callback_v   = callback_v
-        self.size         = size
-        self.name         = name
-        self.log          = log
-
+        self.locked       = AdversarialDelayedKey.LOCKED_NONE
+        self.shot         = False
+    
     def update_h(self, value):
-        self.cumulative_h, self.cumulative_v = self._consume1(value, self.cumulative_h, self.cumulative_v)
-        # self.log.debug(f"update_h is updating values, self.cumulative_v={self.cumulative_v}, self.cumulative_h={self.cumulative_h}, self.size={self.size}, value={value}")
 
-        while self.cumulative_h >= self.size:
-            # self.log.debug(f"update_h is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
-            self.callback_h(self.cumulative_h)
-            self.cumulative_h -= self.size
+        if self.axis_lockable:
+            if self.locked:
+                if self.locked != AdversarialDelayedKey.LOCKED_H:
+                    return
+        
+        self.cumulative_h, self.cumulative_v = self._ingest1(value, self.cumulative_h, self.cumulative_v)
+        self.cumulative_h = self._spend(self.cumulative_h, self.callback_h, AdversarialDelayedKey.LOCKED_H, False)
+        self.cumulative_h = self._spend(self.cumulative_h, self.callback_h, AdversarialDelayedKey.LOCKED_H, True)
 
-        while self.cumulative_h <= -self.size:
-            # self.log.debug(f"update_h is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
-            self.callback_h(self.cumulative_h)
-            self.cumulative_h += self.size
+        # while self.cumulative_h >= self.size:
+            
+        #     if self.axis_lockable:
+        #         self.locked = AdversarialDelayedKey.LOCKED_H
+            
+        #     if self.single_shot:
+        #         if not self.shot:
+        #             self.callback_h(self.cumulative_h)
+        #             self.shot = True
+        #     else:
+        #         self.callback_h(self.cumulative_h)
+
+        #     self.cumulative_h -= self.size
+
+        # while self.cumulative_h <= -self.size:
+
+        #     if self.axis_lockable:
+        #         self.locked = AdversarialDelayedKey.LOCKED_H
+            
+        #     if self.single_shot:
+        #         if not self.shot:
+        #             self.callback_h(self.cumulative_h)
+        #             self.shot = True
+        #     else:
+        #         self.callback_h(self.cumulative_h)
+            
+        #     self.cumulative_h += self.size
 
     def update_v(self, value):
-        self.cumulative_v, self.cumulative_h = self._consume1(value, self.cumulative_v, self.cumulative_h)
-        # self.log.debug(f"update_v is updating values, self.cumulative_v={self.cumulative_v}, self.cumulative_h={self.cumulative_h}, self.size={self.size}, value={value}")
 
-        while self.cumulative_v >= self.size:
-            # self.log.debug(f"update_v is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
-            self.callback_v(self.cumulative_v)
-            self.cumulative_v -= self.size
+        if self.axis_lockable:
+            if self.locked:
+                if self.locked != AdversarialDelayedKey.LOCKED_V:
+                    return
+        
+        self.cumulative_v, self.cumulative_h = self._ingest1(value, self.cumulative_v, self.cumulative_h)
+        self.cumulative_v = self._spend(self.cumulative_v, self.callback_v, AdversarialDelayedKey.LOCKED_V, False)
+        self.cumulative_v = self._spend(self.cumulative_v, self.callback_v, AdversarialDelayedKey.LOCKED_V, True)
 
-        while self.cumulative_v <= -self.size:
-            # self.log.debug(f"update_v is emitting event, self.cumulative_v={self.cumulative_v}, self.size={self.size}")
-            self.callback_v(self.cumulative_v)
-            self.cumulative_v += self.size
+        # while self.cumulative_v >= self.size:
+            
+        #     if self.axis_lockable:
+        #         self.locked = AdversarialDelayedKey.LOCKED_V
+            
+        #     if self.single_shot:
+        #         if not self.shot:
+        #             self.callback_v(self.cumulative_v)
+        #             self.shot = True
+        #     else:
+        #         self.callback_v(self.cumulative_v)
+
+        #     self.cumulative_v -= self.size
+
+        # while self.cumulative_v <= -self.size:
+            
+        #     if self.axis_lockable:
+        #         self.locked = AdversarialDelayedKey.LOCKED_V
+            
+        #     if self.single_shot:
+        #         if not self.shot:
+        #             self.callback_v(self.cumulative_v)
+        #             self.shot = True
+        #     else:
+        #         self.callback_v(self.cumulative_v)
+
+        #     self.cumulative_v += self.size
     
-    def _consume1(self, energy, current_acc, other_acc):
+    def _ingest1(self, energy, current_acc, other_acc):
+
         if energy >= 0:
             if other_acc >= 0:
-                new_energy, new_other_acc = self._consume2(energy, other_acc)
+                new_energy, new_other_acc = self._ingest2(energy, other_acc)
                 current_acc += new_energy
                 other_acc    = new_other_acc
             else:
-                new_energy, new_other_acc = self._consume2(energy, -other_acc)
+                new_energy, new_other_acc = self._ingest2(energy, -other_acc)
                 current_acc += new_energy
                 other_acc    = -new_other_acc
         else:
             if other_acc >= 0:
-                new_energy, new_other_acc = self._consume2(-energy, other_acc)
+                new_energy, new_other_acc = self._ingest2(-energy, other_acc)
                 current_acc += -new_energy
                 other_acc    = new_other_acc
             else:
-                new_energy, new_other_acc = self._consume2(-energy, -other_acc)
+                new_energy, new_other_acc = self._ingest2(-energy, -other_acc)
                 current_acc += -new_energy
                 other_acc    = -new_other_acc
+        
         return current_acc, other_acc
     
-    def _consume2(self, energy, other_acc):
+    def _ingest2(self, energy, other_acc):
+
         if energy <= other_acc:
             other_acc -= energy
         else:
             energy -= other_acc
             other_acc = 0
+        
         return energy, other_acc
+
+    def _spend(self, cumulative, callback, locked_state, reverse_axis):
+
+        if reverse_axis:
+            cumulative = -cumulative
+
+        while cumulative >= self.size:
+
+            if self.axis_lockable:
+                self.locked = locked_state
+            
+            if self.single_shot:
+                if not self.shot:
+                    callback(-cumulative if reverse_axis else cumulative)
+                    self.shot = True
+            else:
+                callback(-cumulative if reverse_axis else cumulative)
+
+            cumulative -= self.size
+
+        return -cumulative if reverse_axis else cumulative

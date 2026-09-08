@@ -7,3 +7,4 @@ build*
 canvas2.release
 .*
 *.bak
+images/SmartMouse-StateMachine-Mouse.svg

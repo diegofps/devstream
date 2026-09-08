@@ -538,6 +538,9 @@ class SmartOutputReflex(Reflex):
             "search_selection_with_duckduckgo": {
                 "default": self.search_selection_with_duckduckgo,
             },
+            "search_selection_with_ecosia": {
+                "default": self.search_selection_with_ecosia,
+            },
             "search_selection_with_google": {
                 "default": self.search_selection_with_google,
             },

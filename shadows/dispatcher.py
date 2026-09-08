@@ -80,4 +80,3 @@ class Dispatcher(Shadow):
     def on_configure(self):
         super().on_configure()
         self.add_reflex(DispatcherReflex, autostart=True)
-
