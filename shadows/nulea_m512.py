@@ -128,29 +128,19 @@ class NuleaM512_N(BaseNuleaM512Reflex):
             value = event.value
             eb.update("REL_X", value)
         
-        # with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-        #     eb.update_h("ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW", event.value)
-        
     def on_move_rel_y(self, event):
         with VirtualMouseEvent(self.mind, SOURCE_NULEAM512) as eb:
             # value = self._smooth(event.value, 0.2, 0.5, 1, 20)
             value = event.value
             eb.update("REL_Y", value)
-
-        # self.log.debug("Sending update_v event for ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW")
-        # with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-        #     eb.update_v("ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW", event.value)
     
     def on_wheel_left(self, event): # E
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-            if event.value > 0:
-                eb.function("next_tab", event.value)
-            else:
-                eb.function("previous_tab", event.value)
+            eb.function("next_tab" if event.value > 0 else "previous_tab", event.value)
         
     def on_wheel_right(self, event): # F
         with SmartOutputEvent(self.mind, SOURCE_NULEAM512) as eb:
-            eb.update("SCROLL_VOLUME", event.value)
+            eb.function("volume_up" if event.value > 0 else "volume_down", event.value)
         
     def _smooth(self, value, multiply1, multiply2, threshold1, threshold2):
         

@@ -53,7 +53,7 @@ class MXMaster3S_LogidMonitor(Reflex):
 
 
 def mxMaster3SEventWrapper(reflex, device_name, event, target):
-    # log.debug(f"Event received from {device_name}: {event}")
+    # reflex.log.debug(f"Event received from {device_name}: {event}")
 
     if event.type == e.EV_KEY:
 

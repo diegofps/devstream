@@ -28,7 +28,7 @@ class DeviceReaderReflex(Reflex):
                         if daemon.done:
                             break
 
-                        # log.debug(f"{self.name} is emiting event {event} in topic {self.topic_name}")
+                        # self.log.debug(f"{self.name} is emiting event {event} in topic {self.topic_name}")
                         self.mind.emit(self.topic_name, event)
                 
             except OSError as e:
@@ -53,4 +53,4 @@ class DeviceReader(Shadow):
 
     def on_configure(self):
         super().on_configure()
-        self.add_reflex(DeviceReaderReflex, self.name, self.dev, autostart=True)
+        self.add_reflex(DeviceReaderReflex, topic_name=self.name, dev=self.dev, autostart=True)

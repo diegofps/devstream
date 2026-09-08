@@ -15,8 +15,9 @@ class Shadow:
         self.log = DevStreamLogger(filename=f"{self.name}.log")
         self.log.info(f"Creating shadow {self.name}")
 
-    def add_reflex(self, ReflexType, *args, **kwargs):
-        reflex = ReflexType(*args, **{**self.reflex_kwargs, **kwargs})
+    def add_reflex(self, ReflexType, **kwargs):
+        self.log.debug(f"Adding reflex: ReflexType.name=\"{ReflexType.__name__}\", kwargs=\"{kwargs}\"")
+        reflex = ReflexType(**{**self.reflex_kwargs, **kwargs})
         assert not reflex.name in self.reflexes, f"Shadow {self.name} already contains a reflex with the name {reflex.name}"
         self.reflexes[reflex.name] = reflex
         reflex.attach(self)
@@ -97,6 +98,7 @@ class Shadow:
     def on_configure(self, **reflex_kwargs):
         if not 'log_prefix' in reflex_kwargs:
             reflex_kwargs['log_prefix'] = self.name
+        self.log.info(f"Configuring Shadow name=\"{self.name}\", reflex_kwargs=\"{reflex_kwargs}\"")
         self.reflex_kwargs = reflex_kwargs
         self.require_device(reflex_kwargs.get('required_devices', []))
 

@@ -12,18 +12,16 @@ TOPIC_WINDOW_CHANGED = "WindowChanged"
 
 class WatchWindowsReflex(Reflex):
 
-    def __init__(self, username, display, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, username, display, **kwargs):
+        super().__init__(**kwargs)
         self.username = username
         self.display = display
-
         self.log.info(f"Creating {self.name}: username={username}, display={display}")
     
     def on_configure(self):
         self.require_daemon()
 
     def run(self, daemon):
-
         while not daemon.done:
             try:
                 cmd  = shlex.split("su %s -c 'xprop -spy -root _NET_ACTIVE_WINDOW -display %s'" % (self.username, self.display))
@@ -107,7 +105,7 @@ class WatchWindows(Shadow):
     
     def on_configure(self):
         super().on_configure(log_prefix=self.name)
-        self.add_reflex(WatchWindowsReflex, self.username, self.display, autostart=True)
+        self.add_reflex(WatchWindowsReflex, username=self.username, display=self.display, autostart=True)
 
 
 # def on_load(shadow, username, display):

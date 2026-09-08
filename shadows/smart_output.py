@@ -6,7 +6,7 @@ from shadows.virtual_keyboard import VirtualKeyboardEvent
 from shadows.virtual_mouse import VirtualMouseEvent
 # from shadows.virtual_pen import VirtualPenEvent
 
-from keys import DelayedKey, LockableDelayedKey, AdversarialDelayedKey
+from keys import DelayedKey
 
 from subprocess import Popen, PIPE
 from shadow import Shadow
@@ -157,62 +157,9 @@ class SmartOutputReflex(Reflex):
 
     def init_keys(self):
 
-        self.SCROLL_VOLUME  = DelayedKey("SCROLL_VOLUME",  lambda v: self.run_function("volume_up") if v else self.run_function("volume_down"), 200)
-        self.SCROLL_TABS    = DelayedKey("SCROLL_TABS",    lambda v: self.run_function("next_tab") if v else self.run_function("previous_tab"), 500)
-        self.SCROLL_WINDOWS = DelayedKey("SCROLL_WINDOWS", lambda v: self.run_function("next_window") if v else self.run_function("previous_window"), 500)
-        self.SCROLL_ZOOM    = DelayedKey("SCROLL_ZOOM",    lambda v: self.run_function("zoom_in") if v else self.run_function("zoom_out"), 200)
-        self.SCROLL_UNDO    = DelayedKey("SCROLL_UNDO",    lambda v: self.run_function("undo") if v else self.run_function("redo"), 200)
-
-        self.SCROLL_VKEYS   = DelayedKey("SCROLL_VKEYS",   self.scroll_v_key, 200)
-        self.SCROLL_HKEYS   = DelayedKey("SCROLL_HKEYS",   self.scroll_h_key, 200)
         self.SCROLL_H       = DelayedKey("SCROLL_H",       self.scroll_h_send_cmd, 200)
         self.SCROLL_V       = DelayedKey("SCROLL_V",       self.scroll_v_send_cmd, 200)
 
-        self.SCROLL_BRIGHTNESS = DelayedKey(
-            "SCROLL_BRIGHTNESS", 
-            lambda v: self.run_function("brightness_up") if v else self.run_function("brightness_down"), 
-            200
-        )
-
-        self.SCROLL_MAXIMIZE_MININIMIZE_WINDOW = DelayedKey(
-            "SCROLL_MAXIMIZE_MININIMIZE_WINDOW", 
-            lambda x: self.run_function("maximize_window") if x else self.run_function("minimize_window"),
-            400
-        )
-
-        self.SCROLL_PLACE_WINDOW_LEFT_RIGHT = DelayedKey(
-            "SCROLL_PLACE_WINDOW_LEFT_RIGHT", 
-            lambda x: self.run_function("place_window_right") if x else self.run_function("place_window_left"),
-            400
-        )
-
-        self.DUAL_WINDOWS_TABS = LockableDelayedKey(
-            "DUAL_WINDOWS_TABS", 
-            lambda v: self.run_function("next_window") if v else self.run_function("previous_window"), 
-            lambda v: self.run_function("next_tab") if v else self.run_function("previous_tab"),
-            800
-        )
-        
-        self.DUAL_UNDO_VOLUME  = LockableDelayedKey(
-            "DUAL_UNDO_VOLUME",  
-            lambda v: self.run_function("redo") if v else self.run_function("undo"),
-            lambda v: self.run_function("volume_up") if v else self.run_function("volume_down"), 
-            500
-        )
-
-        self.ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW = AdversarialDelayedKey(
-            "ADVERSARIAL_PLACEWINDOW_OR_MAXMINWINDOW",
-            lambda x: self.run_function("place_window_right") if x >= 0 else self.run_function("place_window_left"),
-            lambda x: self.run_function("minimize_window") if x >= 0 else self.run_function("maximize_window"),
-            250, self.log
-        )
-    
-        self.ADVERSARIAL_SWITCH_APPS_OR_WINDOWS = AdversarialDelayedKey(
-            "ADVERSARIAL_SWITCH_APPS_OR_WINDOWS",
-            lambda x: self.run_function("next_app") if x >= 0 else self.run_function("previous_app"),
-            lambda x: self.run_function("next_app_window") if x >= 0 else self.run_function("previous_app_window"),
-            100, self.log
-        )
     
     def on_login_changed(self, topic_name, event):
         import pwd
