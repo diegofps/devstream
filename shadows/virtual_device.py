@@ -15,9 +15,8 @@ class VirtualDeviceEvent:
     UPDATE_V = 4
     UNLOCK   = 5
     FORWARD  = 6
-    # FUNCTION = 7
-    SLEEP    = 8
-    SEQUENCE = 9
+    SLEEP    = 7
+    SEQUENCE = 8
 
     def __init__(self, mind, topic, source=None):
         self.source        = source
@@ -131,14 +130,11 @@ class VirtualDeviceReflex(Reflex):
         elif event_type == VirtualDeviceEvent.FORWARD:
             self.on_event_forward(event[1], event[2], event[3])
         
-        # elif event_type == VirtualDeviceEvent.FUNCTION:
-        #     self.run(event[2], *event[3:])
-        
         elif event_type == VirtualDeviceEvent.SLEEP:
             self.on_event_sleep(event[1])
         
         else:
-            self.log.error(f"Invalid event_type in {self.__class__.__name__} event: {event_type}")
+            self.log.error(f"Invalid event_type, event=\"{event_type}\"")
 
     def on_event_press(self, key_name):
         if hasattr(self, key_name):
@@ -166,16 +162,11 @@ class VirtualDeviceReflex(Reflex):
     
     def on_event_forward(self, type, code, value):
         if not code in self.acquired_keys and not code in self._ignored_keys:
-            # log.info(self._ignored_keys, code)
-            self.log.info(f"{self.__class__.__name__} is missing the key {e.KEY[code]}")
-        
+            self.log.warn(f"Missing key code in on_event_forward, code={code}, key={e.KEY[code]}")
         self.vdev.write(type, code, value)
 
     def on_event_sleep(self, delay):
         time.sleep(delay)
-        
-    # def run(self, name, *args):
-    #     getattr(self, 'function_' + name)(*args)
 
     def terminate(self):
         if self.vdev is not None:

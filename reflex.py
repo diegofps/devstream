@@ -169,11 +169,11 @@ class Reflex:
         pass
     
     def on_activate(self, clean=True):
-        self.log.debug(f"{self.name} is activating, clean={clean}")
+        self.log.info(f"{self.name} is activating, clean={clean}")
         self.clean = clean
 
     def on_deactivate(self):
-        self.log.debug(f"{self.name} is deactivating")
+        self.log.info(f"{self.name} is deactivating")
 
     def require_daemon(self, value=True):
         # log.debug(f"Inside require_daemon for reflex {self.name}, value={value}")
