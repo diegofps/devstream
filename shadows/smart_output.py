@@ -436,7 +436,7 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_F", "-KEY_F", "-KEY_LEFTCTRL"]}],
 
-                ("firefox", "firefox-beta", "QtCreator"): [{
+                ("firefox", "firefox-beta", "firefox_firefox", "QtCreator"): [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_K", "-KEY_K", "-KEY_LEFTCTRL"]}],
 
@@ -572,6 +572,35 @@ class SmartOutputReflex(Reflex):
                     "type": "keyboard",
                     "sequence": ["+KEY_BRIGHTNESSDOWN", "-KEY_BRIGHTNESSDOWN"],
                 }],
+            },
+            "save": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_S", "-KEY_S", "-KEY_LEFTCTRL"]}],
+            },
+            "save_as": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTSHIFT", "+KEY_S", "-KEY_S", "-KEY_LEFTSHIFT", "-KEY_LEFTCTRL"]}],
+                
+                ("firefox", "firefox-beta", "firefox_firefox"): [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_S", "-KEY_S", "-KEY_LEFTCTRL"]}],
+            },
+            "open": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_O", "-KEY_O", "-KEY_LEFTCTRL"]}],
+            },
+            "new": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_N", "-KEY_N", "-KEY_LEFTCTRL"]}],
+
+                ("firefox", "firefox-beta", "firefox_firefox"): [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTCTRL", "+KEY_T", "-KEY_T", "-KEY_LEFTCTRL"]}],
+
             },
         }
 

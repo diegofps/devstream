@@ -244,17 +244,15 @@ class SmartMouseReflex_HG(SmartMouseReflex):
             self.log.debug("Releasing H from SmartMouseReflex_HG, clean is", self.clean)
             self.shift_reflex("HGh", clean=False)
 
-    # def on_event_I(self, value):
-    #     self.clean = False
-    #     with SmartOutputEvent(self.mind, self.source_name) as eb:
-    #         eb.function("ctrl_d" if value > 0 else "ctrl_c", value)
+    def on_event_I(self, value):
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("open" if value > 0 else "save_as")
 
-    # def on_event_J(self, value):
-    #     self.clean = False
-    #     with VirtualKeyboardEvent(self.mind, self.source_name) as eb:
-    #         key = "KEY_ESC" if value > 0 else "KEY_ENTER"
-    #         eb.press(key)
-    #         eb.release(key)
+    def on_event_J(self, value):
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("new" if value > 0 else "save")
 
     def on_K(self, event):
         self.clean = False
