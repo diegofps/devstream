@@ -129,6 +129,9 @@ class SmartMouseReflex_N(SmartMouseReflex): # Normal Mode
 
 class SmartMouseReflex_H(SmartMouseReflex):
 
+    def __init__(self, **kwargs):
+        super().__init__(IJ_single_shot=True, **kwargs)
+
     def on_A(self, event):
         self.clean = False
         if event.value == 0:
@@ -173,13 +176,15 @@ class SmartMouseReflex_H(SmartMouseReflex):
                     eb.function("navigate_forward")
             self.shift_reflex("N")
 
-    def on_I(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_Y", event.value)
+    def on_event_I(self, value):
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("cut" if value > 0 else "")
 
-    def on_J(self, event):
-        with VirtualMouseEvent(self.mind, self.source_name) as eb:
-            eb.update("REL_X", event.value)
+    def on_event_J(self, value):
+        self.clean = False
+        with SmartOutputEvent(self.mind, self.source_name) as eb:
+            eb.function("paste" if value > 0 else "copy")
 
     def on_K(self, event):
         self.clean = False
