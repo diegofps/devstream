@@ -179,7 +179,7 @@ class SmartMouseReflex_H(SmartMouseReflex):
     def on_event_I(self, value):
         self.clean = False
         with SmartOutputEvent(self.mind, self.source_name) as eb:
-            eb.function("cut" if value > 0 else "")
+            eb.function("cut" if value > 0 else "undo")
 
     def on_event_J(self, value):
         self.clean = False
@@ -415,11 +415,10 @@ class SmartMouseReflex_G(SmartMouseReflex):
 class SmartMouseReflex_GH(SmartMouseReflex):
     
     def on_A(self, event):
-        pass
-        # self.clean = False
-        # if event.value == 1:
-        #     with SmartOutputEvent(self.mind, self.source_name) as eb:
-        #         eb.function("go_to_declaration")
+        self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, self.source_name) as eb:
+                eb.function("move_text_up")
 
     def on_B(self, event):
         self.clean = False
@@ -428,11 +427,10 @@ class SmartMouseReflex_GH(SmartMouseReflex):
                 eb.function("focus_mode")
         
     def on_C(self, event):
-        pass
-        # self.clean = False
-        # if event.value == 1:
-        #     with SmartOutputEvent(self.mind, self.source_name) as eb:
-        #         eb.function("rename")
+        self.clean = False
+        if event.value == 1:
+            with SmartOutputEvent(self.mind, self.source_name) as eb:
+                eb.function("move_text_down")
 
     def on_D(self, event):
         pass
@@ -548,19 +546,19 @@ class SmartMouseReflex_D(SmartMouseReflex):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("reboot")
+                eb.function("go_to_declaration")
 
     def on_B(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("lock")
+                eb.function("rename")
         
     def on_C(self, event):
         self.clean = False
         if event.value == 0:
             with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("poweroff")
+                eb.function("find_all_references")
 
     def on_D(self, event):
         if event.value == 0:
@@ -578,22 +576,18 @@ class SmartMouseReflex_D(SmartMouseReflex):
         pass
 
     def on_G(self, event):
-        self.clean = False
-        if event.value == 0:
-            with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("ctrl_d")
+        pass
     
     def on_H(self, event):
-        self.clean = False
-        if event.value == 0:
-            with SmartOutputEvent(self.mind, self.source_name) as eb:
-                eb.function("ctrl_c")
-    
-    def on_I(self, event):
         pass
 
-    def on_J(self, event): # J
-        pass
+    def on_I(self, event):
+        with VirtualMouseEvent(self.mind, self.source_name) as eb:
+            eb.update("REL_Y", event.value)
+
+    def on_J(self, event):
+        with VirtualMouseEvent(self.mind, self.source_name) as eb:
+            eb.update("REL_X", event.value)
 
     def on_K(self, event):
         pass

@@ -114,7 +114,7 @@ class SmartOutputReflex(Reflex):
         # self.log.info("Inside run_function. Looking for", function_name)
         
         if not function_name in self.functions:
-            self.log.error("Unknown function: %s", function_name)
+            self.log.error(f"Unknown function: {function_name}")
             return
         
         function = self.functions[function_name]
@@ -236,6 +236,16 @@ class SmartOutputReflex(Reflex):
                 "default": [{
                     "type": "keyboard",
                     "sequence": ["+KEY_LEFTCTRL", "+KEY_LEFTALT", "+KEY_LEFTSHIFT", "+KEY_LEFT", "-KEY_LEFT", "-KEY_LEFTSHIFT", "-KEY_LEFTALT", "-KEY_LEFTCTRL"]}],
+            },
+            "move_text_up": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTALT", "+KEY_UP", "-KEY_UP", "-KEY_LEFTALT"]}],
+            },
+            "move_text_down": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTALT", "+KEY_DOWN", "-KEY_DOWN", "-KEY_LEFTALT"]}],
             },
             "select_window": {
                 "default": [{
@@ -430,6 +440,11 @@ class SmartOutputReflex(Reflex):
                     {"type": "keyboard", 
                     "sequence": ["-KEY_LEFTCTRL"]},
                 ],
+            },
+            "find_all_references": {
+                "default": [{
+                    "type": "keyboard",
+                    "sequence": ["+KEY_LEFTSHIFT", "+KEY_LEFTALT", "+KEY_F12", "-KEY_F12", "-KEY_LEFTALT", "-KEY_LEFTSHIFT"]}],
             },
             "advanced_search": {
                 "default": [{
